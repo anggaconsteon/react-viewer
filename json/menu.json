@@ -1,0 +1,79 @@
+[
+    {
+        "menu": "Dashboard Umum",
+        "link": "1FTaIACxtt0KEfj5ycXH50s_MhpmK9eDgibju5K7Hb4A/edit?pli=1&gid=815108501#gid=815108501"
+    },
+    {
+        "menu": "Presensi Hari ini",
+        "link": "1r2cZvs0Kwp4O_-9g-XAVicO2D19j3wBERDZ6d5ZLYn8"
+    },
+    {
+        "menu": "Pegawai",
+        "subMenus": [
+            {
+                "title": "Pendaftaran Pegawai",
+                "link": "1FTaIACxtt0KEfj5ycXH50s_MhpmK9eDgibju5K7Hb4A/edit?pli=1&gid=74580014#gid=74580014",
+                "contents": [
+                    {
+                        "description": "Ini adalah menu Pendaftaran Pegawai",
+                        "topButton": [
+                            {
+                                "id": "absensi-type",
+                                "bType": "drd",
+                                "label": "Absensi",
+                                "valueKey": "id",
+                                "trigger": "onChange",
+                                "values": [
+                                    {
+                                        "id": 1,
+                                        "title": "Kantor Pusat"
+                                    },
+                                    {
+                                        "id": 2,
+                                        "title": "Product Group"
+                                    }
+                                ],
+                                "action": [
+                                    {
+                                        "aType": "sWrite",
+                                        "target": "1XNtStUS...xhk",
+                                        "range": "Presensi Manual!C2"
+                                    }
+                                ]
+                            },
+                            {
+                                "id": "tanggal-presensi",
+                                "bType": "date",
+                                "label": "Date",
+                                "trigger": "onChange",
+                                "dateFormat": "DD/MM/YYYY",
+                                "action": [
+                                    {
+                                        "aType": "sWrite",
+                                        "target": "1XNtStUS...xhk",
+                                        "range": "Presensi Manual!D2"
+                                    }
+                                ]
+                            },
+                            {
+                                "id": "btn-download",
+                                "bType": "btn",
+                                "label": "Download Pdf",
+                                "trigger": "onSubmit",
+                                "tButton": "submit",
+                                "icon": "check-check",
+                                "action": [
+                                    {
+                                        "aType": "sWrite",
+                                        "target": "1XNtStUS...xhk",
+                                        "range": "Presensi Manual!E2"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

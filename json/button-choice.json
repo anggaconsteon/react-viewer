@@ -1,0 +1,29 @@
+{
+    "type": "HORIZONTAL_BUTTON_CHOICE",
+    "selectionMode": "single",
+    "width": 100,
+    "children": [
+        {
+            "width": "200",
+            "height": "100",
+            "iconUrl": "https://firestore.com",
+            "label": "Potential Owner",
+            "bgColor": "#000"
+
+        },
+        {
+            "width": "200",
+            "height": "100",
+            "iconUrl": "https://firestore.com",
+            "label": "Follow Up",
+            "bgColor": "#000"
+        },
+        {
+            "width": "200",
+            "height": "100",
+            "iconUrl": "https://firestore.com",
+            "label": "Not Interested",
+            "bgColor": "#000"
+        }
+    ]
+}

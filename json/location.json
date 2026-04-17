@@ -1,0 +1,177 @@
+{
+    "type": "HORIZONTAL_ICON",
+    "width": 86,
+    "children": [
+        {
+            "type": "location",
+            "url": "https://firebasestorage.googleapis.com/v0/b/otq-01-ase2/o/c%2Fautsorz%2Ficon2%2Ficon-190120-qr-scan-90x90.png?alt=media&token=da753564-7c75-4073-a750-bf2e9c1826c1",
+            "text": "QR◆Batal◆Absensi berhasil◆Clock in berhasil◆Clock out berhasil◆Clock out overtime sudah dicatat. Silakan lanjut clock in◆Clock out sudah dicatat, pending persetujuan. Silakan lanjut clock in.◆✔️ Check IN dg QR berhasil◆OK◆QR salah◆QR yang anda scan salah, coba scan lagi.◆Scan Lagi◆Anda perlu Selfie◆QR yang anda scan salah. Lakukan foto wajah anda (selfie)◆Foto Selfie◆Perlu informasi lebih lanjut◆Anda clock out overtime atau lupa clock out?◆Lupa check-out◆Lembur◆Anda tidak di lokasi◆Anda tidak berada di lokasi yang ditentukan◆Batal◆Lokasi tidak valid, matikan fake GPS◆Kamu sedang diluar area absensi",
+            "imgHeight": 600,
+            "imgWidth": 600,
+            "folder": "id/2022/vtl/attendance-selfie/dirgahayu",
+            "filename": "80883888051110-2026-04-15-15-55-33",
+            "locList": [
+                [
+                    -6.31607,
+                    106.64483,
+                    30
+                ],
+                [
+                    -6.3162557,
+                    106.644882,
+                    30
+                ],
+                [
+                    -6.89609,
+                    107.58163,
+                    30
+                ],
+                [
+                    -8.8291404,
+                    115.1586866,
+                    100
+                ],
+                [
+                    -6.252338,
+                    106.617278,
+                    30
+                ],
+                [
+                    -6.9202713,
+                    107.5923769,
+                    200
+                ],
+                [
+                    -6.1896892,
+                    106.761209,
+                    200
+                ]
+            ],
+            "width": 100,
+            "timeClockOut1": 1598429395771,
+            "timeClockOut2": 1598454595771,
+            "actionLast": "check-in",
+            "flag": "attendance-check-in",
+            "route": "vertikaTeknoLokacipta",
+            "opMode": "qr-single",
+            "tolerance": 80,
+            "displayMode": "full-screen",
+            "fakeGpsAllowed": false,
+            "outPositionAllowed": false
+        },
+        {
+            "type": "location",
+            "url": "https://firebasestorage.googleapis.com/v0/b/otq-01-ase2/o/c%2Fautsorz%2Ficon2%2Ficon-190121-selfie-90x90.png?alt=media&token=2b585e8d-dcda-486e-96e2-057fd05d1db9",
+            "text": "Selfie◆Batal◆Absensi berhasil◆Clock in berhasil◆Clock out berhasil◆Clock out overtime sudah dicatat. Silakan lanjut clock in◆Clock out sudah dicatat, pending persetujuan. Silakan lanjut clock in.◆✔️ Check IN dg SELFIE berhasil◆OK◆QR salah◆QR yang anda scan salah, coba scan lagi.◆Scan Lagi◆Anda perlu Selfie◆Anda tidak berada di lokasi yang ditentukan◆Batal◆Perlu informasi lebih lanjut◆Anda clock out overtime atau lupa clock out?◆Lupa check-out◆Lembur◆Anda tidak di lokasi◆Anda tidak berada di lokasi yang ditentukan◆Batal◆Lokasi tidak valid, matikan fake GPS◆Kamu sedang diluar area absensi",
+            "imgHeight": 600,
+            "imgWidth": 600,
+            "folder": "id/2022/vtl/attendance-selfie/dirgahayu",
+            "filename": "80883888051110-2026-04-15-15-55-33",
+            "locList": [
+                [
+                    -6.31607,
+                    106.64483,
+                    30
+                ],
+                [
+                    -6.3162557,
+                    106.644882,
+                    30
+                ],
+                [
+                    -6.89609,
+                    107.58163,
+                    30
+                ],
+                [
+                    -8.8291404,
+                    115.1586866,
+                    100
+                ],
+                [
+                    -6.252338,
+                    106.617278,
+                    30
+                ],
+                [
+                    -6.9202713,
+                    107.5923769,
+                    200
+                ],
+                [
+                    -6.1896892,
+                    106.761209,
+                    200
+                ]
+            ],
+            "width": 100,
+            "timeClockOut1": 1598429395771,
+            "timeClockOut2": 1598454595771,
+            "actionLast": "check-in",
+            "flag": "attendance-check-in",
+            "route": "vertikaTeknoLokacipta",
+            "opMode": "selfie",
+            "tolerance": 80,
+            "displayMode": "full-screen",
+            "fakeGpsAllowed": false,
+            "outPositionAllowed": false
+        },
+        {
+            "type": "location",
+            "url": "https://firebasestorage.googleapis.com/v0/b/otq-01-ase2/o/c%2Fautsorz%2Ficon2%2Ficon-190110-gps-90x90.png?alt=media&token=4f8a13c2-324f-4506-9b8e-42d66d44a3f9",
+            "text": "GPS◆Batal◆Absensi berhasil◆Clock in berhasil◆Clock out berhasil◆Clock out overtime sudah dicatat. Silakan lanjut clock in◆Clock out sudah dicatat, pending persetujuan. Silakan lanjut clock in.◆✔️ Check IN dg GPS berhasil◆OK◆QR salah◆QR yang anda scan salah, coba scan lagi.◆Scan Lagi◆Anda perlu Selfie◆QR yang anda scan salah. Lakukan foto wajah anda (selfie)◆Foto Selfie◆Perlu informasi lebih lanjut◆Anda clock out overtime atau lupa clock out?◆Lupa check-out◆Lembur◆Anda tidak di lokasi◆Anda tidak berada di lokasi yang ditentukan◆Batal◆Lokasi tidak valid, matikan fake GPS◆Kamu sedang diluar area absensi",
+            "imgHeight": 600,
+            "imgWidth": 600,
+            "folder": "id/2022/vtl/attendance-selfie/dirgahayu",
+            "filename": "80883888051110-2026-04-15-15-55-33",
+            "locList": [
+                [
+                    -6.31607,
+                    106.64483,
+                    30
+                ],
+                [
+                    -6.3162557,
+                    106.644882,
+                    30
+                ],
+                [
+                    -6.89609,
+                    107.58163,
+                    30
+                ],
+                [
+                    -8.8291404,
+                    115.1586866,
+                    100
+                ],
+                [
+                    -6.252338,
+                    106.617278,
+                    30
+                ],
+                [
+                    -6.9202713,
+                    107.5923769,
+                    200
+                ],
+                [
+                    -6.1896892,
+                    106.761209,
+                    200
+                ]
+            ],
+            "width": 100,
+            "timeClockOut1": 1598429395771,
+            "timeClockOut2": 1598454595771,
+            "actionLast": "check-in",
+            "flag": "attendance-check-in",
+            "route": "vertikaTeknoLokacipta",
+            "opMode": "gps-single",
+            "tolerance": 80,
+            "displayMode": "full-screen",
+            "fakeGpsAllowed": false,
+            "outPositionAllowed": false
+        }
+    ]
+}

@@ -1,0 +1,66 @@
+{
+    "type": "tasklist",
+    "width": 100,
+    "text": "Pantry◆Mall Alam Sutera",
+    "iconStatus": "checklist",
+    "status": "Verified",
+    "progressBar": {
+        "height": 8,
+        "color": "#21321",
+        "bgColor": "#0000",
+        "text": "[ALREADY_CHECK]◆[COUNT]◆tasks◆[PERCENT]"
+    },
+    "children": [
+        {
+            "id": "task_001",
+            "category": "Cleaning",
+            "text": "Clean table surfaces◆Completed at [TIME]◆Not available in this area◆Skipped - revisit later◆Issue reported - add details below"
+        },
+        {
+            "id": "task_002",
+            "category": "Cleaning",
+            "text": "Sweep the floor◆Completed at [TIME]◆Not available in this area◆Skipped - revisit later◆Issue reported - add details below"
+        },
+        {
+            "id": "task_003",
+            "category": "Waste",
+            "text": "Dispose trash bags◆Completed at [TIME]◆Not available in this area◆Skipped - revisit later◆Issue reported - add details below"
+        }
+    ],
+    "options": [
+        {
+            "id": "done",
+            "text": "Done◆Mark as completed",
+            "icon": "checklist",
+            "bgColor": "#4CAF50"
+        },
+        {
+            "id": "notAvailable",
+            "text": "Not Available◆Item absent from this area",
+            "icon": "x",
+            "bgColor": "#9E9E9E"
+        },
+        {
+            "id": "skipped",
+            "text": "Skipped◆Come back to this later",
+            "icon": "skipped",
+            "bgColor": "#E6A020"
+        },
+        {
+            "id": "issue",
+            "text": "Issue◆Report a problem",
+            "icon": "warning",
+            "bgColor": "#E53935",
+            "extraFields": [
+                {
+                    "type": "photoPicker",
+                    "label": "Add Photo"
+                },
+                {
+                    "type": "textArea",
+                    "label": "Describe the issue"
+                }
+            ]
+        }
+    ]
+}
