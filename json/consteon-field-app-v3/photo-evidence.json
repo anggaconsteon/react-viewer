@@ -1,0 +1,11 @@
+{
+    "type": "PHOTO_EVIDENCE",
+    "required": true,
+    "maxPhotos": 1,
+    "quality": 80,
+    "maxSizeMb": 5,
+    "folder": "id/2025/patrol/evidence",
+    "filename": "{location}_{HHhmm}",
+    "displayMode": "full",
+    "text": "Ambil foto kondisi APAR◆Wajib untuk titik emergency◆Wajib◆Foto berhasil diambil◆Tersimpan◆Foto diambil◆Ambil ulang◆Gagal menyimpan foto◆Coba lagi◆Ukuran foto terlalu besar◆Maks. {maxSizeMb} MB per foto◆Izin kamera diperlukan◆Izin kamera belum diberikan. Buka pengaturan?◆Buka Pengaturan◆Foto wajib sebelum melanjutkan"
+}

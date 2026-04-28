@@ -1,0 +1,27 @@
+{
+    "type": "SHIFT_SUMMARY",
+    "mode": "shift",
+    "siteName": "Mall Pesona Square",
+    "shiftName": "Shift Pagi",
+    "shiftStart": "08:00",
+    "shiftEnd": "16:00",
+    "durationMin": 478,
+    "stats": [
+        {
+            "value": 12,
+            "color": "blue",
+            "textIndex": 3
+        },
+        {
+            "value": 2,
+            "color": "cyan",
+            "textIndex": 4
+        },
+        {
+            "value": 1,
+            "color": "amber",
+            "textIndex": 5
+        }
+    ],
+    "text": "Ringkasan Shift◆Selesaikan pekerjaan hari ini◆j◆Aktivitas◆Patrol◆Insiden"
+}

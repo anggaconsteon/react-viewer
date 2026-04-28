@@ -1,0 +1,18 @@
+{
+    "type": "PROGRESS_BAR",
+    "bgColor": "#FFF",
+    "lineColor": "#000",
+    "showPercent": "[SHOWPERCENT]",
+    "showCount": "[SHOWCOUNT]",
+    "width": 100,
+    "height": 20,
+    "borderRadius": 10,
+    // "position": "[POSITION]",
+    "positionId": [
+        1,
+        2,
+        3,
+        4
+    ],
+    "text": "Pantry◆Mall Alam Sutera◆·◆Floor 10◆/◆✓◆Verified◆tasks◆% "
+}

@@ -1,0 +1,16 @@
+{
+    "type": "SHIFT_TIMER",
+    "checkinTime": "08:00",
+    "shiftEnd": "16:00",
+    "timezone": "WIB",
+    "text": "Shift Aktif◆Check-in◆Sisa"
+}
+// text[0] = label atas "Shift Aktif"
+// text[1] = label check-in "Check-in"
+// text[2] = label sisa waktu "Sisa"
+//
+// Nilai waktu (07:43:21, 00:16:39)
+// dihitung renderer dari:
+// - checkinTime (kapan mulai)
+// - shiftEnd (kapan selesai)
+// - waktu device sekarang (live tick)

@@ -1,0 +1,9 @@
+{
+    "type": "PROGRESS_BAR",
+    "dataSource": "checkpoint",
+    "checkpointId": "patrol-malam-001",
+    "showItems": true,
+    "showCount": true,
+    "color": "blue",
+    "text": "Progres Patrol◆selesai◆aktif◆belum◆Semua titik selesai◆{done} dari {total} selesai◆Gagal memuat data◆Muat ulang"
+}

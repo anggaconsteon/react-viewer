@@ -1,0 +1,117 @@
+{
+  "type": "PAGE",
+  "id": "laporan_pekerjaan",
+  "title": "Laporan Pekerjaan",
+  "subtitle": "Field activity reports submitted from the worker app",
+  "children": [
+    {
+      "type": "TOPBAR",
+      "alignment": "start",
+      "children": [
+        {
+          "type": "DROPDOWN",
+          "key": "type",
+          "variant": "outline",
+          "placeholder": "All types",
+          "emptyText": "Type tidak ditemukan",
+          "options": "Patrol◆Cleaning◆Maintenance◆Delivery"
+        },
+        {
+          "type": "DROPDOWN",
+          "key": "site",
+          "variant": "outline",
+          "placeholder": "All sites",
+          "emptyText": "Site tidak ditemukan",
+          "options": "Plaza Senayan◆Grand Indonesia◆Pondok Indah Mall◆Kota Kasablanka"
+        },
+        {
+          "type": "DROPDOWN",
+          "key": "date",
+          "variant": "outline",
+          "placeholder": "Today",
+          "emptyText": "Date tidak ditemukan",
+          "options": "Today◆Yesterday◆Last 7 days◆Last 30 days"
+        },
+        {
+          "type": "SPACER"
+        },
+        {
+          "type": "BUTTON",
+          "variant": "outline",
+          "size": "icon",
+          "icon": "FilterIcon",
+          "text": "Filter",
+          "onClick": {
+            "type": "FETCH_CONTENT",
+            "url": "https://api.example.com/reports/filter",
+            "method": "POST",
+            "target": "mainContent",
+            "onError": {
+              "toast": "Gagal memuat data"
+            }
+          }
+        },
+        {
+          "type": "BUTTON",
+          "variant": "outline",
+          "size": "default",
+          "icon": "DownloadIcon",
+          "text": "Export",
+          "onClick": {
+            "type": "SUBMIT",
+            "url": "https://api.example.com/reports/export",
+            "method": "POST",
+            "onSuccess": {
+              "toast": "Export berhasil, file akan diunduh"
+            },
+            "onError": {
+              "toast": "Gagal export data"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "SPREADSHEET",
+      "id": "mainContent",
+      "src": "https://docs.google.com/spreadsheets/d/1abc123def456/edit?usp=sharing&rm=minimal&widget=true&headers=false",
+      "editable": true
+    },
+    {
+      "type": "BOTTOMBAR",
+      "alignment": "end",
+      "children": [
+        {
+          "type": "BUTTON",
+          "variant": "ghost",
+          "size": "default",
+          "text": "Reset",
+          "onClick": {
+            "type": "RESET",
+            "scope": "topbar"
+          }
+        },
+        {
+          "type": "BUTTON",
+          "variant": "default",
+          "size": "default",
+          "icon": "CheckIcon",
+          "text": "Submit",
+          "data": "type◆site",
+          "onClick": {
+            "type": "SUBMIT",
+            "url": "https://api.example.com/reports/submit",
+            "method": "POST",
+            "onSuccess": {
+              "toast": "Laporan berhasil dikirim",
+              "then": "REFRESH_CONTENT"
+            },
+            "onError": {
+              "toast": "Gagal mengirim laporan"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

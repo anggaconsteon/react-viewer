@@ -1,0 +1,14 @@
+{
+    "type": "SHIFT_CARD",
+    "siteName": "Mall Pesona Square",
+    "shiftName": "Shift Pagi",
+    "shiftStart": "08:00",
+    "shiftEnd": "16:00",
+    "distanceM": 500,
+    "date": "Senin, 16 Apr",
+    "text": "Lokasi Kerja◆m"
+}
+// text[0] = label card "Lokasi Kerja"
+// text[1] = satuan jarak "m"
+//   → renderer tampilkan: "500m"
+//   → dari distanceM + text[1]

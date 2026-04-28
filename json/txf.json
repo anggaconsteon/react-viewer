@@ -1,0 +1,18 @@
+{
+    "type": "txf",
+    "variant": "qrScan",
+    "qr": "lqr",
+    "table": "",
+    "fakeGpsAllowed": "TRUE",
+    "outPositionAllowed": "FALSE",
+    "text": "Lokasi◆Kode lokasi◆Batal◆Scan QR lokasi◆Pencarian◆Tulis nama atau site◆{\\\"searchDisplayType\\\":\\\"text1\\\", \\\"content\\\":\\\"Lokasi : <1>\\\\nToleransi : <4> meter\\\"}◆Lokasi tidak ada dalam daftar◆Lokasi tidak dalam daftar◆Anda di luar batas lokasi◆QR Tidak dikenal◆QR Tidak dikenal◆Lokasi tidak valid, matikan fake GPS◆Kamu sedang diluar area absensi",
+    "margin": "10,0,0,0",
+    "icon": "pin_drop",
+    "label": "",
+    "hint": "Scan QR atau isi lokasi",
+    "maxLength": 0,
+    "size": 18,
+    "position": 5,
+    "buttonIcon": "qr_code_2",
+    "locationNamePosition": "[LOCATIONNAMEPOSITION]"
+}

@@ -1,0 +1,10 @@
+{
+    "type": "TASKLIST",
+    "position": 2,
+    "width": "100",
+    "height": 40,
+    "borderRadius": 10,
+    "category": "[CATEGORY]",
+    "text": "Refill hand soap◆Completed at◆Not Available in this area◆Skipped - Revisit later◆Issue flagged - describe in report",
+    "options": "✓◆Done◆Mark as completed◆✖◆Not Available◆Item absent from this area◆>◆Skipped◆Come back to this later◆!◆Issue◆Flag a problem to report"
+}

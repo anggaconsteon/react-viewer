@@ -1,0 +1,16 @@
+{
+    "type": "CHECKLIST_SOP",
+    "required": false,
+    "items": [
+        {
+            "done": false
+        },
+        {
+            "done": false
+        },
+        {
+            "done": false
+        }
+    ],
+    "text": "Checklist SOP◆Opsional◆Wajib◆Semua item selesai◆Jalur evakuasi tidak terhalang◆APAR tidak kadaluarsa◆Area lobby aman & bersih"
+}

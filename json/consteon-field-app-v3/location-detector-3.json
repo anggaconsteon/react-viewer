@@ -1,0 +1,9 @@
+{
+    "type": "LOCATION_DETECTOR",
+    "width": 100,
+    "height": 40,
+    "borderRadius": 10,
+    "showViewMap": "[SHOWVIEWMAP]",
+    "showRefresh": "[SHOWREFRESH]",
+    "text": "Location◆Inside Site◆Outside Site◆Unknown◆High Accuracy◆Low Accuracy◆±◆m◆View Map◆Refresh◆Posisi tidak ditemukan"
+}

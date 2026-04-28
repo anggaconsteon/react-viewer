@@ -1,0 +1,11 @@
+{
+    "type": "PATROL_INFO_CARD",
+    "mode": "full",
+    "patrolName": "Night Patrol — Mall Area",
+    "date": "Senin, 16 Apr",
+    "shift": "Shift Malam",
+    "totalPoints": 8,
+    "estimateMin": 45,
+    "scheduledStart": "22:00",
+    "text": "Titik◆Estimasi◆Mulai"
+}

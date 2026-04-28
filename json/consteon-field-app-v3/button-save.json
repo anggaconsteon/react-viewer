@@ -1,0 +1,35 @@
+{
+    "type": "BUTTON_SAVE",
+    "linkedTo": "STATUS_AREA",
+    "disabledUntil": "STATUS_AREA",
+    "variants": [
+        {
+            "condition": "aman",
+            "style": "green",
+            "textIndex": 0,
+            "action": "submit"
+        },
+        {
+            "condition": "perhatian",
+            "style": "amber",
+            "textIndex": 1,
+            "action": "navigate",
+            "route": "incident-form",
+            "params": {
+                "prefill": true
+            }
+        },
+        {
+            "condition": "masalah",
+            "style": "red",
+            "textIndex": 2,
+            "action": "navigate",
+            "route": "incident-form",
+            "params": {
+                "prefill": true,
+                "severity": "high"
+            }
+        }
+    ],
+    "text": "Simpan & Lanjut →◆Simpan & Buat Laporan →◆Simpan & Laporkan Insiden →"
+}

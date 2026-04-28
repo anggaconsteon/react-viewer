@@ -4,7 +4,8 @@
       "Bash(python3 -c \"import reportlab; print\\('reportlab ok'\\)\")",
       "Bash(pip install:*)",
       "Bash(python3 gen_location_doc.py)",
-      "Bash(python3 gen_timeline_doc.py)"
+      "Bash(python3 gen_timeline_doc.py)",
+      "Bash(npm install *)"
     ]
   }
 }

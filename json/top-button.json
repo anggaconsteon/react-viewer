@@ -1,0 +1,41 @@
+[
+    {
+        "bType": "drd",
+        "label": "Absensi",
+        "values": [
+            {
+                "title": "Kantor Pusat",
+                "id": 1,
+                "action": [
+                    {
+                        "range": "Presensi Manual!C2",
+                        "aType": "sWrite",
+                        "target": "1XNtStUSPnRl5wfHFPWGY_LNAhBOxnE_Bm7suRqlfxhk"
+                    }
+                ]
+            },
+            {
+                "title": "Product Group",
+                "id": 2,
+                "action": [
+                    {
+                        "range": "Presensi Manual!C2",
+                        "aType": "sWrite",
+                        "target": "1XNtStUSPnRl5wfHFPWGY_LNAhBOxnE_Bm7suRqlfxhk"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "bType": "date",
+        "label": "Date",
+        "action": [
+            {
+                "range": "Presensi Manual!C2",
+                "aType": "sWrite",
+                "target": "1XNtStUSPnRl5wfHFPWGY_LNAhBOxnE_Bm7suRqlfxhk"
+            }
+        ]
+    }
+]

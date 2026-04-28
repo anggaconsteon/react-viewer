@@ -1,0 +1,7 @@
+{
+    "type": "BUTTON_CHOICES",
+    "direction": "horizontal",
+    "alignment": "SPACEEVENLY",
+    "position": 5,
+    "content": "Aman◇safe◇CHECK◇100◇80◇#2D6A2D◇#3A8A3A◇none◆Perhatian◇warning◇WARNING◇100◇80◇#4A3800◇#6A5200◇{\"title\":\"Laporkan sebagai kejadian?\",\"message\":\"Kondisi perlu perhatian akan dicatat.\",\"iconUrl\":\"https://firebase.com/icon_warning.png\",\"btnYes\":{\"text\":\"Ya, buat laporan\",\"action\":\"savesend\"},\"btnNo\":{\"text\":\"Tidak, lanjut\"}}◆Masalah◇issue◇CLOSE◇100◇80◇#4A1515◇#6A2020◇{\"title\":\"Laporkan sebagai kejadian?\",\"message\":\"Lokasi & waktu akan diisi otomatis dari checkpoint ini\",\"iconUrl\":\"https://firebase.com/icon_alert.png\",\"btnYes\":{\"text\":\"Ya, laporkan\",\"action\":\"route\",\"route\":\"report-incident\"},\"btnNo\":{\"text\":\"Tidak\"}}"
+}

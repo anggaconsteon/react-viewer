@@ -1,0 +1,29 @@
+{
+    "type": "STATUS_AREA",
+    "required": true,
+    "options": [
+        {
+            "value": "aman",
+            "color": "green",
+            "icon": "check",
+            "action": null
+        },
+        {
+            "value": "perhatian",
+            "color": "amber",
+            "icon": "warning",
+            "action": {
+                "type": "dialog"
+            }
+        },
+        {
+            "value": "masalah",
+            "color": "red",
+            "icon": "x",
+            "action": {
+                "type": "dialog"
+            }
+        }
+    ],
+    "text": "Status Area◆Wajib dipilih◆Aman◆Perhatian◆Masalah◆Laporkan sebagai kejadian?◆Kondisi perlu perhatian akan dicatat. Buat laporan insiden?◆Ya, buat laporan◆Tidak, lanjut◆Laporkan sebagai kejadian?◆Lokasi & waktu akan diisi otomatis◆Ya, laporkan◆Tidak◆Status wajib dipilih"
+}

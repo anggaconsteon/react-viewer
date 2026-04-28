@@ -1,0 +1,29 @@
+{
+    "type": "locationInfo",
+    "width": "100",
+    "height": "100",
+    "fakeGpsAllowed": "TRUE",
+    "outPositionAllowed": "FALSE",
+    "folderPic": "id/2022/vtl/profile-picture/dirgahayu",
+    "folderIcon": "id/2022/vtl/icon/dirgahayu",
+    "accuraccy": "High",
+    "header": {
+        "imgUrl": "https://profile.com",
+        "imgWidth": 500,
+        "imgHeight": 500,
+        "shift": "08.00 - 17.00",
+        "checkIn": "08.00",
+        "checkOut": "17.00",
+        "text": "Rudi Hartono◆Security Guard◆Mall Alam Sutera◆Live◆Shift"
+    },
+    "children": [
+        {
+            "iconUrl": "location.svg",
+            "text": "Location◆Insite Site"
+        },
+        {
+            "iconUrl": "location.svg",
+            "text": "Check-in◆07.40 WIB"
+        }
+    ]
+}

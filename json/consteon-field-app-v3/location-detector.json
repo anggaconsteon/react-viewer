@@ -1,0 +1,25 @@
+{
+    "type": "LOCATION_DETECTOR",
+    "worker": {
+        "name": "Rudi Hartono",
+        "role": "Security Guard",
+        "jobAddress": "Mall Alam Sutera",
+        "avatar": {
+            "initials": "RH",
+            "color": "#5B7FD4"
+        }
+    },
+    "shift": {
+        "start": "08:00",
+        "end": "17:00"
+    },
+    "checkinTime": "07:58",
+    "checkoutTime": "17:00",
+    "timezone": "WIB",
+    "gps": {
+        "status": "inside",
+        "accuracy": 8,
+        "distanceM": 0
+    },
+    "text": "Location◆GPS Accuracy◆Active◆Not Checked-in◆Issue◆Idle◆Inside Site◆Outside Site◆Unknown◆Your shift starts at {start}. Please check in to begin work.◆Outside geofence! Return to assigned site immediately.◆No activity for {agoMin} minutes. Please resume patrol.◆Detected {distanceM}m away"
+}
