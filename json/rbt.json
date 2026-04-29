@@ -11,7 +11,7 @@
             "flag": "report-patrol",
             "fakeGpsAllowed": false,
             "outPositionAllowed": false,
-            "addToTable": "vtl.report-patrol⭘retention◼4320⭘description◼field-report⭘flag◼patrol⭘<1>◼report-patrol⭘<2>◼◀️2|T7|Ddd MMM yyyy HH:mm▶️⭘<3>◼85924392055168⭘<4>◼Muhamad Angga⭘<5>◼◁5▷⭘<6>◼◁11▷⭘<7>◼◁10▷⭘<8>◼Product Group⭘<9>◼Product Group⭘<10>◼◁3▷⭘<11>◼◁12▷",
+            "addToTable": "vtl.report-patrol⭘retention◼4320⭘description◼field-report⭘flag◼patrol⭘<1>◼report-patrol⭘<2>◼◀️2|T7|Ddd MMM yyyy HH:mm▶️⭘<3>◼85924392055168⭘<4>◼Muhamad Angga⭘<5>◼◁5▷⭘<6>◼◁1 1▷⭘<7>◼◁10▷⭘<8>◼Product Group⭘<9>◼Product Group⭘<10>◼◁3▷⭘<11>◼◁12▷",
             "chain": {
                 "type": "DO_DIALOG",
                 "title": "Laporan Patroli",

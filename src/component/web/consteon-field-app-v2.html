@@ -1,0 +1,1925 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consteon Field Worker App — Full UI Mockup v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --bg:       #080B10;
+  --s1:       #0F1318;
+  --s2:       #161C24;
+  --s3:       #1E2630;
+  --border:   #252E3C;
+  --border2:  #2E3A4C;
+
+  --blue:     #3B7BFF;
+  --blue-d:   rgba(59,123,255,.12);
+  --blue-g:   rgba(59,123,255,.25);
+  --green:    #1FCC72;
+  --green-d:  rgba(31,204,114,.1);
+  --red:      #FF3E3E;
+  --red-d:    rgba(255,62,62,.1);
+  --amber:    #FFAA00;
+  --amber-d:  rgba(255,170,0,.1);
+  --cyan:     #00D4FF;
+  --cyan-d:   rgba(0,212,255,.1);
+  --violet:   #8B5CF6;
+  --violet-d: rgba(139,92,246,.1);
+
+  --t1: #F0F4FA;
+  --t2: #8A9AB8;
+  --t3: #4A5A72;
+  --t4: #2E3A4C;
+
+  --font-display: 'Syne', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+
+  --r-phone: 38px;
+  --r-card:  18px;
+  --r-btn:   16px;
+  --r-chip:  12px;
+}
+
+body {
+  background: var(--bg);
+  font-family: var(--font-body);
+  color: var(--t1);
+  min-height: 100vh;
+  padding: 40px 20px 80px;
+}
+
+/* ── Page Header ─────────────────────────────── */
+.page-header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+.page-header .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--blue-d);
+  border: 1px solid var(--blue-g);
+  border-radius: 100px;
+  padding: 5px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 16px;
+}
+.page-header h1 {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 5vw, 42px);
+  font-weight: 800;
+  color: var(--t1);
+  line-height: 1.1;
+  margin-bottom: 12px;
+}
+.page-header h1 span { color: var(--blue); }
+.page-header p {
+  font-size: 14px;
+  color: var(--t2);
+  max-width: 580px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ── Section Divider ─────────────────────────── */
+.section-divider {
+  max-width: 1500px;
+  margin: 0 auto 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.section-divider .sd-label {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding: 4px 14px;
+  border-radius: 100px;
+}
+.section-divider .sd-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.sd-original { color: var(--t3); background: var(--s2); border: 1px solid var(--border); }
+.sd-patrol   { color: var(--cyan);  background: rgba(0,212,255,.08); border: 1px solid rgba(0,212,255,.2); }
+
+/* ── Screens Grid ─────────────────────────────── */
+.screens-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  max-width: 1500px;
+  margin: 0 auto 48px;
+  justify-content: center;
+}
+
+/* ── Screen Wrap ─────────────────────────────── */
+.screen-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.screen-tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.screen-tag .num {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  color: var(--t3);
+  text-transform: uppercase;
+}
+.screen-tag .badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 100px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.badge-updated { background: var(--amber-d); color: var(--amber); border: 1px solid rgba(255,170,0,.2); }
+.badge-new     { background: var(--cyan-d);  color: var(--cyan);  border: 1px solid rgba(0,212,255,.2); }
+.badge-core    { background: rgba(255,62,62,.1); color: var(--red); border: 1px solid rgba(255,62,62,.2); }
+.badge-edge    { background: var(--violet-d); color: var(--violet); border: 1px solid rgba(139,92,246,.2); }
+
+.screen-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--t2);
+  text-align: center;
+  max-width: 240px;
+}
+
+/* ── Phone Shell ─────────────────────────────── */
+.phone {
+  width: 288px;
+  background: var(--s1);
+  border-radius: var(--r-phone);
+  border: 1.5px solid var(--border);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 0 0 6px rgba(255,255,255,.02),
+    0 32px 80px rgba(0,0,0,.6),
+    inset 0 1px 0 rgba(255,255,255,.05);
+}
+.phone.patrol-active {
+  border-color: rgba(0,212,255,.3);
+  box-shadow:
+    0 0 0 6px rgba(0,212,255,.04),
+    0 32px 80px rgba(0,0,0,.6),
+    0 0 40px rgba(0,212,255,.08);
+}
+.phone.incident-active {
+  border-color: rgba(255,62,62,.3);
+  box-shadow:
+    0 0 0 6px rgba(255,62,62,.04),
+    0 32px 80px rgba(0,0,0,.6),
+    0 0 40px rgba(255,62,62,.08);
+}
+
+/* notch */
+.phone-notch {
+  width: 96px;
+  height: 24px;
+  background: var(--bg);
+  border-radius: 0 0 16px 16px;
+  margin: 0 auto;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.notch-cam {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--border2);
+}
+.notch-pill {
+  width: 32px; height: 4px;
+  border-radius: 2px;
+  background: var(--border2);
+}
+
+/* ── Status Bar ──────────────────────────────── */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 20px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--t3);
+  flex-shrink: 0;
+}
+.sb-icons { display: flex; gap: 5px; align-items: center; font-size: 10px; }
+
+/* ── App Body ────────────────────────────────── */
+.app-body {
+  flex: 1;
+  padding: 12px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+.app-body.tight { gap: 8px; padding-bottom: 14px; }
+
+/* ── Top Bar ─────────────────────────────────── */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.app-brand {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--blue);
+  letter-spacing: .04em;
+}
+.back-btn {
+  width: 32px; height: 32px;
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--t2);
+}
+.top-title {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--t1);
+}
+.avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), #6366F1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* ── Cards ───────────────────────────────────── */
+.card {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  padding: 14px 16px;
+  flex-shrink: 0;
+}
+.card-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--t3);
+  margin-bottom: 4px;
+}
+.card-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--t1);
+}
+.card-sub {
+  font-size: 11px;
+  color: var(--t2);
+  margin-top: 3px;
+}
+.meta-pills {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.meta-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.mp-blue   { background: var(--blue-d); color: var(--blue);  border: 1px solid var(--blue-g); }
+.mp-green  { background: var(--green-d); color: var(--green); border: 1px solid rgba(31,204,114,.2); }
+.mp-amber  { background: var(--amber-d); color: var(--amber); border: 1px solid rgba(255,170,0,.2); }
+.mp-cyan   { background: var(--cyan-d);  color: var(--cyan);  border: 1px solid rgba(0,212,255,.2); }
+
+/* ── Timer Card ──────────────────────────────── */
+.timer-card {
+  background: linear-gradient(135deg, rgba(31,204,114,.08) 0%, rgba(31,204,114,.03) 100%);
+  border: 1px solid rgba(31,204,114,.18);
+  border-radius: var(--r-card);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.tc-left .tc-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 2px;
+}
+.tc-left .tc-val {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--green);
+  letter-spacing: -.02em;
+  line-height: 1;
+}
+.tc-left .tc-sub { font-size: 10px; color: var(--t3); margin-top: 3px; }
+.pulse {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: glow 2s ease-in-out infinite;
+}
+@keyframes glow {
+  0%,100%{box-shadow:0 0 0 0 rgba(31,204,114,.6);opacity:1}
+  50%{box-shadow:0 0 0 6px rgba(31,204,114,0);opacity:.5}
+}
+
+/* ── Section Label ───────────────────────────── */
+.section-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--t3);
+  flex-shrink: 0;
+}
+
+/* ── Primary Button ──────────────────────────── */
+.btn {
+  width: 100%;
+  border: none;
+  border-radius: var(--r-btn);
+  padding: 15px 16px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: .02em;
+  flex-shrink: 0;
+  transition: transform .1s;
+}
+.btn-green  { background: var(--green);  color: #000; box-shadow: 0 6px 20px rgba(31,204,114,.3); }
+.btn-blue   { background: var(--blue);   color: #fff; box-shadow: 0 6px 20px rgba(59,123,255,.3); }
+.btn-red    { background: var(--red);    color: #fff; box-shadow: 0 6px 20px rgba(255,62,62,.3); }
+.btn-amber  { background: var(--amber);  color: #000; box-shadow: 0 6px 20px rgba(255,170,0,.3); }
+.btn-cyan   { background: var(--cyan);   color: #000; box-shadow: 0 6px 20px rgba(0,212,255,.3); }
+.btn-ghost  { background: var(--s2); color: var(--t2); border: 1px solid var(--border); box-shadow: none; }
+.btn-sm {
+  padding: 11px 14px;
+  font-size: 12px;
+  border-radius: 12px;
+}
+
+/* ── Action Grid (Home Active) ───────────────── */
+.action-grid {
+  display: grid;
+  gap: 8px;
+}
+.ag-2 { grid-template-columns: 1fr 1fr; }
+
+.act-btn {
+  background: var(--s2);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 14px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  transition: transform .1s;
+}
+.act-btn .ab-icon {
+  width: 46px; height: 46px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.act-btn .ab-name { font-size: 12px; font-weight: 700; text-align: center; line-height: 1.25; }
+.act-btn .ab-sub  { font-size: 10px; color: var(--t3); text-align: center; }
+
+/* Patrol button — visually dominant */
+.act-btn-patrol {
+  grid-column: span 2;
+  flex-direction: row;
+  justify-content: flex-start;
+  padding: 16px;
+  gap: 14px;
+  background: linear-gradient(135deg, rgba(0,212,255,.1) 0%, rgba(59,123,255,.08) 100%);
+  border-color: rgba(0,212,255,.3);
+  position: relative;
+  overflow: hidden;
+}
+.act-btn-patrol::after {
+  content: '';
+  position: absolute;
+  right: -20px; top: -20px;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,212,255,.12) 0%, transparent 70%);
+}
+.act-btn-patrol .ab-icon { background: rgba(0,212,255,.15); color: var(--cyan); font-size: 24px; width: 52px; height: 52px; }
+.act-btn-patrol .ab-text { display: flex; flex-direction: column; gap: 3px; }
+.act-btn-patrol .ab-name { font-size: 15px; color: var(--cyan); }
+.act-btn-patrol .ab-sub  { color: var(--t2); text-align: left; font-size: 11px; }
+
+.act-btn-activity .ab-icon { background: var(--blue-d); color: var(--blue); }
+.act-btn-activity { border-color: rgba(59,123,255,.2); }
+
+.act-btn-incident {
+  border-color: rgba(255,62,62,.25);
+  background: rgba(255,62,62,.04);
+}
+.act-btn-incident .ab-icon { background: rgba(255,62,62,.12); color: var(--red); }
+.act-btn-incident .ab-name { color: var(--red); }
+
+.act-btn-end {
+  grid-column: span 2;
+  flex-direction: row;
+  padding: 12px 16px;
+  gap: 10px;
+  justify-content: center;
+  background: transparent;
+}
+.act-btn-end .ab-icon { background: var(--s3); color: var(--t3); width: 36px; height: 36px; border-radius: 10px; font-size: 16px; }
+.act-btn-end .ab-name { font-size: 12px; color: var(--t3); }
+
+/* ── Patrol Info Card ────────────────────────── */
+.patrol-info-card {
+  background: linear-gradient(135deg, rgba(0,212,255,.08) 0%, rgba(59,123,255,.06) 100%);
+  border: 1px solid rgba(0,212,255,.22);
+  border-radius: var(--r-card);
+  padding: 16px;
+  flex-shrink: 0;
+}
+.pic-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.pic-icon {
+  width: 48px; height: 48px;
+  background: rgba(0,212,255,.15);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.pic-name {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--t1);
+}
+.pic-sub { font-size: 11px; color: var(--t2); margin-top: 2px; }
+.pic-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.pic-stat {
+  background: rgba(0,0,0,.2);
+  border-radius: 10px;
+  padding: 8px 10px;
+  text-align: center;
+}
+.pic-stat .ps-val {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--cyan);
+}
+.pic-stat .ps-lbl { font-size: 9px; color: var(--t3); text-transform: uppercase; letter-spacing: .06em; margin-top: 2px; }
+
+/* ── Progress Bar ────────────────────────────── */
+.progress-bar-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.pb-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.pb-label { font-size: 11px; font-weight: 600; color: var(--t2); }
+.pb-count { font-size: 12px; font-weight: 800; color: var(--cyan); }
+.pb-track {
+  height: 6px;
+  background: var(--s3);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.pb-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--cyan), var(--blue));
+  transition: width .4s ease;
+}
+
+/* ── Checkpoint List ─────────────────────────── */
+.cp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.cp-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  padding: 10px 12px;
+  position: relative;
+}
+.cp-item.cp-done {
+  background: rgba(31,204,114,.05);
+  border-color: rgba(31,204,114,.18);
+  opacity: .8;
+}
+.cp-item.cp-next {
+  background: rgba(0,212,255,.06);
+  border-color: rgba(0,212,255,.3);
+}
+.cp-item.cp-skip {
+  opacity: .5;
+}
+.cp-dot {
+  width: 28px; height: 28px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.dot-done  { background: rgba(31,204,114,.15); }
+.dot-next  { background: rgba(0,212,255,.15); animation: cpPulse 2s ease infinite; }
+.dot-idle  { background: var(--s3); }
+@keyframes cpPulse {
+  0%,100%{ box-shadow: 0 0 0 0 rgba(0,212,255,.4); }
+  50%    { box-shadow: 0 0 0 5px rgba(0,212,255,0); }
+}
+.cp-body { flex: 1; }
+.cp-name { font-size: 12px; font-weight: 700; color: var(--t1); }
+.cp-status { font-size: 10px; margin-top: 2px; font-weight: 600; }
+.cs-done  { color: var(--green); }
+.cs-next  { color: var(--cyan); }
+.cs-idle  { color: var(--t3); }
+.cp-time  { font-size: 10px; color: var(--t3); }
+.cp-connector {
+  position: absolute;
+  left: 24px;
+  top: 100%;
+  width: 2px;
+  height: 6px;
+  background: var(--border);
+  transform: translateX(-50%);
+  z-index: 1;
+}
+
+/* ── Scan Area ───────────────────────────────── */
+.scan-frame {
+  background: var(--s2);
+  border: 2px dashed rgba(0,212,255,.35);
+  border-radius: 16px;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+.scan-frame::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  animation: scanLine 2s ease-in-out infinite;
+}
+@keyframes scanLine {
+  0%   { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(140px); opacity: 0; }
+}
+.scan-icon { font-size: 36px; }
+.scan-label { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--cyan); }
+.scan-sub { font-size: 10px; color: var(--t3); text-align: center; }
+
+/* ── Checkpoint Result Card ──────────────────── */
+.cp-result-card {
+  background: var(--s2);
+  border: 1.5px solid rgba(0,212,255,.25);
+  border-radius: var(--r-card);
+  padding: 14px 16px;
+  flex-shrink: 0;
+}
+.cr-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.cr-icon {
+  width: 40px; height: 40px;
+  background: rgba(0,212,255,.12);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.cr-name { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--t1); }
+.cr-meta { font-size: 10px; color: var(--t3); margin-top: 2px; }
+.cr-divider { height: 1px; background: var(--border); margin: 4px 0 10px; }
+.cr-info-row {
+  display: flex;
+  gap: 8px;
+}
+.cr-info-item {
+  flex: 1;
+  background: var(--s3);
+  border-radius: 10px;
+  padding: 8px;
+  text-align: center;
+}
+.cri-val { font-size: 11px; font-weight: 700; color: var(--t1); }
+.cri-lbl { font-size: 9px; color: var(--t3); text-transform: uppercase; letter-spacing: .06em; margin-top: 2px; }
+
+/* ── Action Row ──────────────────────────────── */
+.action-row {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.action-row .btn { padding: 13px 10px; font-size: 12px; }
+
+/* ── Photo Box ───────────────────────────────── */
+.photo-box {
+  background: var(--s2);
+  border: 1.5px dashed var(--border2);
+  border-radius: 13px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.pb-icon { font-size: 20px; }
+.pb-text { font-size: 12px; font-weight: 600; color: var(--t2); }
+.pb-sub  { font-size: 10px; color: var(--t3); margin-top: 1px; }
+.pb-arrow { margin-left: auto; font-size: 14px; color: var(--t3); }
+
+/* ── Incident Header ─────────────────────────── */
+.incident-header {
+  background: linear-gradient(135deg, rgba(255,62,62,.1) 0%, rgba(255,62,62,.04) 100%);
+  border: 1px solid rgba(255,62,62,.25);
+  border-radius: var(--r-card);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.ih-icon {
+  width: 46px; height: 46px;
+  background: rgba(255,62,62,.15);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.ih-title { font-family: var(--font-display); font-size: 14px; font-weight: 800; color: var(--red); }
+.ih-sub { font-size: 10px; color: var(--t3); margin-top: 3px; }
+
+/* ── Incident Buttons ────────────────────────── */
+.incident-list { display: flex; flex-direction: column; gap: 7px; flex-shrink: 0; }
+.inc-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,62,62,.05);
+  border: 1.5px solid rgba(255,62,62,.18);
+  border-radius: 13px;
+  padding: 11px 14px;
+  cursor: pointer;
+}
+.inc-icon {
+  width: 34px; height: 34px;
+  background: rgba(255,62,62,.12);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.inc-text { font-size: 12px; font-weight: 700; color: var(--t1); }
+.inc-arrow { margin-left: auto; color: var(--t3); font-size: 14px; }
+
+/* ── Toggle Row ──────────────────────────────── */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  padding: 12px 14px;
+  flex-shrink: 0;
+}
+.tr-text { font-size: 12px; font-weight: 700; }
+.tr-sub  { font-size: 10px; color: var(--t3); margin-top: 2px; }
+.toggle {
+  width: 42px; height: 24px;
+  background: var(--green);
+  border-radius: 12px;
+  position: relative;
+  flex-shrink: 0;
+}
+.toggle::after {
+  content: '';
+  position: absolute;
+  right: 3px; top: 3px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: #fff;
+}
+.toggle.off { background: var(--border2); }
+.toggle.off::after { right: auto; left: 3px; }
+
+/* ── Input Fake ──────────────────────────────── */
+.input-fake {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 11px 14px;
+  font-size: 12px;
+  color: var(--t3);
+  font-family: var(--font-body);
+  flex: 1;
+}
+
+/* ── Location Row ────────────────────────────── */
+.loc-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(31,204,114,.06);
+  border: 1px solid rgba(31,204,114,.2);
+  border-radius: 11px;
+  padding: 9px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--green);
+  flex-shrink: 0;
+}
+
+/* ── Edge Case Card ──────────────────────────── */
+.edge-card {
+  background: var(--s2);
+  border-radius: var(--r-card);
+  padding: 14px 16px;
+  flex-shrink: 0;
+}
+.edge-card.ec-warn { border: 1px solid rgba(255,170,0,.25); background: rgba(255,170,0,.04); }
+.edge-card.ec-offline { border: 1px solid rgba(139,92,246,.25); background: rgba(139,92,246,.04); }
+.edge-card.ec-resume  { border: 1px solid rgba(0,212,255,.2); background: rgba(0,212,255,.04); }
+
+.ec-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.ec-icon {
+  width: 38px; height: 38px;
+  border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.ei-warn    { background: rgba(255,170,0,.15); }
+.ei-offline { background: rgba(139,92,246,.15); }
+.ei-resume  { background: rgba(0,212,255,.12); }
+.ec-title { font-size: 13px; font-weight: 700; color: var(--t1); }
+.ec-sub   { font-size: 10px; color: var(--t3); margin-top: 2px; }
+.ec-actions { display: flex; gap: 8px; }
+.ec-btn {
+  flex: 1;
+  border: none;
+  border-radius: 11px;
+  padding: 10px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+}
+.ecb-primary { background: var(--amber); color: #000; }
+.ecb-ghost   { background: var(--s3);    color: var(--t2); }
+.ecb-violet  { background: var(--violet); color: #fff; }
+.ecb-cyan    { background: var(--cyan);   color: #000; }
+.ecb-red     { background: var(--red);    color: #fff; }
+
+/* ── Summary Cards ───────────────────────────── */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+  flex-shrink: 0;
+}
+.sum-item {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  padding: 10px 8px;
+  text-align: center;
+}
+.si-val {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+}
+.si-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--t3); margin-top: 4px; }
+
+/* Completion badge */
+.completion-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(31,204,114,.1), rgba(0,212,255,.06));
+  border: 1px solid rgba(31,204,114,.25);
+  border-radius: var(--r-card);
+  padding: 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.cb-icon { font-size: 32px; }
+.cb-title { font-family: var(--font-display); font-size: 16px; font-weight: 800; color: var(--green); }
+.cb-sub { font-size: 11px; color: var(--t2); }
+
+/* ── Bottom Nav ──────────────────────────────── */
+.bottom-nav {
+  display: flex;
+  background: var(--s1);
+  border-top: 1px solid var(--border);
+  padding: 8px 0 6px;
+  flex-shrink: 0;
+}
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--t3);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.nav-item.active { color: var(--blue); }
+.nav-icon { font-size: 17px; }
+
+/* ── Spacer ──────────────────────────────────── */
+.spacer { flex: 1; }
+
+/* ── Microcopy ───────────────────────────────── */
+.micro {
+  font-size: 10px;
+  color: var(--t3);
+  text-align: center;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+
+/* ── Interaction Notes ───────────────────────── */
+.inotes {
+  width: 288px;
+  border-radius: 13px;
+  padding: 12px 14px;
+  flex-shrink: 0;
+}
+.inotes-default { background: var(--blue-d); border: 1px solid var(--blue-g); }
+.inotes-patrol  { background: var(--cyan-d);  border: 1px solid rgba(0,212,255,.2); }
+.inotes-edge    { background: var(--violet-d); border: 1px solid rgba(139,92,246,.2); }
+.inotes h4 {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.inotes-default h4 { color: var(--blue); }
+.inotes-patrol  h4 { color: var(--cyan); }
+.inotes-edge    h4 { color: var(--violet); }
+.inotes ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+.inotes li {
+  font-size: 11px;
+  color: var(--t2);
+  line-height: 1.4;
+  padding-left: 13px;
+  position: relative;
+}
+.inotes li::before {
+  content: '›';
+  position: absolute;
+  left: 0;
+  font-size: 12px;
+}
+.inotes-default li::before { color: var(--blue); }
+.inotes-patrol  li::before { color: var(--cyan); }
+.inotes-edge    li::before { color: var(--violet); }
+
+/* ── Manual select list ──────────────────────── */
+.manual-list { display: flex; flex-direction: column; gap: 6px; }
+.ml-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+.ml-item.ml-selected { border-color: var(--cyan); background: rgba(0,212,255,.06); }
+.ml-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  border: 2px solid var(--t3);
+  flex-shrink: 0;
+}
+.ml-dot.sel { background: var(--cyan); border-color: var(--cyan); }
+.ml-name { font-size: 12px; font-weight: 600; }
+.ml-sub  { font-size: 10px; color: var(--t3); margin-top: 1px; }
+
+/* ── QR Fail Screen ──────────────────────────── */
+.qr-fail-card {
+  background: rgba(255,170,0,.06);
+  border: 1.5px solid rgba(255,170,0,.25);
+  border-radius: var(--r-card);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.qf-icon { font-size: 24px; flex-shrink: 0; }
+.qf-title { font-size: 13px; font-weight: 700; color: var(--amber); }
+.qf-sub   { font-size: 10px; color: var(--t3); margin-top: 2px; }
+
+/* ── Design Legend ───────────────────────────── */
+.legend {
+  max-width: 1500px;
+  margin: 16px auto 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+.legend-item {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.legend-item h4 {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--t2);
+  margin-bottom: 8px;
+}
+.legend-item p { font-size: 12px; color: var(--t3); line-height: 1.5; }
+.legend-item span {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+}
+
+/* ── Flow connector arrows ───────────────────── */
+.flow-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--t4);
+  font-size: 20px;
+  align-self: center;
+  margin-top: 180px;
+}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <div class="eyebrow">⚡ Consteon · Field Worker App v2</div>
+  <h1>Full UI Mockup<br><span>+ Guard Tour / Patrol Mode</span></h1>
+  <p>Complete 13-screen design system. Updated home screen + full structured patrol workflow with edge case handling.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION A: ORIGINAL SCREENS (Updated)
+═══════════════════════════════════════════════════════ -->
+<div class="section-divider" style="max-width:1500px;margin:0 auto 32px">
+  <div class="sd-line"></div>
+  <div class="sd-label sd-original">Original Screens — Updated</div>
+  <div class="sd-line"></div>
+</div>
+
+<div class="screens-grid">
+
+  <!-- ── S1: Home Pre Check-in ── -->
+  <div class="screen-wrap">
+    <div class="screen-tag"><span class="num">Screen 1</span></div>
+    <div class="screen-title">Home — Belum Mulai Shift</div>
+    <div class="phone">
+      <div class="phone-notch"><div class="notch-cam"></div><div class="notch-pill"></div></div>
+      <div class="status-bar"><span>07:58</span><div class="sb-icons">▲▲ 🔋</div></div>
+      <div class="app-body">
+        <div class="top-bar">
+          <span class="app-brand">Consteon</span>
+          <div class="avatar">SR</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Lokasi Kerja</div>
+          <div class="card-title">Mall Pesona Square</div>
+          <div class="card-sub">Shift Pagi · 08:00 – 16:00</div>
+          <div class="meta-pills">
+            <div class="meta-pill mp-blue">📍 500m</div>
+            <div class="meta-pill mp-blue">Senin, 16 Apr</div>
+          </div>
+        </div>
+        <div class="micro" style="color:var(--t2);font-size:12px">Selamat pagi, Surya 👋</div>
+        <div class="spacer"></div>
+        <div class="micro">Pastikan kamu sudah berada di lokasi sebelum mulai</div>
+        <button class="btn btn-green">▶&nbsp; Mulai Shift</button>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item active"><div class="nav-icon">🏠</div>Beranda</div>
+        <div class="nav-item"><div class="nav-icon">📋</div>Riwayat</div>
+        <div class="nav-item"><div class="nav-icon">👤</div>Profil</div>
+      </div>
+    </div>
+    <div class="inotes inotes-default">
+      <h4>Interaction Notes</h4>
+      <ul>
+        <li>Satu tombol saja — zero distraction</li>
+        <li>Lokasi & jadwal shift otomatis dari sistem</li>
+        <li>Tidak ada akses fitur lain sebelum check-in</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── S2: Start Shift ── -->
+  <div class="screen-wrap">
+    <div class="screen-tag"><span class="num">Screen 2</span></div>
+    <div class="screen-title">Start Shift — Check-in Flow</div>
+    <div class="phone">
+      <div class="phone-notch"><div class="notch-cam"></div><div class="notch-pill"></div></div>
+      <div class="status-bar"><span>07:59</span><div class="sb-icons">▲▲ 🔋</div></div>
+      <div class="app-body">
+        <div class="top-bar">
+          <div class="back-btn">←</div>
+          <span class="top-title">Mulai Shift</span>
+          <div style="width:32px"></div>
+        </div>
+        <div class="loc-row">📍 Terdeteksi: Mall Pesona Square – B1</div>
+        <div class="toggle-row">
+          <div><div class="tr-text">Briefing selesai?</div><div class="tr-sub">Briefing sudah dilakukan?</div></div>
+          <div class="toggle"></div>
+        </div>
+        <div class="section-lbl">Foto Lokasi (opsional)</div>
+        <div class="photo-box">
+          <div class="pb-icon">📷</div>
+          <div><div class="pb-text">Tambah Foto</div><div class="pb-sub">Kondisi area kerja saat ini</div></div>
+          <div class="pb-arrow">›</div>
+        </div>
+        <div class="input-fake">Catatan (opsional)…</div>
+        <div class="spacer"></div>
+        <div class="micro">Mulai kerja sekarang · Tap sekali, langsung tercatat</div>
+        <button class="btn btn-green">✅&nbsp; Check In &amp; Mulai Shift</button>
+      </div>
+    </div>
+    <div class="inotes inotes-default">
+      <h4>Interaction Notes</h4>
+      <ul>
+        <li>Lokasi dideteksi otomatis — tidak perlu input manual</li>
+        <li>Toggle briefing: default ON</li>
+        <li>Foto & catatan opsional — tidak wajib</li>
+        <li>Satu tombol besar di bawah</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── S3: Home ACTIVE (UPDATED) ── -->
+  <div class="screen-wrap">
+    <div class="screen-tag">
+      <span class="num">Screen 3 ★</span>
+      <span class="badge badge-updated">Updated</span>
+    </div>
+    <div class="screen-title">Home — Shift Aktif</div>
+    <div class="phone">
+      <div class="phone-notch"><div class="notch-cam"></div><div class="notch-pill"></div></div>
+      <div class="status-bar"><span>10:23</span><div class="sb-icons">▲▲ 🔋</div></div>
+      <div class="app-body">
+        <div class="top-bar">
+          <span class="app-brand">Consteon</span>
+          <div class="avatar">SR</div>
+        </div>
+        <div class="timer-card">
+          <div class="tc-left">
+            <div class="tc-lbl">Shift Berjalan</div>
+            <div class="tc-val">2j 24m</div>
+            <div class="tc-sub">Aktivitas terakhir: 10:15</div>
+          </div>
+          <div class="pulse"></div>
+        </div>
+        <div class="section-lbl">Apa yang kamu lakukan?</div>
+        <div class="action-grid">
+          <!-- PATROL — dominant CTA -->
+          <div class="act-btn act-btn-patrol">
+            <div class="ab-icon">🛡️</div>
+            <div class="ab-text">
+              <div class="ab-name">Mulai Patrol</div>
+              <div class="ab-sub">8 titik · Night Patrol</div>
+            </div>
+          </div>
+          <!-- Activity -->
+          <div class="act-btn act-btn-activity ag-2" style="grid-column:span 1">
+            <div class="ab-icon" style="background:var(--blue-d);color:var(--blue)">🗺️</div>
+            <div class="ab-name">Aktivitas</div>
+            <div class="ab-sub">Catat kegiatan</div>
+          </div>
+          <!-- Incident -->
+          <div class="act-btn act-btn-incident">
+            <div class="ab-icon">⚠️</div>
+            <div class="ab-name">Insiden</div>
+            <div class="ab-sub">Laporkan</div>
+          </div>
+          <!-- End Shift -->
+          <div class="act-btn act-btn-end">
+            <div class="ab-icon">🔚</div>
+            <div class="ab-name">Akhiri Shift</div>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item active"><div class="nav-icon">🏠</div>Beranda</div>
+        <div class="nav-item"><div class="nav-icon">📋</div>Riwayat</div>
+        <div class="nav-item"><div class="nav-icon">👤</div>Profil</div>
+      </div>
+    </div>
+    <div class="inotes inotes-default">
+      <h4>Interaction Notes</h4>
+      <ul>
+        <li>Patrol ditampilkan dominan — full-width, warna cyan</li>
+        <li>Aktivitas & Insiden tetap mudah diakses</li>
+        <li>Akhiri Shift disembunyikan secara visual (abu-abu)</li>
+        <li>Timer berjalan otomatis sejak check-in</li>
+      </ul>
+    </div>
+  </div>
+
+</div><!-- /screens-grid original -->
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION B: PATROL FLOW
+═══════════════════════════════════════════════════════ -->
+<div class="section-divider" style="max-width:1500px;margin:48px auto 32px">
+  <div class="sd-line"></div>
+  <div class="sd-label sd-patrol">🛡️ Patrol / Guard Tour Mode — New Screens</div>
+  <div class="sd-line"></div>
+</div>
+
+<div class="screens-grid">
+
+  <!-- ── P1: Patrol Start ── -->
+  <div class="screen-wrap">
+    <div class="screen-tag">
+      <span class="num">Patrol–1</span>
+      <span class="badge badge-new">New</span>
+    </div>
+    <div class="screen-title">Patrol Start Screen</div>
+    <div class="phone patrol-active">
+      <div class="phone-notch"><div class="notch-cam"></div><div class="notch-pill"></div></div>
+      <div class="status-bar"><span>22:01</span><div class="sb-icons">▲▲ 🔋</div></div>
+      <div class="app-body">
+        <div class="top-bar">
+          <div class="back-btn">←</div>
+          <span class="top-title">Patrol</span>
+          <div style="width:32px"></div>
+        </div>
+        <div class="patrol-info-card">
+          <div class="pic-header">
+            <div class="pic-icon">🛡️</div>
+            <div>
+              <div class="pic-name">Night Patrol — Mall Area</div>
+              <div class="pic-sub">Senin, 16 Apr · Shift Malam</div>
+            </div>
+          </div>
+          <div class="pic-stats">
+            <div class="pic-stat"><div class="ps-val">8</div><div class="ps-lbl">Titik</div></div>
+            <div class="pic-stat"><div class="ps-val">45m</div><div class="ps-lbl">Estimasi</div></div>
+            <div class="pic-stat"><div class="ps-val">22:00</div><div class="ps-lbl">Mulai</div></div>
+          </div>
+        </div>
+        <div class="section-lbl">Daftar Titik Patrol</div>
+        <div class="cp-list">
+          <div class="cp-item"><div class="cp-dot dot-idle">⭕</div><div class="cp-body"><div class="cp-name">Lobby Utama</div><div class="cp-status cs-idle">Belum dikunjungi</div></div></div>
+          <div class="cp-item"><div class="cp-dot dot-idle">⭕</div><div class="cp-body"><div class="cp-name">Parkiran Barat</div><div class="cp-status cs-idle">Belum dikunjungi</div></div></div>
+          <div class="cp-item"><div class="cp-dot dot-idle">⭕</div><div class="cp-body"><div class="cp-name">Loading Dock</div><div class="cp-status cs-idle">Belum dikunjungi</div></div></div>
+          <div class="cp-item" style="opacity:.5"><div class="cp-dot dot-idle">⭕</div><div class="cp-body"><div class="cp-name">+5 titik lainnya</div><div class="cp-status cs-idle">—</div></div></div>
+        </div>
+        <div class="spacer"></div>
+        <button class="btn btn-cyan">🛡️&nbsp; Mulai Patrol</button>
+      </div>
+    </div>
+    <div class="inotes inotes-patrol">
+      <h4>Interaction Notes</h4>
+      <ul>
+        <li>Patrol name & titik ditampilkan sebelum mulai</li>
+        <li>Worker tahu scope sebelum tap — mengurangi kejutan</li>
+        <li>Estimasi waktu ditampilkan untuk planning</li>
+        <li>Satu tombol besar — tidak ada pilihan lain</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── P2: Patrol In Progress ── -->
+  <div class="screen-wrap">
+    <div class="screen-tag">
+      <span class="num">Patrol–2</span>
+      <span class="badge badge-core">★ Core</span>
+    </div>
+    <div class="screen-title">Patrol In Progress</div>
+    <div class="phone patrol-active">
+      <div class="phone-notch"><div class="notch-cam"></div><div class="notch-pill"></div></div>
+      <div class="status-bar"><span>22:17</span><div class="sb-icons">▲▲ 🔋</div></div>
+      <div class="app-body tight">
+        <div class="top-bar">
+          <div class="back-btn">←</div>
+          <span class="top-title">🛡️ Patrol Aktif</span>
+          <div style="font-size:11px;color:var(--cyan);font-weight:700">16m</div>
+        </div>
+
+        <div class="progress-bar-wrap">
+          <div class="pb-row">
+            <span class="pb-label">Progress patrol</span>
+            <span class="pb-count">3 / 8 selesai</span>
+          </div>
+          <div class="pb-track"><div class="pb-fill" style="width:37.5%"></div></div>
+        </div>
+
+        <div class="section-lbl">Titik Checkpoint</div>
+        <div class="cp-list">
+          <div class="cp-item cp-done">
+            <div class="cp-dot dot-done">✅</div>
+            <div class="cp-body"><div class="cp-name">Lobby Utama</div><div class="cp-status cs-done">Selesai · Aman</div></div>
+            <div class="cp-time">22:04</div>
+          </div>
+          <div class="cp-item cp-done">
+            <div class="cp-dot dot-done">✅</div>
+            <div class="cp-body"><div class="cp-name">Lift Area Lt.1</div><div class="cp-status cs-done">Selesai · Aman</div></div>
+            <div class="cp-time">22:09</div>
+          </div>
+          <div class="cp-item cp-done">
+            <div class="cp-dot dot-done">⚠️</div>
+            <div class="cp-body"><div class="cp-name">Pintu Darurat B1</div><div class="cp-status" style="color:var(--amber)">Selesai · Ada Masalah</div></div>
+            <div class="cp-time">22:14</div>
+          </div>
+          <div class="cp-item cp-next">
+            <div class="cp-dot dot-next">🟡</div>
+            <div class="cp-body"><div class="cp-name">Parkiran Barat</div><div class="cp-status cs-next">Berikutnya →</div></div>
+            <div class="cp-time">—</div>
+          </div>
+          <div class="cp-item cp-skip">
+            <div class="cp-dot dot-idle">⭕</div>
+            <div class="cp-body"><div class="cp-name">Loading Dock</div><div class="cp-status cs-idle">Menunggu</div></div>
+            <div class="cp-time">—</div>
+          </div>
+        </div>
+
+        <div class="spacer"></div>
+        <button class="btn btn-cyan" style="font-size:16px">📷&nbsp; Scan QR — Titik Berikutnya</button>
+        <button class="btn btn-ghost btn-sm" style="margin-top:4px">⌨️&nbsp; Input Manual (QR rusak?)</button>
+      </div>
+    </div>
+    <div class="inotes inotes-patrol">
+      <h4>Interaction Notes</h4>
+      <ul>
+        <li>Progress bar selalu terlihat — tahu sudah sampai mana</li>
+        <li>Checkpoint berikutnya di-highlight dengan warna & animasi pulse</li>
+        <li>Status aman/masalah terlihat per titik</li>
+        <li>Scan QR = tombol paling besar & paling atas</li>
+        <li>Manual input tersedia tapi disembunyikan secara visual</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── P3: Scan Result / Checkpoint Action ── -->
+  <div class="screen-wrap">
+    <div class="screen-tag">
+      <span class="num">Patrol–3</span>
+      <span class="badge badge-new">New</span>
+    </div>
+    <div class="screen-title">Checkpoint Action Screen</div>
+    <div class="phone patrol-active">
+      <div class="phone-notch"><div class="notch-cam"></div><div class="notch-pill"></div></div>
+      <div class="status-bar"><span>22:19</span><div class="sb-icons">▲▲ 🔋</div></div>
+      <div class="app-body">
+        <div class="top-bar">
+          <div class="back-btn">←</div>
+          <span class="top-title">Titik Ditemukan</span>
+          <div style="font-size:18px">✅</div>
+        </div>
+
+        <div class="cp-result-card">
+          <div class="cr-header">
+            <div class="cr-icon">📍</div>
+            <div>
+              <div class="cr-name">Parkiran Barat</div>
+              <div class="cr-meta">QR dipindai · Cocok dengan jadwal</div>
+            </div>
+          </div>
+          <div class="cr-divider"></div>
+          <div class="cr-info-row">
+            <div class="cr-info-item"><div class="cri-val">22:19</div><div class="cri-lbl">Waktu</div></div>
+            <div class="cr-info-item"><div class="cri-val">Auto</div><div class="cri-lbl">Lokasi</div></div>
+            <div class="cr-info-item"><div class="cri-val">4 / 8</div><div class="cri-lbl">Progress</div></div>
+          </div>
+        </div>
+
+        <div class="section-lbl">Ambil Foto Kondisi Area</div>
+        <div class="photo-box">
+          <div class="pb-icon">📷</div>
+          <div><div class="pb-text">Ambil foto kondisi area</div><div class="pb-sub">Disarankan sebagai bukti</div></div>
+          <div class="pb-arrow">›</div>
+        </div>
+
+        <div class="spacer"></div>
+        <div class="section-lbl">Status Area Ini</div>
+        <div class="action-row">
+          <button class="btn btn-green" style="font-size:13px">✔&nbsp; Aman</button>
+          <button class="btn btn-red"   style="font-size:13px">⚠&nbsp; Ada Masalah</button>
+        </div>
+        <div class="micro">Tandai aman atau laporkan masalah · Titik ini sudah selesai</div>
+      </div>
+    </div>
+    <div class="inotes inotes-patrol">
+      <h4>Interaction Notes</h4>
+      <ul>
+        <li>Nama titik dikonfirmasi setelah scan — verifikasi visual</li>
+        <li>Timestamp & lokasi dicatat otomatis</li>
+        <li>Foto disarankan tapi tidak wajib</li>
+        <li>"Aman" vs "Ada Masalah" — dua tombol besar, mudah dibedakan</li>
+        <li>"Ada Masalah" → redirect ke Incident Report dengan data pre-filled</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── P4: Manual Input Fallback ── -->
+  <div class="screen-wrap">
+    <div class="screen-tag">
+      <span class="num">Patrol–4</span>
+      <span class="badge badge-edge">Edge Case</span>
+    </div>
+    <div class="screen-title">Manual Input — QR Rusak</div>
+    <div class="phone patrol-active">
+      <div class="phone-notch"><div class="notch-cam"></div><div class="notch-pill"></div></div>
+      <div class="status-bar"><span>22:21</span><div class="sb-icons">▲▲ 🔋</div></div>
+      <div class="app-body">
+        <div class="top-bar">
+          <div class="back-btn">←</div>
+          <span class="top-title">Input Manual</span>
+          <div style="width:32px"></div>
+        </div>
+
+        <div class="qr-fail-card">
+          <div class="qf-icon">⚠️</div>
+          <div>
+            <div class="qf-title">QR tidak bisa dipindai</div>
+            <div class="qf-sub">Pilih titik secara manual dari daftar</div>
+          </div>
+        </div>
+
+        <div class="section-lbl">Pilih Titik Checkpoint</div>
+        <div class="manual-list">
+          <div class="ml-item">
+            <div class="ml-dot"></div>
+            <div><div class="ml-name">Lobby Utama</div><div class="ml-sub">Lantai GF</div></div>
+          </div>
+          <div class="ml-item ml-selected">
+            <div class="ml-dot sel"></div>
+            <div><div class="ml-name" style="color:var(--cyan)">Parkiran Barat</div><div class="ml-sub">Lantai B1 · Berikutnya</div></div>
+          </div>
+          <div class="ml-item">
+            <div class="ml-dot"></div>
+            <div><div class="ml-name">Loading Dock</div><div class="ml-sub">Sisi Timur</div></div>
+          </div>
+          <div class="ml-item">
+            <div class="ml-dot"></div>
+            <div><div class="ml-name">Pintu Darurat Lt.3</div><div class="ml-sub">Tangga B</div></div>
+          </div>
+        </div>
+
+        <div class="spacer"></div>
+        <button class="btn btn-cyan">✔&nbsp; Lanjut ke Titik Ini</button>
+        <div class="micro" style="margin-top:4px">QR rusak akan dilaporkan otomatis ke supervisor</div>
+      </div>
+    </div>
+    <div class="inotes inotes-edge">
+      <h4>Interaction Notes</h4>
+      <ul>
+        <li>QR gagal scan → sistem otomatis tampilkan fallback</li>
+        <li>Worker pilih dari daftar — tidak perlu mengetik</li>
+        <li>Titik berikutnya di-highlight sebagai default pilihan</li>
+        <li>Laporan QR rusak dikirim otomatis ke supervisor</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── P5: Patrol Completion ── -->
+  <div class="screen-wrap">
+    <div class="screen-tag">
+      <span class="num">Patrol–5</span>
+      <span class="badge badge-new">New</span>
+    </div>
+    <div class="screen-title">Patrol Selesai</div>
+    <div class="phone patrol-active">
+      <div class="phone-notch"><div class="notch-cam"></div><div class="notch-pill"></div></div>
+      <div class="status-bar"><span>22:48</span><div class="sb-icons">▲▲ 🔋</div></div>
+      <div class="app-body">
+        <div class="top-bar">
+          <div class="back-btn">←</div>
+          <span class="top-title">Selesai Patrol</span>
+          <div style="width:32px"></div>
+        </div>
+
+        <div class="completion-badge">
+          <div class="cb-icon">🏁</div>
+          <div class="cb-title">Patrol Selesai!</div>
+          <div class="cb-sub">Night Patrol · Semua titik telah dikunjungi</div>
+        </div>
+
+        <div class="summary-grid">
+          <div class="sum-item"><div class="si-val" style="color:var(--cyan)">8</div><div class="si-lbl">Titik</div></div>
+          <div class="sum-item"><div class="si-val" style="color:var(--green)">7</div><div class="si-lbl">Aman</div></div>
+          <div class="sum-item"><div class="si-val" style="color:var(--amber)">1</div><div class="si-lbl">Masalah</div></div>
+        </div>
+
+        <div class="card" style="padding:12px 14px">
+          <div class="card-label">Durasi Patrol</div>
+          <div class="card-title" style="font-size:22px;color:var(--cyan)">47 menit</div>
+          <div class="card-sub">22:01 – 22:48 · Semua checkpoint tercatat</div>
+        </div>
+
+        <div class="section-lbl">Catatan Akhir (opsional)</div>
+        <div class="input-fake">Tambahkan catatan jika ada…</div>
+
+        <div class="spacer"></div>
+        <button class="btn btn-green">✅&nbsp; Selesaikan Patrol</button>
+        <div class="micro" style="margin-top:4px">Laporan dikirim otomatis ke supervisor</div>
+      </div>
+    </div>
+    <div class="inotes inotes-patrol">
+      <h4>Interaction Notes</h4>
+      <ul>
+        <li>Summary otomatis — worker tidak perlu input angka</li>
+        <li>Badge "Selesai" memberikan reward feeling</li>
+        <li>Masalah yang ditemukan dirangkum di sini</li>
+        <li>Catatan opsional — boleh langsung selesaikan</li>
+        <li>Laporan terkirim otomatis ke supervisor & sistem</li>
+      </ul>
+    </div>
+  </div>
+
+</div><!-- /patrol screens -->
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION C: EDGE CASES
+═══════════════════════════════════════════════════════ -->
+<div class="section-divider" style="max-width:1500px;margin:48px auto 32px">
+  <div class="sd-line"></div>
+  <div class="sd-label" style="color:var(--violet);background:var(--violet-d);border:1px solid rgba(139,92,246,.2);padding:4px 14px;border-radius:100px;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap">🔴 Edge Cases — UI Handling</div>
+  <div class="sd-line"></div>
+</div>
+
+<div class="screens-grid">
+
+  <!-- Edge 1: No Internet -->
+  <div class="screen-wrap">
+    <div class="screen-tag">
+      <span class="num">Edge–1</span>
+      <span class="badge badge-edge">Offline</span>
+    </div>
+    <div class="screen-title">No Internet — Offline Mode</div>
+    <div class="phone patrol-active" style="border-color:rgba(139,92,246,.3)">
+      <div class="phone-notch"><div class="notch-cam"></div><div class="notch-pill"></div></div>
+      <div class="status-bar"><span>22:25</span><div class="sb-icons" style="color:var(--violet)">✕ 🔋</div></div>
+      <div class="app-body">
+        <div class="top-bar">
+          <span class="app-brand" style="color:var(--violet)">Consteon</span>
+          <div class="avatar" style="background:var(--violet)">SR</div>
+        </div>
+
+        <div class="edge-card ec-offline">
+          <div class="ec-header">
+            <div class="ec-icon ei-offline">📡</div>
+            <div>
+              <div class="ec-title">Tidak ada koneksi</div>
+              <div class="ec-sub">Mode offline aktif · Data tersimpan lokal</div>
+            </div>
+          </div>
+          <div class="ec-actions">
+            <button class="ec-btn ecb-violet">Lanjut Offline</button>
+            <button class="ec-btn ecb-ghost">Coba Lagi</button>
+          </div>
+        </div>
+
+        <div class="card" style="border-color:rgba(139,92,246,.2)">
+          <div class="card-label" style="color:var(--violet)">Status Sinkronisasi</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+            <div style="display:flex;justify-content:space-between;font-size:11px">
+              <span style="color:var(--t2)">3 aktivitas tersimpan lokal</span>
+              <span style="color:var(--amber)">⏳ Pending</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11px">
+              <span style="color:var(--t2)">2 foto belum terunggah</span>
+              <span style="color:var(--amber)">⏳ Pending</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="micro" style="padding:0 4px">Semua data tersimpan di perangkat. Akan otomatis sinkron saat koneksi kembali.</div>
+
+        <div class="spacer"></div>
+        <button class="btn" style="background:var(--violet);color:#fff;box-shadow:0 6px 20px rgba(139,92,246,.3)">✅&nbsp; Lanjut Patrol Offline</button>
+      </div>
+    </div>
+    <div class="inotes inotes-edge">
+      <h4>Interaction Notes</h4>
+      <ul>
+        <li>Banner offline muncul otomatis — warna berbeda (violet)</li>
+        <li>Worker bisa lanjut kerja — tidak perlu tunggu koneksi</li>
+        <li>Data disimpan lokal & sinkron saat online kembali</li>
+        <li>Jumlah data pending ditampilkan dengan jelas</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Edge 2: Exit Mid-Patrol / Resume -->
+  <div class="screen-wrap">
+    <div class="screen-tag">
+      <span class="num">Edge–2</span>
+      <span class="badge badge-edge">Resume</span>
+    </div>
+    <div class="screen-title">Keluar Tengah Patrol — Resume</div>
+    <div class="phone patrol-active">
+      <div class="phone-notch"><div class="notch-cam"></div><div class="notch-pill"></div></div>
+      <div class="status-bar"><span>22:31</span><div class="sb-icons">▲▲ 🔋</div></div>
+      <div class="app-body">
+        <div class="top-bar">
+          <span class="app-brand">Consteon</span>
+          <div class="avatar">SR</div>
+        </div>
+
+        <div class="edge-card ec-resume">
+          <div class="ec-header">
+            <div class="ec-icon ei-resume">🔄</div>
+            <div>
+              <div class="ec-title">Patrol belum selesai</div>
+              <div class="ec-sub">Night Patrol · 3/8 titik selesai · Terakhir: 22:19</div>
+            </div>
+          </div>
+          <div class="ec-actions">
+            <button class="ec-btn ecb-cyan">Lanjutkan</button>
+            <button class="ec-btn ecb-ghost">Batalkan</button>
+          </div>
+        </div>
+
+        <div class="progress-bar-wrap">
+          <div class="pb-row">
+            <span class="pb-label">Progress tersimpan</span>
+            <span class="pb-count">3 / 8</span>
+          </div>
+          <div class="pb-track"><div class="pb-fill" style="width:37.5%"></div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">Titik Berikutnya</div>
+          <div class="card-title" style="font-size:14px;color:var(--cyan)">📍 Parkiran Barat</div>
+          <div class="card-sub">Lanjutkan dari titik ini</div>
+        </div>
+
+        <div class="spacer"></div>
+        <button class="btn btn-cyan">▶&nbsp; Lanjutkan Patrol</button>
+        <button class="btn btn-ghost btn-sm" style="margin-top:6px">Mulai Patrol Baru</button>
+      </div>
+    </div>
+    <div class="inotes inotes-edge">
+      <h4>Interaction Notes</h4>
+      <ul>
+        <li>Progress tersimpan otomatis — bisa dilanjutkan kapan saja</li>
+        <li>Banner resume muncul saat membuka app lagi</li>
+        <li>Titik berikutnya langsung ditampilkan — tidak perlu ingat</li>
+        <li>Opsi batalkan tersedia tapi tidak dipromosikan</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Edge 3: Missed Checkpoint Warning -->
+  <div class="screen-wrap">
+    <div class="screen-tag">
+      <span class="num">Edge–3</span>
+      <span class="badge badge-edge">Warning</span>
+    </div>
+    <div class="screen-title">Titik Terlewat — Soft Warning</div>
+    <div class="phone">
+      <div class="phone-notch"><div class="notch-cam"></div><div class="notch-pill"></div></div>
+      <div class="status-bar"><span>22:50</span><div class="sb-icons">▲▲ 🔋</div></div>
+      <div class="app-body">
+        <div class="top-bar">
+          <div class="back-btn">←</div>
+          <span class="top-title">Selesai Patrol</span>
+          <div style="width:32px"></div>
+        </div>
+
+        <div class="edge-card ec-warn">
+          <div class="ec-header">
+            <div class="ec-icon ei-warn">⚠️</div>
+            <div>
+              <div class="ec-title">2 titik belum dikunjungi</div>
+              <div class="ec-sub">Kamu bisa tetap selesaikan patrol, tapi akan tercatat sebagai terlewat</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-lbl">Titik yang Terlewat</div>
+        <div class="cp-list">
+          <div class="cp-item" style="border-color:rgba(255,170,0,.25);background:rgba(255,170,0,.04)">
+            <div class="cp-dot" style="background:rgba(255,170,0,.15);font-size:14px">⚠️</div>
+            <div class="cp-body">
+              <div class="cp-name">Loading Dock</div>
+              <div class="cp-status" style="color:var(--amber)">Tidak dikunjungi</div>
+            </div>
+          </div>
+          <div class="cp-item" style="border-color:rgba(255,170,0,.25);background:rgba(255,170,0,.04)">
+            <div class="cp-dot" style="background:rgba(255,170,0,.15);font-size:14px">⚠️</div>
+            <div class="cp-body">
+              <div class="cp-name">CCTV Room</div>
+              <div class="cp-status" style="color:var(--amber)">Tidak dikunjungi</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="spacer"></div>
+        <button class="btn btn-amber">📍&nbsp; Kunjungi Titik yang Terlewat</button>
+        <button class="btn btn-ghost btn-sm" style="margin-top:6px;color:var(--t3)">Tetap Selesaikan (titik tercatat terlewat)</button>
+        <div class="micro" style="margin-top:4px">Supervisor akan mendapat notifikasi titik terlewat</div>
+      </div>
+    </div>
+    <div class="inotes inotes-edge">
+      <h4>Interaction Notes</h4>
+      <ul>
+        <li>Soft warning — tidak memblokir, tapi jelas memberitahu</li>
+        <li>Tombol utama: kembali & kunjungi titik yang terlewat</li>
+        <li>Tetap bisa selesaikan — sistem catat sebagai missed</li>
+        <li>Supervisor dinotif otomatis — tidak perlu lapor manual</li>
+      </ul>
+    </div>
+  </div>
+
+</div><!-- /edge cases -->
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION D: REMAINING ORIGINAL SCREENS
+═══════════════════════════════════════════════════════ -->
+<div class="section-divider" style="max-width:1500px;margin:48px auto 32px">
+  <div class="sd-line"></div>
+  <div class="sd-label sd-original">Remaining Original Screens</div>
+  <div class="sd-line"></div>
+</div>
+
+<div class="screens-grid">
+
+  <!-- Activity -->
+  <div class="screen-wrap">
+    <div class="screen-tag"><span class="num">Screen 4</span></div>
+    <div class="screen-title">Aktivitas Quick Input</div>
+    <div class="phone">
+      <div class="phone-notch"><div class="notch-cam"></div><div class="notch-pill"></div></div>
+      <div class="status-bar"><span>10:24</span><div class="sb-icons">▲▲ 🔋</div></div>
+      <div class="app-body">
+        <div class="top-bar">
+          <div class="back-btn">←</div>
+          <span class="top-title">Pilih Aktivitas</span>
+          <div style="width:32px"></div>
+        </div>
+        <div class="micro" style="text-align:left;color:var(--t2);font-size:12px">Langsung tersimpan setelah kamu tap</div>
+        <div class="action-grid ag-2">
+          <div class="act-btn" style="border-color:rgba(59,123,255,.25);background:rgba(59,123,255,.08)">
+            <div class="ab-icon" style="background:var(--blue-d);color:var(--blue)">🚶</div>
+            <div class="ab-name">Patroli</div>
+          </div>
+          <div class="act-btn">
+            <div class="ab-icon" style="background:var(--s3);color:var(--t2)">📍</div>
+            <div class="ab-name">Checkpoint</div>
+          </div>
+          <div class="act-btn">
+            <div class="ab-icon" style="background:var(--s3);color:var(--t2)">👁️</div>
+            <div class="ab-name">Monitoring</div>
+          </div>
+          <div class="act-btn">
+            <div class="ab-icon" style="background:var(--s3);color:var(--t2)">🧹</div>
+            <div class="ab-name">Kebersihan</div>
+          </div>
+          <div class="act-btn">
+            <div class="ab-icon" style="background:var(--s3);color:var(--t2)">🔧</div>
+            <div class="ab-name">Perbaikan</div>
+          </div>
+          <div class="act-btn">
+            <div class="ab-icon" style="background:var(--s3);color:var(--t2)">➕</div>
+            <div class="ab-name">Lainnya</div>
+          </div>
+        </div>
+        <div class="photo-box" style="padding:11px 14px">
+          <div class="pb-icon">📷</div>
+          <div><div class="pb-text">Tambah foto (opsional)</div></div>
+          <div class="pb-arrow">›</div>
+        </div>
+        <div class="spacer"></div>
+        <button class="btn btn-blue">✅&nbsp; Simpan Aktivitas</button>
+      </div>
+    </div>
+    <div class="inotes inotes-default">
+      <h4>Interaction Notes</h4>
+      <ul>
+        <li>Tap chip → langsung terpilih dengan visual feedback</li>
+        <li>Foto opsional — bisa skip</li>
+        <li>Timestamp & lokasi otomatis di background</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Incident -->
+  <div class="screen-wrap">
+    <div class="screen-tag"><span class="num">Screen 5</span></div>
+    <div class="screen-title">Laporan Insiden</div>
+    <div class="phone incident-active">
+      <div class="phone-notch"><div class="notch-cam"></div><div class="notch-pill"></div></div>
+      <div class="status-bar"><span>10:35</span><div class="sb-icons">▲▲ 🔋</div></div>
+      <div class="app-body">
+        <div class="top-bar">
+          <div class="back-btn" style="border-color:rgba(255,62,62,.3)">←</div>
+          <span class="top-title" style="color:var(--red)">⚠️ Laporkan Insiden</span>
+          <div style="width:32px"></div>
+        </div>
+        <div class="incident-header">
+          <div class="ih-icon">🚨</div>
+          <div>
+            <div class="ih-title">Laporkan kejadian sekarang</div>
+            <div class="ih-sub">Tambahkan bukti jika ada · Lokasi otomatis</div>
+          </div>
+        </div>
+        <div class="section-lbl">Jenis Kejadian</div>
+        <div class="incident-list">
+          <div class="inc-btn"><div class="inc-icon">👀</div><div class="inc-text">Kejadian Mencurigakan</div><div class="inc-arrow">›</div></div>
+          <div class="inc-btn"><div class="inc-icon">🔨</div><div class="inc-text">Kerusakan</div><div class="inc-arrow">›</div></div>
+          <div class="inc-btn"><div class="inc-icon">😠</div><div class="inc-text">Keributan / Gangguan</div><div class="inc-arrow">›</div></div>
+          <div class="inc-btn"><div class="inc-icon">📝</div><div class="inc-text">Lainnya</div><div class="inc-arrow">›</div></div>
+        </div>
+        <div class="photo-box">
+          <div class="pb-icon">📷</div>
+          <div><div class="pb-text">Foto / Video (prioritas)</div><div class="pb-sub">Tambahkan bukti kejadian</div></div>
+          <div class="pb-arrow">›</div>
+        </div>
+        <div class="spacer"></div>
+        <div class="loc-row">📍 Lokasi terdeteksi · 10:35 WIB</div>
+        <button class="btn btn-red">🚨&nbsp; Kirim Laporan</button>
+      </div>
+    </div>
+    <div class="inotes inotes-default">
+      <h4>Interaction Notes</h4>
+      <ul>
+        <li>Warna merah memberi sinyal urgensi</li>
+        <li>Foto/video jadi input utama, bukan teks</li>
+        <li>Lokasi & timestamp otomatis</li>
+        <li>Jika dipanggil dari patrol — data checkpoint pre-filled</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- End Shift -->
+  <div class="screen-wrap">
+    <div class="screen-tag"><span class="num">Screen 7</span></div>
+    <div class="screen-title">Akhiri Shift — Summary</div>
+    <div class="phone">
+      <div class="phone-notch"><div class="notch-cam"></div><div class="notch-pill"></div></div>
+      <div class="status-bar"><span>15:58</span><div class="sb-icons">▲▲ 🔋</div></div>
+      <div class="app-body">
+        <div class="top-bar">
+          <div class="back-btn">←</div>
+          <span class="top-title">Akhiri Shift</span>
+          <div style="width:32px"></div>
+        </div>
+        <div class="card">
+          <div class="card-label">Ringkasan Shift</div>
+          <div class="card-title">Mall Pesona Square · Shift Pagi</div>
+          <div class="card-sub">08:00 – 16:00 · Durasi: 7j 58m</div>
+        </div>
+        <div class="summary-grid">
+          <div class="sum-item"><div class="si-val" style="color:var(--blue)">12</div><div class="si-lbl">Aktivitas</div></div>
+          <div class="sum-item"><div class="si-val" style="color:var(--cyan)">2</div><div class="si-lbl">Patrol</div></div>
+          <div class="sum-item"><div class="si-val" style="color:var(--amber)">1</div><div class="si-lbl">Insiden</div></div>
+        </div>
+        <div class="section-lbl">Catatan Akhir (opsional)</div>
+        <div class="input-fake" style="min-height:52px;padding-top:10px">Tambahkan catatan jika diperlukan…</div>
+        <div class="photo-box" style="padding:11px 14px">
+          <div class="pb-icon">📷</div>
+          <div><div class="pb-text">Foto kondisi akhir (opsional)</div></div>
+          <div class="pb-arrow">›</div>
+        </div>
+        <div class="spacer"></div>
+        <div class="micro">Selesaikan pekerjaan hari ini</div>
+        <button class="btn" style="background:linear-gradient(135deg,var(--blue),#6366F1);color:#fff;box-shadow:0 6px 20px rgba(99,102,241,.35)">🔚&nbsp; Akhiri Shift</button>
+      </div>
+    </div>
+    <div class="inotes inotes-default">
+      <h4>Interaction Notes</h4>
+      <ul>
+        <li>Summary otomatis — termasuk patrol count</li>
+        <li>Catatan & foto bersifat opsional</li>
+        <li>Setelah tap → semua tombol terkunci</li>
+        <li>Data terkirim ke supervisor otomatis</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ Design System ═══ -->
+<div class="legend">
+  <div class="legend-item">
+    <h4>🛡️ Patrol sebagai Workflow</h4>
+    <p>Patrol bukan tombol aktivitas biasa — ini adalah guided step-by-step mode dengan state, progress, dan validasi tersendiri.</p>
+    <span>Start → Scan → Confirm → Complete</span>
+  </div>
+  <div class="legend-item">
+    <h4>🎨 Warna Semantik</h4>
+    <p>Cyan = patrol mode aktif. Hijau = aman/selesai. Merah = insiden/urgensi. Amber = peringatan/masalah. Violet = edge case/offline.</p>
+    <span>5 warna, 5 makna berbeda</span>
+  </div>
+  <div class="legend-item">
+    <h4>📍 Auto-Capture</h4>
+    <p>Lokasi, timestamp, nama worker, nama checkpoint — semuanya dicatat otomatis. Worker hanya tap, foto, dan konfirmasi status.</p>
+    <span>Zero typing untuk core actions</span>
+  </div>
+  <div class="legend-item">
+    <h4>🔴 Edge Cases First</h4>
+    <p>QR rusak, offline, patrol terpotong, titik terlewat — semua skenario nyata di lapangan sudah punya UI khusus. Bukan error screen.</p>
+    <span>Graceful degradation by design</span>
+  </div>
+  <div class="legend-item">
+    <h4>⚡ State Machine</h4>
+    <p>Patrol punya 3 state: Not Started / In Progress / Completed. Setiap state memiliki tampilan berbeda dan aksi yang berbeda.</p>
+    <span>Worker selalu tahu posisi mereka</span>
+  </div>
+  <div class="legend-item">
+    <h4>📲 Audit Trail</h4>
+    <p>Setiap tap menghasilkan log: checkpoint ID, timestamp, lokasi GPS, foto, status. Data tersedia untuk supervisor secara real-time.</p>
+    <span>Trackable & auditable by default</span>
+  </div>
+</div>
+
+</body>
+</html>

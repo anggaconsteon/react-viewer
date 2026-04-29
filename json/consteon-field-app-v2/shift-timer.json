@@ -1,6 +1,6 @@
 {
     "type": "SHIFT_TIMER",
-    "checkinTime": "08:00",
+    "checkinTime": "08:00", 
     "shiftEnd": "16:00",
     "timezone": "WIB",
     "text": "Shift Aktif◆Check-in◆Sisa"

@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consteon v3 — Checkpoint SOP Templates</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --bg:    #070A0E;
+  --s1:    #0C1018;
+  --s2:    #131A24;
+  --s3:    #1A2230;
+  --s4:    #212C3C;
+  --bd:    #243040;
+  --bd2:   #2C3A4E;
+
+  --blue:   #3D7FFF;
+  --cyan:   #00CFFF;
+  --green:  #18D86E;
+  --amber:  #FFB020;
+  --red:    #FF3B3B;
+  --violet: #9B6DFF;
+  --teal:   #00E5C4;
+
+  --blue-a:   rgba(61,127,255,.12);
+  --cyan-a:   rgba(0,207,255,.12);
+  --green-a:  rgba(24,216,110,.10);
+  --amber-a:  rgba(255,176,32,.10);
+  --red-a:    rgba(255,59,59,.10);
+  --violet-a: rgba(155,109,255,.10);
+  --teal-a:   rgba(0,229,196,.10);
+
+  --t1: #EEF3FA;
+  --t2: #8494B2;
+  --t3: #4A5A72;
+  --t4: #283040;
+
+  --fd: 'Syne', sans-serif;
+  --fb: 'DM Sans', sans-serif;
+}
+
+body {
+  background: var(--bg);
+  font-family: var(--fb);
+  color: var(--t1);
+  padding: 36px 16px 80px;
+}
+
+/* ── Noise grain overlay ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: .4;
+}
+
+/* ── Page header ── */
+.ph {
+  text-align: center;
+  margin-bottom: 52px;
+  position: relative;
+  z-index: 1;
+}
+.ph-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--cyan-a);
+  border: 1px solid rgba(0,207,255,.22);
+  border-radius: 100px;
+  padding: 5px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 18px;
+}
+.ph h1 {
+  font-family: var(--fd);
+  font-size: clamp(26px, 5vw, 46px);
+  font-weight: 800;
+  line-height: 1.08;
+  margin-bottom: 14px;
+}
+.ph h1 em { font-style: normal; color: var(--cyan); }
+.ph p { font-size: 14px; color: var(--t2); max-width: 600px; margin: 0 auto; line-height: 1.65; }
+
+/* ── Section title ── */
+.sec-title {
+  max-width: 1560px;
+  margin: 0 auto 28px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+  z-index: 1;
+}
+.sec-title .st-pill {
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: 100px;
+}
+.st-sop     { color: var(--cyan);   background: var(--cyan-a);   border: 1px solid rgba(0,207,255,.2); }
+.st-flow    { color: var(--green);  background: var(--green-a);  border: 1px solid rgba(24,216,110,.2); }
+.st-cond    { color: var(--amber);  background: var(--amber-a);  border: 1px solid rgba(255,176,32,.2); }
+.st-edge    { color: var(--violet); background: var(--violet-a); border: 1px solid rgba(155,109,255,.2); }
+.st-types   { color: var(--teal);   background: var(--teal-a);   border: 1px solid rgba(0,229,196,.2); }
+.sec-title .st-line { flex: 1; height: 1px; background: var(--bd); }
+
+/* ── Grid ── */
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  max-width: 1560px;
+  margin: 0 auto 52px;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Screen wrap ── */
+.sw {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 13px;
+}
+.sw-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.sw-num {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--t3);
+}
+.badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 2px 9px;
+  border-radius: 100px;
+}
+.b-new     { color: var(--cyan);   background: var(--cyan-a);   border: 1px solid rgba(0,207,255,.22); }
+.b-upd     { color: var(--amber);  background: var(--amber-a);  border: 1px solid rgba(255,176,32,.22); }
+.b-core    { color: var(--red);    background: var(--red-a);    border: 1px solid rgba(255,59,59,.22); }
+.b-edge    { color: var(--violet); background: var(--violet-a); border: 1px solid rgba(155,109,255,.22); }
+.b-type    { color: var(--teal);   background: var(--teal-a);   border: 1px solid rgba(0,229,196,.22); }
+
+.sw-sub {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--t2);
+  text-align: center;
+  max-width: 240px;
+}
+
+/* ── Phone ── */
+.phone {
+  width: 292px;
+  background: var(--s1);
+  border-radius: 40px;
+  border: 1.5px solid var(--bd);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 0 0 5px rgba(255,255,255,.025),
+    0 28px 70px rgba(0,0,0,.65),
+    inset 0 1px 0 rgba(255,255,255,.04);
+  position: relative;
+}
+.phone-c { border-color: rgba(0,207,255,.28); box-shadow: 0 0 0 5px rgba(0,207,255,.04), 0 28px 70px rgba(0,0,0,.65), 0 0 48px rgba(0,207,255,.07); }
+.phone-r { border-color: rgba(255,59,59,.28);  box-shadow: 0 0 0 5px rgba(255,59,59,.04),  0 28px 70px rgba(0,0,0,.65), 0 0 48px rgba(255,59,59,.07); }
+.phone-a { border-color: rgba(255,176,32,.28); box-shadow: 0 0 0 5px rgba(255,176,32,.04), 0 28px 70px rgba(0,0,0,.65), 0 0 48px rgba(255,176,32,.07); }
+.phone-g { border-color: rgba(24,216,110,.28); box-shadow: 0 0 0 5px rgba(24,216,110,.04), 0 28px 70px rgba(0,0,0,.65), 0 0 48px rgba(24,216,110,.07); }
+.phone-v { border-color: rgba(155,109,255,.28);box-shadow: 0 0 0 5px rgba(155,109,255,.04),0 28px 70px rgba(0,0,0,.65), 0 0 48px rgba(155,109,255,.07); }
+
+.notch {
+  width: 100px; height: 26px;
+  background: var(--bg);
+  border-radius: 0 0 18px 18px;
+  margin: 0 auto;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.n-cam  { width: 8px; height: 8px; border-radius: 50%; background: var(--s3); }
+.n-pill { width: 34px; height: 4px; border-radius: 2px; background: var(--s3); }
+
+.sbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 20px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--t3);
+  flex-shrink: 0;
+}
+
+.body {
+  flex: 1;
+  padding: 10px 15px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  overflow: hidden;
+}
+.body.sm { gap: 7px; padding-bottom: 12px; }
+
+/* ── Top bar ── */
+.tbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.back {
+  width: 32px; height: 32px;
+  background: var(--s3);
+  border: 1px solid var(--bd);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: var(--t2); cursor: pointer;
+}
+.ttl {
+  font-family: var(--fd);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--t1);
+}
+.brand {
+  font-family: var(--fd);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--blue);
+  letter-spacing: .04em;
+}
+.av {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), #6054F0);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* ── Checkpoint header card (the KEY component) ── */
+.cp-hero {
+  border-radius: 18px;
+  padding: 14px 15px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+.cp-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: inherit;
+  opacity: .06;
+}
+.ch-entrance  { background: linear-gradient(135deg, rgba(0,207,255,.14), rgba(61,127,255,.08)); border: 1.5px solid rgba(0,207,255,.28); }
+.ch-perimeter { background: linear-gradient(135deg, rgba(24,216,110,.12), rgba(0,229,196,.06)); border: 1.5px solid rgba(24,216,110,.25); }
+.ch-parking   { background: linear-gradient(135deg, rgba(255,176,32,.12), rgba(255,107,0,.06)); border: 1.5px solid rgba(255,176,32,.25); }
+.ch-restricted{ background: linear-gradient(135deg, rgba(255,59,59,.12), rgba(155,109,255,.06)); border: 1.5px solid rgba(255,59,59,.25); }
+.ch-emergency { background: linear-gradient(135deg, rgba(255,59,59,.14), rgba(255,176,32,.08)); border: 1.5px solid rgba(255,59,59,.3); }
+.ch-general   { background: linear-gradient(135deg, rgba(61,127,255,.1),  rgba(155,109,255,.06)); border: 1.5px solid rgba(61,127,255,.22); }
+
+.ch-top { display: flex; align-items: center; gap: 11px; margin-bottom: 10px; }
+.ch-icon {
+  width: 48px; height: 48px;
+  border-radius: 15px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.chi-entrance  { background: rgba(0,207,255,.16); }
+.chi-perimeter { background: rgba(24,216,110,.16); }
+.chi-parking   { background: rgba(255,176,32,.16); }
+.chi-restricted{ background: rgba(255,59,59,.16); }
+.chi-emergency { background: rgba(255,59,59,.2); }
+.chi-general   { background: rgba(61,127,255,.16); }
+
+.ch-name {
+  font-family: var(--fd);
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--t1);
+  line-height: 1.1;
+}
+.ch-type-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin-top: 5px;
+}
+.ctt-entrance  { background: rgba(0,207,255,.15);  color: var(--cyan);   border: 1px solid rgba(0,207,255,.25); }
+.ctt-perimeter { background: rgba(24,216,110,.14); color: var(--green);  border: 1px solid rgba(24,216,110,.25); }
+.ctt-parking   { background: rgba(255,176,32,.14); color: var(--amber);  border: 1px solid rgba(255,176,32,.25); }
+.ctt-restricted{ background: rgba(255,59,59,.14);  color: var(--red);    border: 1px solid rgba(255,59,59,.25); }
+.ctt-emergency { background: rgba(255,59,59,.18);  color: var(--red);    border: 1px solid rgba(255,59,59,.3);  }
+.ctt-general   { background: rgba(61,127,255,.14); color: var(--blue);   border: 1px solid rgba(61,127,255,.25); }
+
+.ch-meta {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.ch-meta-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0,0,0,.25);
+  border-radius: 8px;
+  padding: 4px 9px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--t2);
+}
+
+/* ── Section label ── */
+.slbl {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--t3);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.slbl-req::after {
+  content: 'WAJIB';
+  font-size: 9px;
+  background: rgba(255,59,59,.15);
+  color: var(--red);
+  border: 1px solid rgba(255,59,59,.2);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+.slbl-opt::after {
+  content: 'Opsional';
+  font-size: 9px;
+  background: var(--s3);
+  color: var(--t3);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+/* ── Photo capture ── */
+.photo-slot {
+  background: var(--s2);
+  border: 1.5px dashed var(--bd2);
+  border-radius: 14px;
+  padding: 13px 14px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: border-color .2s;
+}
+.photo-slot.required { border-color: rgba(0,207,255,.35); border-style: solid; }
+.photo-slot.has-photo { border-color: rgba(24,216,110,.35); border-style: solid; background: rgba(24,216,110,.04); }
+.ps-icon { font-size: 22px; flex-shrink: 0; }
+.ps-body { flex: 1; }
+.ps-title { font-size: 12px; font-weight: 700; color: var(--t1); }
+.ps-sub   { font-size: 10px; color: var(--t3); margin-top: 2px; }
+.ps-arrow { font-size: 16px; color: var(--t3); }
+.ps-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(0,207,255,.15);
+  color: var(--cyan);
+  border: 1px solid rgba(0,207,255,.2);
+}
+.ps-badge-done { background: rgba(24,216,110,.15); color: var(--green); border-color: rgba(24,216,110,.2); }
+
+/* ── Status buttons ── */
+.status-row {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.status-btn {
+  flex: 1;
+  border: none;
+  border-radius: 14px;
+  padding: 11px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-family: var(--fb);
+  border: 1.5px solid transparent;
+  transition: all .15s;
+}
+.sb-safe {
+  background: var(--green-a);
+  border-color: rgba(24,216,110,.25);
+  color: var(--green);
+}
+.sb-safe.active {
+  background: var(--green);
+  border-color: var(--green);
+  color: #000;
+  box-shadow: 0 4px 16px rgba(24,216,110,.35);
+}
+.sb-warn {
+  background: var(--amber-a);
+  border-color: rgba(255,176,32,.25);
+  color: var(--amber);
+}
+.sb-warn.active {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: #000;
+  box-shadow: 0 4px 16px rgba(255,176,32,.35);
+}
+.sb-bad {
+  background: var(--red-a);
+  border-color: rgba(255,59,59,.25);
+  color: var(--red);
+}
+.sb-bad.active {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(255,59,59,.35);
+}
+.sb-icon { font-size: 18px; }
+.sb-lbl  { font-size: 10px; font-weight: 700; }
+
+/* ── Checklist ── */
+.checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.cl-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--s2);
+  border: 1px solid var(--bd);
+  border-radius: 11px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.cl-item.checked {
+  background: rgba(24,216,110,.05);
+  border-color: rgba(24,216,110,.22);
+}
+.cl-box {
+  width: 22px; height: 22px;
+  border-radius: 7px;
+  border: 1.5px solid var(--bd2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  flex-shrink: 0;
+  color: transparent;
+  background: var(--s3);
+}
+.cl-box.checked {
+  background: var(--green);
+  border-color: var(--green);
+  color: #000;
+}
+.cl-text {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--t1);
+  line-height: 1.3;
+}
+.cl-item.checked .cl-text { color: var(--t2); text-decoration: line-through; }
+
+/* ── Notes input ── */
+.note-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--s2);
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+  padding: 10px 13px;
+  flex-shrink: 0;
+}
+.note-icon { font-size: 14px; color: var(--t3); flex-shrink: 0; }
+.note-text { font-size: 12px; color: var(--t3); font-family: var(--fb); }
+
+/* ── Offline banner ── */
+.offline-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(155,109,255,.08);
+  border: 1px solid rgba(155,109,255,.22);
+  border-radius: 10px;
+  padding: 8px 12px;
+  flex-shrink: 0;
+}
+.ob-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--violet);
+  flex-shrink: 0;
+  animation: blink 2s ease infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.ob-text { font-size: 10px; font-weight: 600; color: var(--violet); }
+
+/* ── CTA Button ── */
+.btn {
+  width: 100%;
+  border: none;
+  border-radius: 16px;
+  padding: 15px 16px;
+  font-family: var(--fd);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+  letter-spacing: .01em;
+}
+.btn-c  { background: var(--cyan);   color: #000; box-shadow: 0 6px 20px rgba(0,207,255,.3); }
+.btn-g  { background: var(--green);  color: #000; box-shadow: 0 6px 20px rgba(24,216,110,.3); }
+.btn-r  { background: var(--red);    color: #fff; box-shadow: 0 6px 20px rgba(255,59,59,.3); }
+.btn-a  { background: var(--amber);  color: #000; box-shadow: 0 6px 20px rgba(255,176,32,.3); }
+.btn-b  { background: var(--blue);   color: #fff; box-shadow: 0 6px 20px rgba(61,127,255,.3); }
+.btn-ghost { background: var(--s3); color: var(--t2); border: 1px solid var(--bd); box-shadow: none; }
+.btn-sm { padding: 11px 14px; font-size: 12px; border-radius: 12px; }
+
+/* ── Conditional redirect card ── */
+.redirect-card {
+  border-radius: 15px;
+  padding: 13px 14px;
+  flex-shrink: 0;
+}
+.rc-amber { background: rgba(255,176,32,.07); border: 1.5px solid rgba(255,176,32,.28); }
+.rc-red   { background: rgba(255,59,59,.07);  border: 1.5px solid rgba(255,59,59,.28); }
+.rc-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.rc-icon {
+  width: 38px; height: 38px;
+  border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.rci-amber { background: rgba(255,176,32,.18); }
+.rci-red   { background: rgba(255,59,59,.18); }
+.rc-q { font-size: 13px; font-weight: 700; color: var(--t1); }
+.rc-sub { font-size: 10px; color: var(--t3); margin-top: 3px; }
+.rc-btns { display: flex; gap: 7px; }
+.rcb { flex: 1; border: none; border-radius: 10px; padding: 10px; font-family: var(--fd); font-size: 11px; font-weight: 700; cursor: pointer; }
+.rcb-yes-a { background: var(--amber); color: #000; }
+.rcb-yes-r { background: var(--red);   color: #fff; }
+.rcb-no    { background: var(--s4);    color: var(--t2); }
+
+/* ── Progress header ── */
+.patrol-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: rgba(0,207,255,.06);
+  border: 1px solid rgba(0,207,255,.18);
+  border-radius: 14px;
+  padding: 11px 14px;
+  flex-shrink: 0;
+}
+.pb-top { display: flex; justify-content: space-between; align-items: center; }
+.pb-name { font-size: 12px; font-weight: 700; color: var(--cyan); }
+.pb-count { font-size: 12px; font-weight: 800; color: var(--t1); }
+.pb-track { height: 5px; background: var(--s4); border-radius: 3px; overflow: hidden; }
+.pb-fill  { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--cyan), var(--blue)); }
+
+/* ── Step indicator ── */
+.step-dots {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.sd { width: 6px; height: 6px; border-radius: 50%; background: var(--bd2); }
+.sd.active { width: 18px; border-radius: 3px; background: var(--cyan); }
+.sd.done   { background: var(--green); }
+
+/* ── Pre-fill badge ── */
+.prefill-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(0,207,255,.07);
+  border: 1px solid rgba(0,207,255,.18);
+  border-radius: 9px;
+  padding: 7px 11px;
+  flex-shrink: 0;
+}
+.pf-icon { font-size: 12px; }
+.pf-text { font-size: 10px; font-weight: 700; color: var(--cyan); }
+
+/* ── Completion chip ── */
+.done-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(24,216,110,.08);
+  border: 1px solid rgba(24,216,110,.22);
+  border-radius: 10px;
+  padding: 9px 13px;
+  flex-shrink: 0;
+}
+.dc-icon { font-size: 16px; }
+.dc-text { font-size: 11px; font-weight: 700; color: var(--green); }
+.dc-time { margin-left: auto; font-size: 10px; color: var(--t3); }
+
+/* ── Interaction notes ── */
+.inotes {
+  width: 292px;
+  border-radius: 13px;
+  padding: 12px 14px;
+}
+.in-cyan   { background: var(--cyan-a);   border: 1px solid rgba(0,207,255,.2); }
+.in-green  { background: var(--green-a);  border: 1px solid rgba(24,216,110,.2); }
+.in-amber  { background: var(--amber-a);  border: 1px solid rgba(255,176,32,.2); }
+.in-red    { background: var(--red-a);    border: 1px solid rgba(255,59,59,.2); }
+.in-violet { background: var(--violet-a); border: 1px solid rgba(155,109,255,.2); }
+.inotes h4 {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.in-cyan   h4 { color: var(--cyan); }
+.in-green  h4 { color: var(--green); }
+.in-amber  h4 { color: var(--amber); }
+.in-red    h4 { color: var(--red); }
+.in-violet h4 { color: var(--violet); }
+.inotes ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+.inotes li { font-size: 11px; color: var(--t2); line-height: 1.45; padding-left: 12px; position: relative; }
+.inotes li::before { content: '›'; position: absolute; left: 0; font-size: 12px; }
+.in-cyan   li::before { color: var(--cyan); }
+.in-green  li::before { color: var(--green); }
+.in-amber  li::before { color: var(--amber); }
+.in-red    li::before { color: var(--red); }
+.in-violet li::before { color: var(--violet); }
+
+/* ── SOP type legend ── */
+.sop-legend {
+  max-width: 1560px;
+  margin: 0 auto 52px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+.sop-card {
+  border-radius: 16px;
+  padding: 15px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.sc-entrance  { background: rgba(0,207,255,.06);   border: 1px solid rgba(0,207,255,.18); }
+.sc-perimeter { background: rgba(24,216,110,.06);  border: 1px solid rgba(24,216,110,.18); }
+.sc-parking   { background: rgba(255,176,32,.06);  border: 1px solid rgba(255,176,32,.18); }
+.sc-restricted{ background: rgba(255,59,59,.06);   border: 1px solid rgba(255,59,59,.18); }
+.sc-emergency { background: rgba(255,59,59,.08);   border: 1px solid rgba(255,59,59,.22); }
+.sc-general   { background: rgba(61,127,255,.06);  border: 1px solid rgba(61,127,255,.18); }
+
+.sc-head { display: flex; align-items: center; gap: 10px; }
+.sc-icon { font-size: 22px; width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.sci-entrance  { background: rgba(0,207,255,.15); }
+.sci-perimeter { background: rgba(24,216,110,.15); }
+.sci-parking   { background: rgba(255,176,32,.15); }
+.sci-restricted{ background: rgba(255,59,59,.15); }
+.sci-emergency { background: rgba(255,59,59,.2); }
+.sci-general   { background: rgba(61,127,255,.15); }
+
+.sc-name { font-family: var(--fd); font-size: 13px; font-weight: 700; }
+.scn-entrance  { color: var(--cyan); }
+.scn-perimeter { color: var(--green); }
+.scn-parking   { color: var(--amber); }
+.scn-restricted{ color: var(--red); }
+.scn-emergency { color: var(--red); }
+.scn-general   { color: var(--blue); }
+
+.sc-items { display: flex; flex-direction: column; gap: 5px; }
+.sci-item { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--t2); }
+.sci-item::before { content: '☐'; color: var(--t3); flex-shrink: 0; }
+.sc-photo { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 5px; margin-top: 4px; }
+.scp-req  { background: rgba(0,207,255,.12); color: var(--cyan); }
+.scp-opt  { background: var(--s3); color: var(--t3); }
+
+/* ── Flow connector ── */
+.flow-conn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--t4);
+  font-size: 22px;
+  padding-top: 160px;
+  align-self: center;
+}
+
+/* ── Spacer ── */
+.sp { flex: 1; }
+
+/* ── Micro ── */
+.micro { font-size: 10px; color: var(--t3); text-align: center; line-height: 1.4; flex-shrink: 0; }
+
+/* ── Progress stepper header ── */
+.step-header {
+  background: var(--s2);
+  border: 1px solid var(--bd);
+  border-radius: 13px;
+  padding: 10px 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.sh-progress {
+  font-family: var(--fd);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--cyan);
+  flex-shrink: 0;
+}
+.sh-divider { width: 1px; height: 24px; background: var(--bd2); flex-shrink: 0; }
+.sh-info { flex: 1; }
+.sh-name { font-size: 11px; font-weight: 700; color: var(--t1); }
+.sh-next { font-size: 10px; color: var(--t3); margin-top: 2px; }
+.sh-timer { font-size: 12px; font-weight: 700; color: var(--t2); flex-shrink: 0; }
+
+</style>
+</head>
+<body>
+
+<!-- Page Header -->
+<div class="ph">
+  <div class="ph-badge">🛡️ Consteon Field App · v3</div>
+  <h1>Checkpoint <em>SOP Templates</em><br>— Enhanced Patrol Mode</h1>
+  <p>Each checkpoint is a structured mini-inspection. Workers tap, capture evidence, validate checklist, confirm status. No form, no typing, no thinking.</p>
+</div>
+
+<!-- ═══════ SECTION 1: SOP TYPE REFERENCE ═══════ -->
+<div class="sec-title">
+  <div class="st-line"></div>
+  <div class="st-pill st-types">📋 6 Checkpoint SOP Types — Checklist Reference</div>
+  <div class="st-line"></div>
+</div>
+
+<div class="sop-legend">
+  <div class="sop-card sc-entrance">
+    <div class="sc-head">
+      <div class="sc-icon sci-entrance">🚪</div>
+      <div>
+        <div class="sc-name scn-entrance">Entrance / Lobby</div>
+        <div style="font-size:10px;color:var(--t3);margin-top:2px">Pintu masuk utama</div>
+      </div>
+    </div>
+    <div class="sc-items">
+      <div class="sci-item">Pintu dalam kondisi normal</div>
+      <div class="sci-item">Tidak ada orang mencurigakan</div>
+      <div class="sci-item">Area lobby aman &amp; bersih</div>
+    </div>
+    <div class="sc-photo scp-req">📷 Foto wajib</div>
+  </div>
+
+  <div class="sop-card sc-perimeter">
+    <div class="sc-head">
+      <div class="sc-icon sci-perimeter">🌿</div>
+      <div>
+        <div class="sc-name scn-perimeter">Perimeter / Outdoor</div>
+        <div style="font-size:10px;color:var(--t3);margin-top:2px">Area luar gedung</div>
+      </div>
+    </div>
+    <div class="sc-items">
+      <div class="sci-item">Pagar &amp; tembok tidak rusak</div>
+      <div class="sci-item">Tidak ada aktivitas mencurigakan</div>
+      <div class="sci-item">Penerangan berfungsi</div>
+    </div>
+    <div class="sc-photo scp-opt">📷 Foto opsional</div>
+  </div>
+
+  <div class="sop-card sc-parking">
+    <div class="sc-head">
+      <div class="sc-icon sci-parking">🚗</div>
+      <div>
+        <div class="sc-name scn-parking">Parking Area</div>
+        <div style="font-size:10px;color:var(--t3);margin-top:2px">Area parkir kendaraan</div>
+      </div>
+    </div>
+    <div class="sc-items">
+      <div class="sci-item">Tidak ada kendaraan mencurigakan</div>
+      <div class="sci-item">CCTV area parkir aktif</div>
+      <div class="sci-item">Jalur darurat tidak terhalang</div>
+    </div>
+    <div class="sc-photo scp-opt">📷 Foto opsional</div>
+  </div>
+
+  <div class="sop-card sc-restricted">
+    <div class="sc-head">
+      <div class="sc-icon sci-restricted">🔒</div>
+      <div>
+        <div class="sc-name scn-restricted">Restricted Area</div>
+        <div style="font-size:10px;color:var(--t3);margin-top:2px">Ruang terbatas &amp; khusus</div>
+      </div>
+    </div>
+    <div class="sc-items">
+      <div class="sci-item">Pintu terkunci dengan benar</div>
+      <div class="sci-item">Tidak ada akses tidak sah</div>
+      <div class="sci-item">Sistem alarm aktif</div>
+    </div>
+    <div class="sc-photo scp-req">📷 Foto wajib</div>
+  </div>
+
+  <div class="sop-card sc-emergency">
+    <div class="sc-head">
+      <div class="sc-icon sci-emergency">🧯</div>
+      <div>
+        <div class="sc-name scn-emergency">Emergency &amp; Safety</div>
+        <div style="font-size:10px;color:var(--t3);margin-top:2px">Titik keselamatan &amp; darurat</div>
+      </div>
+    </div>
+    <div class="sc-items">
+      <div class="sci-item">APAR tidak kadaluarsa</div>
+      <div class="sci-item">Jalur evakuasi tidak terhalang</div>
+      <div class="sci-item">Lampu darurat berfungsi</div>
+    </div>
+    <div class="sc-photo scp-req">📷 Foto wajib</div>
+  </div>
+
+  <div class="sop-card sc-general">
+    <div class="sc-head">
+      <div class="sc-icon sci-general">🏢</div>
+      <div>
+        <div class="sc-name" style="color:var(--blue)">General Area</div>
+        <div style="font-size:10px;color:var(--t3);margin-top:2px">Area umum gedung</div>
+      </div>
+    </div>
+    <div class="sc-items">
+      <div class="sci-item">Kondisi umum area normal</div>
+      <div class="sci-item">Tidak ada kerusakan terlihat</div>
+      <div class="sci-item">Area bersih dan tertib</div>
+    </div>
+    <div class="sc-photo scp-opt">📷 Foto opsional</div>
+  </div>
+</div>
+
+<!-- ═══════ SECTION 2: ENHANCED CHECKPOINT ACTION — 3 VARIANTS ═══════ -->
+<div class="sec-title">
+  <div class="st-line"></div>
+  <div class="st-pill st-sop">🔵 Enhanced Checkpoint Action Screen — 3 Variants</div>
+  <div class="st-line"></div>
+</div>
+
+<div class="grid">
+
+  <!-- VARIANT A: Entrance / Lobby — STATUS AMAN -->
+  <div class="sw">
+    <div class="sw-label">
+      <span class="sw-num">Variant A</span>
+      <span class="badge b-type">Entrance</span>
+      <span class="badge b-new">Foto Wajib</span>
+    </div>
+    <div class="sw-sub">Lobby Utama — Status: Aman</div>
+    <div class="phone phone-g">
+      <div class="notch"><div class="n-cam"></div><div class="n-pill"></div></div>
+      <div class="sbar"><span>22:19</span><div>▲▲ 🔋</div></div>
+      <div class="body sm">
+        <div class="tbar">
+          <div class="back">←</div>
+          <div class="ttl">Checkpoint #4</div>
+          <div style="font-size:11px;color:var(--cyan);font-weight:700">4/8</div>
+        </div>
+
+        <!-- Progress -->
+        <div class="patrol-bar">
+          <div class="pb-top">
+            <span class="pb-name">Night Patrol</span>
+            <span class="pb-count">4 / 8 titik</span>
+          </div>
+          <div class="pb-track"><div class="pb-fill" style="width:50%"></div></div>
+        </div>
+
+        <!-- Checkpoint Hero -->
+        <div class="cp-hero ch-entrance">
+          <div class="ch-top">
+            <div class="ch-icon chi-entrance">🚪</div>
+            <div>
+              <div class="ch-name">Lobby Utama</div>
+              <div class="ch-type-tag ctt-entrance">🚪 Entrance Area</div>
+            </div>
+          </div>
+          <div class="ch-meta">
+            <div class="ch-meta-pill">📍 Auto · Lt.GF</div>
+            <div class="ch-meta-pill">🕙 22:19 WIB</div>
+            <div class="ch-meta-pill">✅ QR Scan</div>
+          </div>
+        </div>
+
+        <!-- Section 1: Photo (REQUIRED) -->
+        <div class="slbl slbl-req">📷 Foto Bukti</div>
+        <div class="photo-slot has-photo">
+          <div class="ps-icon">🖼️</div>
+          <div class="ps-body">
+            <div class="ps-title">Foto berhasil diambil</div>
+            <div class="ps-sub">lobby_utama_22h19.jpg</div>
+          </div>
+          <div class="ps-badge ps-badge-done">✓ Tersimpan</div>
+        </div>
+
+        <!-- Section 2: Status -->
+        <div class="slbl slbl-req">🎯 Status Area</div>
+        <div class="status-row">
+          <div class="status-btn sb-safe active">
+            <div class="sb-icon">✔</div>
+            <div class="sb-lbl">Aman</div>
+          </div>
+          <div class="status-btn sb-warn">
+            <div class="sb-icon">⚠</div>
+            <div class="sb-lbl">Perhatian</div>
+          </div>
+          <div class="status-btn sb-bad">
+            <div class="sb-icon">✕</div>
+            <div class="sb-lbl">Masalah</div>
+          </div>
+        </div>
+
+        <!-- Section 3: Checklist -->
+        <div class="slbl slbl-opt">☑ Checklist SOP</div>
+        <div class="checklist">
+          <div class="cl-item checked">
+            <div class="cl-box checked">✓</div>
+            <div class="cl-text">Pintu dalam kondisi normal</div>
+          </div>
+          <div class="cl-item checked">
+            <div class="cl-box checked">✓</div>
+            <div class="cl-text">Tidak ada orang mencurigakan</div>
+          </div>
+          <div class="cl-item">
+            <div class="cl-box"></div>
+            <div class="cl-text">Area lobby aman &amp; bersih</div>
+          </div>
+        </div>
+
+        <div class="sp"></div>
+        <button class="btn btn-g">✅ Simpan &amp; Lanjut →</button>
+      </div>
+    </div>
+    <div class="inotes in-green">
+      <h4>Interaction Notes</h4>
+      <ul>
+        <li>Foto wajib untuk entrance — tombol simpan aktif hanya setelah ada foto</li>
+        <li>Status "Aman" dipilih — tombol berwarna solid sebagai konfirmasi visual</li>
+        <li>Checklist opsional — tidak menghalangi submit</li>
+        <li>QR scan terverifikasi ditampilkan di metadata</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- VARIANT B: Emergency & Safety — STATUS PERLU PERHATIAN -->
+  <div class="sw">
+    <div class="sw-label">
+      <span class="sw-num">Variant B</span>
+      <span class="badge b-type">Emergency</span>
+      <span class="badge b-upd">Ada Masalah →</span>
+    </div>
+    <div class="sw-sub">Emergency Point — Trigger Incident Report</div>
+    <div class="phone phone-a">
+      <div class="notch"><div class="n-cam"></div><div class="n-pill"></div></div>
+      <div class="sbar"><span>22:31</span><div>▲▲ 🔋</div></div>
+      <div class="body sm">
+        <div class="tbar">
+          <div class="back">←</div>
+          <div class="ttl">Checkpoint #6</div>
+          <div style="font-size:11px;color:var(--cyan);font-weight:700">6/8</div>
+        </div>
+
+        <div class="patrol-bar">
+          <div class="pb-top">
+            <span class="pb-name">Night Patrol</span>
+            <span class="pb-count">6 / 8 titik</span>
+          </div>
+          <div class="pb-track"><div class="pb-fill" style="width:75%"></div></div>
+        </div>
+
+        <!-- Checkpoint Hero — Emergency -->
+        <div class="cp-hero ch-emergency">
+          <div class="ch-top">
+            <div class="ch-icon chi-emergency">🧯</div>
+            <div>
+              <div class="ch-name">APAR + Pintu Darurat B1</div>
+              <div class="ch-type-tag ctt-emergency">🚨 Emergency &amp; Safety</div>
+            </div>
+          </div>
+          <div class="ch-meta">
+            <div class="ch-meta-pill">📍 Auto · Basement 1</div>
+            <div class="ch-meta-pill">🕙 22:31 WIB</div>
+          </div>
+        </div>
+
+        <!-- Photo (REQUIRED) -->
+        <div class="slbl slbl-req">📷 Foto Bukti</div>
+        <div class="photo-slot required">
+          <div class="ps-icon">📷</div>
+          <div class="ps-body">
+            <div class="ps-title">Ambil foto kondisi APAR</div>
+            <div class="ps-sub">Wajib untuk titik emergency</div>
+          </div>
+          <div class="ps-badge">Wajib</div>
+        </div>
+
+        <!-- Status — Perlu Perhatian SELECTED -->
+        <div class="slbl slbl-req">🎯 Status Area</div>
+        <div class="status-row">
+          <div class="status-btn sb-safe">
+            <div class="sb-icon">✔</div>
+            <div class="sb-lbl">Aman</div>
+          </div>
+          <div class="status-btn sb-warn active">
+            <div class="sb-icon">⚠</div>
+            <div class="sb-lbl">Perhatian</div>
+          </div>
+          <div class="status-btn sb-bad">
+            <div class="sb-icon">✕</div>
+            <div class="sb-lbl">Masalah</div>
+          </div>
+        </div>
+
+        <!-- Conditional: Redirect to Incident? -->
+        <div class="redirect-card rc-amber">
+          <div class="rc-top">
+            <div class="rc-icon rci-amber">⚠️</div>
+            <div>
+              <div class="rc-q">Laporkan sebagai kejadian?</div>
+              <div class="rc-sub">Kondisi perlu perhatian akan dicatat. Buat laporan insiden?</div>
+            </div>
+          </div>
+          <div class="rc-btns">
+            <button class="rcb rcb-yes-a">Ya, buat laporan</button>
+            <button class="rcb rcb-no">Tidak, lanjut</button>
+          </div>
+        </div>
+
+        <!-- Checklist Emergency -->
+        <div class="slbl slbl-opt">☑ Checklist SOP</div>
+        <div class="checklist">
+          <div class="cl-item checked">
+            <div class="cl-box checked">✓</div>
+            <div class="cl-text">Jalur evakuasi tidak terhalang</div>
+          </div>
+          <div class="cl-item">
+            <div class="cl-box"></div>
+            <div class="cl-text">APAR tidak kadaluarsa</div>
+          </div>
+        </div>
+
+        <div class="sp"></div>
+        <button class="btn btn-a" style="font-size:13px">⚠ Simpan &amp; Buat Laporan →</button>
+      </div>
+    </div>
+    <div class="inotes in-amber">
+      <h4>Interaction Notes</h4>
+      <ul>
+        <li>"Perlu Perhatian" dipilih → redirect card muncul otomatis</li>
+        <li>Worker bisa pilih buat laporan atau langsung lanjut</li>
+        <li>Foto tetap wajib untuk emergency checkpoint</li>
+        <li>CTA berubah menjadi amber — sesuai severity</li>
+        <li>Jika buat laporan → Incident screen dibuka dengan data pre-filled</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- VARIANT C: Restricted Area — ADA MASALAH -->
+  <div class="sw">
+    <div class="sw-label">
+      <span class="sw-num">Variant C</span>
+      <span class="badge b-type">Restricted</span>
+      <span class="badge b-core">Critical</span>
+    </div>
+    <div class="sw-sub">Restricted Area — Ada Masalah → Incident Pre-filled</div>
+    <div class="phone phone-r">
+      <div class="notch"><div class="n-cam"></div><div class="n-pill"></div></div>
+      <div class="sbar"><span>22:44</span><div>▲▲ 🔋</div></div>
+      <div class="body sm">
+        <div class="tbar">
+          <div class="back">←</div>
+          <div class="ttl">Checkpoint #7</div>
+          <div style="font-size:11px;color:var(--cyan);font-weight:700">7/8</div>
+        </div>
+
+        <div class="patrol-bar">
+          <div class="pb-top">
+            <span class="pb-name">Night Patrol</span>
+            <span class="pb-count">7 / 8 titik</span>
+          </div>
+          <div class="pb-track"><div class="pb-fill" style="width:87.5%"></div></div>
+        </div>
+
+        <!-- Checkpoint Hero — Restricted -->
+        <div class="cp-hero ch-restricted">
+          <div class="ch-top">
+            <div class="ch-icon chi-restricted">🔒</div>
+            <div>
+              <div class="ch-name">Server Room Lt.3</div>
+              <div class="ch-type-tag ctt-restricted">🔒 Restricted Area</div>
+            </div>
+          </div>
+          <div class="ch-meta">
+            <div class="ch-meta-pill">📍 Auto · Lt.3</div>
+            <div class="ch-meta-pill">🕙 22:44 WIB</div>
+            <div class="ch-meta-pill">✅ QR Scan</div>
+          </div>
+        </div>
+
+        <!-- Photo -->
+        <div class="slbl slbl-req">📷 Foto Bukti</div>
+        <div class="photo-slot has-photo">
+          <div class="ps-icon">🖼️</div>
+          <div class="ps-body">
+            <div class="ps-title">Foto diambil</div>
+            <div class="ps-sub">server_room_22h44.jpg · 1 foto</div>
+          </div>
+          <div class="ps-badge ps-badge-done">✓</div>
+        </div>
+
+        <!-- Status — ADA MASALAH -->
+        <div class="slbl slbl-req">🎯 Status Area</div>
+        <div class="status-row">
+          <div class="status-btn sb-safe">
+            <div class="sb-icon">✔</div>
+            <div class="sb-lbl">Aman</div>
+          </div>
+          <div class="status-btn sb-warn">
+            <div class="sb-icon">⚠</div>
+            <div class="sb-lbl">Perhatian</div>
+          </div>
+          <div class="status-btn sb-bad active">
+            <div class="sb-icon">✕</div>
+            <div class="sb-lbl">Masalah</div>
+          </div>
+        </div>
+
+        <!-- Conditional Redirect — CRITICAL -->
+        <div class="redirect-card rc-red">
+          <div class="rc-top">
+            <div class="rc-icon rci-red">🚨</div>
+            <div>
+              <div class="rc-q">Laporkan sebagai kejadian?</div>
+              <div class="rc-sub">Lokasi &amp; waktu akan diisi otomatis dari checkpoint ini</div>
+            </div>
+          </div>
+          <div class="rc-btns">
+            <button class="rcb rcb-yes-r">🚨 Ya, laporkan</button>
+            <button class="rcb rcb-no">Tidak</button>
+          </div>
+        </div>
+
+        <!-- Checklist Restricted -->
+        <div class="slbl slbl-opt">☑ Checklist SOP</div>
+        <div class="checklist">
+          <div class="cl-item">
+            <div class="cl-box"></div>
+            <div class="cl-text">Pintu terkunci dengan benar</div>
+          </div>
+          <div class="cl-item">
+            <div class="cl-box"></div>
+            <div class="cl-text">Tidak ada akses tidak sah</div>
+          </div>
+        </div>
+
+        <div class="sp"></div>
+        <button class="btn btn-r" style="font-size:13px">🚨 Simpan &amp; Laporkan Insiden →</button>
+      </div>
+    </div>
+    <div class="inotes in-red">
+      <h4>Interaction Notes</h4>
+      <ul>
+        <li>"Ada Masalah" → redirect card menjadi merah, lebih urgent</li>
+        <li>CTA langsung berubah ke "Laporkan Insiden"</li>
+        <li>Data checkpoint (lokasi, waktu, nama) pre-filled ke Incident form</li>
+        <li>Worker tidak perlu mengetik ulang info yang sudah ada</li>
+        <li>Audit trail tetap tersimpan meski ada masalah</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════ SECTION 3: INCIDENT REPORT PRE-FILLED ═══════ -->
+<div class="sec-title">
+  <div class="st-line"></div>
+  <div class="st-pill st-cond">🚨 Conditional Flow — Incident Report Pre-filled dari Checkpoint</div>
+  <div class="st-line"></div>
+</div>
+
+<div class="grid">
+
+  <!-- Incident Pre-filled screen -->
+  <div class="sw">
+    <div class="sw-label">
+      <span class="sw-num">Conditional–1</span>
+      <span class="badge b-core">Auto Pre-filled</span>
+    </div>
+    <div class="sw-sub">Laporan Insiden dari Patrol — Data Otomatis</div>
+    <div class="phone phone-r">
+      <div class="notch"><div class="n-cam"></div><div class="n-pill"></div></div>
+      <div class="sbar"><span>22:44</span><div>▲▲ 🔋</div></div>
+      <div class="body sm">
+        <div class="tbar">
+          <div class="back">←</div>
+          <div class="ttl" style="color:var(--red)">🚨 Laporan Insiden</div>
+          <div style="width:32px"></div>
+        </div>
+
+        <!-- Pre-fill badge -->
+        <div class="prefill-row">
+          <div class="pf-icon">⚡</div>
+          <div class="pf-text">Data diisi otomatis dari Checkpoint #7 · Server Room Lt.3</div>
+        </div>
+
+        <!-- Pre-filled checkpoint data -->
+        <div class="cp-hero ch-restricted" style="padding:11px 14px">
+          <div class="ch-top" style="margin-bottom:7px">
+            <div class="ch-icon chi-restricted" style="width:36px;height:36px;font-size:16px">🔒</div>
+            <div>
+              <div class="ch-name" style="font-size:13px">Server Room Lt.3</div>
+              <div class="ch-type-tag ctt-restricted" style="font-size:9px;margin-top:3px">Checkpoint #7 · Night Patrol</div>
+            </div>
+          </div>
+          <div class="ch-meta">
+            <div class="ch-meta-pill">📍 Lt.3 · Zona Restricted</div>
+            <div class="ch-meta-pill">🕙 22:44 WIB</div>
+            <div class="ch-meta-pill">👤 SR · Surya R.</div>
+          </div>
+        </div>
+
+        <!-- Jenis Kejadian -->
+        <div class="slbl slbl-req">⚠️ Jenis Kejadian</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div class="cl-item checked" style="border-color:rgba(255,59,59,.25);background:rgba(255,59,59,.06)">
+            <div class="cl-box checked" style="background:var(--red);border-color:var(--red)">✓</div>
+            <div class="cl-text" style="color:var(--t1)">Akses tidak sah / mencurigakan</div>
+          </div>
+          <div class="cl-item">
+            <div class="cl-box"></div>
+            <div class="cl-text">Kerusakan fisik</div>
+          </div>
+          <div class="cl-item">
+            <div class="cl-box"></div>
+            <div class="cl-text">Lainnya</div>
+          </div>
+        </div>
+
+        <!-- Foto sudah ada dari checkpoint -->
+        <div class="slbl">📷 Bukti Foto</div>
+        <div class="photo-slot has-photo">
+          <div class="ps-icon">🖼️</div>
+          <div class="ps-body">
+            <div class="ps-title">Dari checkpoint — 1 foto</div>
+            <div class="ps-sub">Tambah foto lagi (opsional)</div>
+          </div>
+          <div class="ps-badge ps-badge-done">+</div>
+        </div>
+
+        <!-- Short note -->
+        <div class="note-row">
+          <div class="note-icon">✏️</div>
+          <div class="note-text">Deskripsi singkat (opsional)…</div>
+        </div>
+
+        <div class="sp"></div>
+        <button class="btn btn-r">🚨 Kirim Laporan Insiden</button>
+        <button class="btn btn-ghost btn-sm" style="margin-top:5px">Batalkan, kembali ke patrol</button>
+      </div>
+    </div>
+    <div class="inotes in-red">
+      <h4>Interaction Notes</h4>
+      <ul>
+        <li>Semua data dari checkpoint terisi otomatis — lokasi, waktu, nama titik, petugas</li>
+        <li>Foto dari checkpoint sudah terlampir — tidak perlu foto ulang</li>
+        <li>Worker hanya pilih jenis kejadian + kirim</li>
+        <li>Bisa batalkan dan kembali ke patrol tanpa kehilangan progress</li>
+        <li>Setelah kirim → kembali ke Patrol In Progress screen</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Offline checkpoint submission -->
+  <div class="sw">
+    <div class="sw-label">
+      <span class="sw-num">Conditional–2</span>
+      <span class="badge b-edge">Offline Mode</span>
+    </div>
+    <div class="sw-sub">Checkpoint Saved Offline — Sync Later</div>
+    <div class="phone phone-v">
+      <div class="notch"><div class="n-cam"></div><div class="n-pill"></div></div>
+      <div class="sbar"><span>22:51</span><div style="color:var(--violet)">✕ 🔋</div></div>
+      <div class="body sm">
+        <div class="tbar">
+          <div class="back">←</div>
+          <div class="ttl">Checkpoint #8</div>
+          <div style="font-size:11px;color:var(--violet);font-weight:700">8/8</div>
+        </div>
+
+        <div class="patrol-bar" style="border-color:rgba(155,109,255,.22);background:rgba(155,109,255,.06)">
+          <div class="pb-top">
+            <span class="pb-name" style="color:var(--violet)">Night Patrol · Offline</span>
+            <span class="pb-count">8 / 8 titik</span>
+          </div>
+          <div class="pb-track"><div class="pb-fill" style="width:100%;background:linear-gradient(90deg,var(--violet),var(--blue))"></div></div>
+        </div>
+
+        <div class="offline-banner" style="background:rgba(155,109,255,.1);border-color:rgba(155,109,255,.28)">
+          <div class="ob-dot"></div>
+          <div class="ob-text">Mode Offline Aktif — Data tersimpan lokal, akan dikirim otomatis</div>
+        </div>
+
+        <!-- Checkpoint Hero — General Offline -->
+        <div class="cp-hero ch-general">
+          <div class="ch-top">
+            <div class="ch-icon chi-general">🏢</div>
+            <div>
+              <div class="ch-name">Rooftop Access</div>
+              <div class="ch-type-tag" style="background:rgba(155,109,255,.15);color:var(--violet);border:1px solid rgba(155,109,255,.25)">🏢 General Area</div>
+            </div>
+          </div>
+          <div class="ch-meta">
+            <div class="ch-meta-pill">📍 Rooftop</div>
+            <div class="ch-meta-pill">🕙 22:51 WIB</div>
+            <div class="ch-meta-pill" style="color:var(--violet)">📡 Offline</div>
+          </div>
+        </div>
+
+        <!-- Photo offline -->
+        <div class="slbl">📷 Foto Bukti</div>
+        <div class="photo-slot has-photo" style="border-color:rgba(155,109,255,.3)">
+          <div class="ps-icon">🖼️</div>
+          <div class="ps-body">
+            <div class="ps-title">Foto tersimpan offline</div>
+            <div class="ps-sub">rooftop_22h51.jpg · Pending sync</div>
+          </div>
+          <div class="ps-badge" style="background:rgba(155,109,255,.15);color:var(--violet);border-color:rgba(155,109,255,.25)">⏳</div>
+        </div>
+
+        <!-- Status offline -->
+        <div class="slbl slbl-req">🎯 Status Area</div>
+        <div class="status-row">
+          <div class="status-btn sb-safe active">
+            <div class="sb-icon">✔</div>
+            <div class="sb-lbl">Aman</div>
+          </div>
+          <div class="status-btn sb-warn">
+            <div class="sb-icon">⚠</div>
+            <div class="sb-lbl">Perhatian</div>
+          </div>
+          <div class="status-btn sb-bad">
+            <div class="sb-icon">✕</div>
+            <div class="sb-lbl">Masalah</div>
+          </div>
+        </div>
+
+        <!-- Checklist -->
+        <div class="checklist">
+          <div class="cl-item checked">
+            <div class="cl-box checked">✓</div>
+            <div class="cl-text">Kondisi umum area normal</div>
+          </div>
+          <div class="cl-item checked">
+            <div class="cl-box checked">✓</div>
+            <div class="cl-text">Tidak ada kerusakan terlihat</div>
+          </div>
+        </div>
+
+        <div class="sp"></div>
+        <button class="btn" style="background:var(--violet);color:#fff;box-shadow:0 6px 20px rgba(155,109,255,.35)">
+          💾 Simpan Offline &amp; Lanjut →
+        </button>
+        <div class="micro" style="margin-top:4px">📡 Tersimpan offline · Akan sinkron otomatis saat online</div>
+      </div>
+    </div>
+    <div class="inotes in-violet">
+      <h4>Interaction Notes</h4>
+      <ul>
+        <li>UI berubah ke violet — sinyal visual "sedang offline"</li>
+        <li>Semua input tetap bisa dilakukan — foto, status, checklist</li>
+        <li>Badge "⏳ Pending" pada foto — jelas menunjukkan belum terkirim</li>
+        <li>Tombol "Simpan Offline" — bukan "Kirim" untuk menghindari false expectation</li>
+        <li>Sync otomatis saat koneksi kembali, tanpa aksi dari worker</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Checkpoint already done / duplicate scan -->
+  <div class="sw">
+    <div class="sw-label">
+      <span class="sw-num">Conditional–3</span>
+      <span class="badge b-edge">Edge: Sudah Selesai</span>
+    </div>
+    <div class="sw-sub">Checkpoint Sudah Disubmit — Review Mode</div>
+    <div class="phone phone-c">
+      <div class="notch"><div class="n-cam"></div><div class="n-pill"></div></div>
+      <div class="sbar"><span>22:20</span><div>▲▲ 🔋</div></div>
+      <div class="body sm">
+        <div class="tbar">
+          <div class="back">←</div>
+          <div class="ttl">Checkpoint #4</div>
+          <div style="font-size:16px">✅</div>
+        </div>
+
+        <!-- Done chip -->
+        <div class="done-chip">
+          <div class="dc-icon">✅</div>
+          <div class="dc-text">Titik ini sudah selesai</div>
+          <div class="dc-time">22:19 WIB</div>
+        </div>
+
+        <!-- Review mode (read-only) -->
+        <div class="cp-hero ch-entrance" style="opacity:.85">
+          <div class="ch-top">
+            <div class="ch-icon chi-entrance">🚪</div>
+            <div>
+              <div class="ch-name">Lobby Utama</div>
+              <div class="ch-type-tag ctt-entrance">🚪 Entrance Area</div>
+            </div>
+          </div>
+          <div class="ch-meta">
+            <div class="ch-meta-pill">✅ Aman</div>
+            <div class="ch-meta-pill">🕙 22:19</div>
+            <div class="ch-meta-pill">📷 1 foto</div>
+          </div>
+        </div>
+
+        <div class="slbl">📋 Rekap Checklist</div>
+        <div class="checklist">
+          <div class="cl-item checked">
+            <div class="cl-box checked">✓</div>
+            <div class="cl-text">Pintu dalam kondisi normal</div>
+          </div>
+          <div class="cl-item checked">
+            <div class="cl-box checked">✓</div>
+            <div class="cl-text">Tidak ada orang mencurigakan</div>
+          </div>
+          <div class="cl-item" style="opacity:.4">
+            <div class="cl-box"></div>
+            <div class="cl-text">Area lobby aman &amp; bersih</div>
+          </div>
+        </div>
+
+        <!-- Cannot re-submit warning -->
+        <div style="background:rgba(0,207,255,.06);border:1px solid rgba(0,207,255,.18);border-radius:11px;padding:10px 13px;flex-shrink:0">
+          <div style="font-size:11px;font-weight:700;color:var(--cyan)">Checkpoint ini sudah tercatat</div>
+          <div style="font-size:10px;color:var(--t3);margin-top:3px">Scan ulang tidak akan membuat duplikasi data</div>
+        </div>
+
+        <div class="sp"></div>
+        <button class="btn btn-c">→ Kembali ke Patrol</button>
+        <button class="btn btn-ghost btn-sm" style="margin-top:5px">✏️ Edit Catatan</button>
+      </div>
+    </div>
+    <div class="inotes in-cyan">
+      <h4>Interaction Notes</h4>
+      <ul>
+        <li>Scan ganda tidak akan membuat duplikasi data — sistem mendeteksi otomatis</li>
+        <li>Review mode: semua data read-only, tidak bisa disubmit ulang</li>
+        <li>Worker bisa edit catatan jika perlu</li>
+        <li>Tombol utama: kembali ke patrol — redirect ke titik berikutnya</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════ SECTION 4: UPDATED PATROL IN PROGRESS ═══════ -->
+<div class="sec-title">
+  <div class="st-line"></div>
+  <div class="st-pill st-flow">🔄 Updated Patrol In Progress — With SOP Status Indicators</div>
+  <div class="st-line"></div>
+</div>
+
+<div class="grid">
+  <div class="sw">
+    <div class="sw-label">
+      <span class="sw-num">Patrol–2</span>
+      <span class="badge b-upd">Updated</span>
+    </div>
+    <div class="sw-sub">Patrol List — SOP Status per Checkpoint</div>
+    <div class="phone phone-c">
+      <div class="notch"><div class="n-cam"></div><div class="n-pill"></div></div>
+      <div class="sbar"><span>22:44</span><div>▲▲ 🔋</div></div>
+      <div class="body sm">
+        <div class="tbar">
+          <div class="back">←</div>
+          <div class="ttl" style="font-size:12px">🛡️ Night Patrol · Mall Area</div>
+          <div style="font-size:11px;color:var(--t3);font-weight:700">37m</div>
+        </div>
+
+        <!-- Step header -->
+        <div class="step-header">
+          <div class="sh-progress">7/8</div>
+          <div class="sh-divider"></div>
+          <div class="sh-info">
+            <div class="sh-name">Rooftop Access</div>
+            <div class="sh-next">Titik terakhir · Segera selesai</div>
+          </div>
+          <div class="sh-timer">22:44</div>
+        </div>
+
+        <!-- Checkpoint list with SOP status -->
+        <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0">
+
+          <div style="display:flex;align-items:center;gap:8px;background:rgba(24,216,110,.05);border:1px solid rgba(24,216,110,.18);border-radius:11px;padding:8px 11px">
+            <div style="width:26px;height:26px;background:rgba(24,216,110,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">✅</div>
+            <div style="flex:1">
+              <div style="font-size:11px;font-weight:700;color:var(--t1)">Lobby Utama</div>
+              <div style="font-size:9px;color:var(--green);margin-top:1px">Aman · 📷 Foto · ☑ 2/3 checklist</div>
+            </div>
+            <div style="font-size:9px;color:var(--t3)">22:19</div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--bd);border-radius:11px;padding:8px 11px">
+            <div style="width:26px;height:26px;background:rgba(24,216,110,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">✅</div>
+            <div style="flex:1">
+              <div style="font-size:11px;font-weight:700;color:var(--t2)">Lift Area Lt.1</div>
+              <div style="font-size:9px;color:var(--t3);margin-top:1px">Aman · 📷 Foto · ☑ 3/3</div>
+            </div>
+            <div style="font-size:9px;color:var(--t3)">22:24</div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:8px;background:rgba(255,176,32,.05);border:1px solid rgba(255,176,32,.22);border-radius:11px;padding:8px 11px">
+            <div style="width:26px;height:26px;background:rgba(255,176,32,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">⚠️</div>
+            <div style="flex:1">
+              <div style="font-size:11px;font-weight:700;color:var(--t1)">APAR + Pintu Darurat B1</div>
+              <div style="font-size:9px;color:var(--amber);margin-top:1px">Perlu perhatian · Laporan dibuat</div>
+            </div>
+            <div style="font-size:9px;color:var(--t3)">22:31</div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--bd);border-radius:11px;padding:8px 11px">
+            <div style="width:26px;height:26px;background:rgba(24,216,110,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">✅</div>
+            <div style="flex:1">
+              <div style="font-size:11px;font-weight:700;color:var(--t2)">Parkiran Barat</div>
+              <div style="font-size:9px;color:var(--t3);margin-top:1px">Aman · ☑ 2/3 checklist</div>
+            </div>
+            <div style="font-size:9px;color:var(--t3)">22:37</div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:8px;background:rgba(255,59,59,.05);border:1px solid rgba(255,59,59,.22);border-radius:11px;padding:8px 11px">
+            <div style="width:26px;height:26px;background:rgba(255,59,59,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">🚨</div>
+            <div style="flex:1">
+              <div style="font-size:11px;font-weight:700;color:var(--t1)">Server Room Lt.3</div>
+              <div style="font-size:9px;color:var(--red);margin-top:1px">Masalah · Insiden dilaporkan</div>
+            </div>
+            <div style="font-size:9px;color:var(--t3)">22:44</div>
+          </div>
+
+          <!-- Next -->
+          <div style="display:flex;align-items:center;gap:8px;background:rgba(0,207,255,.07);border:1.5px solid rgba(0,207,255,.3);border-radius:11px;padding:8px 11px;animation:nextPulse 2s ease infinite">
+            <div style="width:26px;height:26px;background:rgba(0,207,255,.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">🟡</div>
+            <div style="flex:1">
+              <div style="font-size:11px;font-weight:700;color:var(--cyan)">Rooftop Access</div>
+              <div style="font-size:9px;color:var(--cyan);margin-top:1px">Berikutnya → Tap scan</div>
+            </div>
+            <div style="font-size:9px;color:var(--cyan);font-weight:700">→</div>
+          </div>
+
+        </div>
+
+        <div class="sp"></div>
+        <button class="btn btn-c">📷 Scan QR — Titik Terakhir</button>
+        <button class="btn btn-ghost btn-sm" style="margin-top:5px">⌨️ Input Manual</button>
+      </div>
+    </div>
+    <div class="inotes in-cyan">
+      <h4>Interaction Notes</h4>
+      <ul>
+        <li>Setiap checkpoint menampilkan ringkasan SOP: status, foto, checklist count</li>
+        <li>Warna per baris sesuai status — hijau/amber/merah</li>
+        <li>Insiden yang dibuat ter-linked ke checkpoint terkait</li>
+        <li>Titik berikutnya selalu di-highlight dan animasi</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Updated Patrol Completion with SOP audit -->
+  <div class="sw">
+    <div class="sw-label">
+      <span class="sw-num">Patrol–5</span>
+      <span class="badge b-upd">Updated</span>
+    </div>
+    <div class="sw-sub">Patrol Complete — SOP Audit Summary</div>
+    <div class="phone phone-g">
+      <div class="notch"><div class="n-cam"></div><div class="n-pill"></div></div>
+      <div class="sbar"><span>22:52</span><div>▲▲ 🔋</div></div>
+      <div class="body sm">
+        <div class="tbar">
+          <div class="back">←</div>
+          <div class="ttl">Patrol Selesai</div>
+          <div style="width:32px"></div>
+        </div>
+
+        <!-- Completion -->
+        <div style="background:linear-gradient(135deg,rgba(24,216,110,.1),rgba(0,207,255,.06));border:1px solid rgba(24,216,110,.25);border-radius:16px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;flex-shrink:0">
+          <div style="font-size:30px">🏁</div>
+          <div style="font-family:var(--fd);font-size:16px;font-weight:800;color:var(--green)">Night Patrol Selesai!</div>
+          <div style="font-size:11px;color:var(--t2)">22:01 – 22:52 · Durasi 51 menit</div>
+        </div>
+
+        <!-- SOP Audit stats -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;flex-shrink:0">
+          <div style="background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:9px 6px;text-align:center">
+            <div style="font-family:var(--fd);font-size:18px;font-weight:800;color:var(--cyan)">8</div>
+            <div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px">Titik</div>
+          </div>
+          <div style="background:var(--s2);border:1px solid rgba(24,216,110,.2);border-radius:12px;padding:9px 6px;text-align:center">
+            <div style="font-family:var(--fd);font-size:18px;font-weight:800;color:var(--green)">6</div>
+            <div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px">Aman</div>
+          </div>
+          <div style="background:var(--s2);border:1px solid rgba(255,176,32,.2);border-radius:12px;padding:9px 6px;text-align:center">
+            <div style="font-family:var(--fd);font-size:18px;font-weight:800;color:var(--amber)">1</div>
+            <div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px">Perhatian</div>
+          </div>
+          <div style="background:var(--s2);border:1px solid rgba(255,59,59,.2);border-radius:12px;padding:9px 6px;text-align:center">
+            <div style="font-family:var(--fd);font-size:18px;font-weight:800;color:var(--red)">1</div>
+            <div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px">Masalah</div>
+          </div>
+        </div>
+
+        <!-- SOP Compliance -->
+        <div style="background:var(--s2);border:1px solid var(--bd);border-radius:13px;padding:11px 13px;flex-shrink:0">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:8px">SOP Compliance</div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:11px;color:var(--t2)">📷 Foto bukti</span>
+              <span style="font-size:11px;font-weight:700;color:var(--green)">8/8 ✓</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:11px;color:var(--t2)">☑ Checklist diisi</span>
+              <span style="font-size:11px;font-weight:700;color:var(--amber)">6/8</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:11px;color:var(--t2)">🚨 Insiden dilaporkan</span>
+              <span style="font-size:11px;font-weight:700;color:var(--red)">2 laporan</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="note-row">
+          <div class="note-icon">✏️</div>
+          <div class="note-text">Catatan akhir patrol (opsional)…</div>
+        </div>
+
+        <div class="sp"></div>
+        <button class="btn btn-g">✅ Selesaikan &amp; Kirim Laporan</button>
+        <div class="micro" style="margin-top:4px">Laporan lengkap dikirim ke supervisor otomatis</div>
+      </div>
+    </div>
+    <div class="inotes in-green">
+      <h4>Interaction Notes</h4>
+      <ul>
+        <li>SOP Compliance ditampilkan — supervisor bisa langsung audit</li>
+        <li>Breakdown per status (aman/perhatian/masalah) terlihat jelas</li>
+        <li>Foto, checklist, insiden dirangkum dalam satu view</li>
+        <li>Satu tap kirim — laporan lengkap termasuk foto &amp; insiden</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════ DESIGN SYSTEM LEGEND ═══════ -->
+<div style="max-width:1560px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;position:relative;z-index:1">
+  <div style="background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:15px 16px">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:8px">🎯 Tap, Capture, Submit</div>
+    <div style="font-size:12px;color:var(--t3);line-height:1.5">Setiap checkpoint hanya butuh 3 aksi: tap status → (opsional foto) → simpan. Tidak ada form panjang.</div>
+    <div style="display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:var(--cyan)">Max 4 taps per checkpoint</div>
+  </div>
+  <div style="background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:15px 16px">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:8px">🎨 Dynamic Checkpoint Color</div>
+    <div style="font-size:12px;color:var(--t3);line-height:1.5">Setiap tipe checkpoint punya warna sendiri. Worker langsung tahu konteks tanpa membaca teks panjang.</div>
+    <div style="display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:var(--cyan)">6 tipe × warna unik</div>
+  </div>
+  <div style="background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:15px 16px">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:8px">⚡ Conditional Auto-flow</div>
+    <div style="font-size:12px;color:var(--t3);line-height:1.5">Pilih "Ada Masalah" → incident form terbuka sendiri dengan semua data terisi. Zero re-input dari worker.</div>
+    <div style="display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:var(--red)">Pre-filled: lokasi, waktu, titik, petugas</div>
+  </div>
+  <div style="background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:15px 16px">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:8px">📊 SOP Audit Trail</div>
+    <div style="font-size:12px;color:var(--t3);line-height:1.5">Setiap checkpoint mencatat foto, status, checklist, dan timestamp. Supervisor bisa audit setiap titik secara detail.</div>
+    <div style="display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:var(--green)">Trackable · Auditable · Verifiable</div>
+  </div>
+  <div style="background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:15px 16px">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:8px">🔒 Validation Logic</div>
+    <div style="font-size:12px;color:var(--t3);line-height:1.5">Status = wajib. Foto = wajib untuk Entrance, Restricted, Emergency. Checklist = opsional tapi didorong.</div>
+    <div style="display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:var(--amber)">Configurable per checkpoint type</div>
+  </div>
+  <div style="background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:15px 16px">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:8px">📡 Offline-first Design</div>
+    <div style="font-size:12px;color:var(--t3);line-height:1.5">Seluruh patrol bisa berjalan tanpa internet. Data sinkron otomatis saat koneksi kembali. Violet = offline mode.</div>
+    <div style="display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:var(--violet)">No data loss, ever</div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -35,11 +35,7 @@ const SEVERITIES = [
   { id: "critical", label: "Critical" },
 ];
 
-const STATUS_FLOW_COMPLAINT = ["open", "acknowledged", "in_progress", "resolved", "closed"];
-const STATUS_FLOW_REPORT    = ["logged", "reviewed", "closed"];
-
-const getStatusFlow = (type) =>
-  type === "report" ? STATUS_FLOW_REPORT : STATUS_FLOW_COMPLAINT;
+const STATUS_FLOW = ["open", "acknowledged", "in_progress", "resolved", "closed"];
 
 const WORKERS = [
   { id: "w1", name: "Pak Joko",  speciality: "Maintenance" },
@@ -69,8 +65,6 @@ const TASK_STATUS_META = {
 const initialComplaints = [
   {
     id: "CMP-2041",
-    type: "complaint",
-    source: "client",
     title: "Broken glass near main entrance",
     description: "Glass panel by the main lobby door is cracked. Sharp edges visible — risk of injury for visitors entering during morning rush.",
     category: "maintenance",
@@ -115,8 +109,6 @@ const initialComplaints = [
   },
   {
     id: "CMP-2040",
-    type: "complaint",
-    source: "client",
     title: "Restroom not cleaned since morning",
     description: "Floor 3 ladies' restroom — bins overflowing, no tissue, water on floor.",
     category: "cleaning",
@@ -166,8 +158,6 @@ const initialComplaints = [
   },
   {
     id: "CMP-2039",
-    type: "complaint",
-    source: "client",
     title: "Unauthorized vehicle in reserved bay",
     description: "Black SUV parked in bay B2-14 (reserved for tenant). Plate B 1234 XYZ. Has been there since 6am.",
     category: "security",
@@ -187,8 +177,6 @@ const initialComplaints = [
   },
   {
     id: "CMP-2038",
-    type: "complaint",
-    source: "client",
     title: "AC leaking onto carpet",
     description: "Conference room AC unit dripping. Carpet patch is wet ~50cm radius. Smells musty.",
     category: "maintenance",
@@ -239,8 +227,6 @@ const initialComplaints = [
   },
   {
     id: "CMP-2037",
-    type: "complaint",
-    source: "client",
     title: "Loading dock light flickering",
     description: "Sodium lamp at dock 2 has been flickering for 3 nights. Drivers complain of poor visibility.",
     category: "maintenance",
@@ -258,85 +244,6 @@ const initialComplaints = [
       { type: "comment", user: "Pak Bambang", role: "Client", message: "Will need ladder access.", timestamp: "2026-04-25T05:45:00" },
     ],
   },
-  {
-    id: "RPT-0312",
-    type: "report",
-    source: "worker",
-    title: "Suspicious package at parcel locker",
-    description: "Unattended brown box at locker 14, no return address. Cordoned area as precaution. Awaiting supervisor review before opening.",
-    category: "security",
-    severity: "high",
-    location: "Tower A — Lobby",
-    status: "logged",
-    createdAt: "2026-04-25T07:48:00",
-    sla: { dueIn: 4, breached: false },
-    photos: ["https://images.unsplash.com/photo-1607435097405-db48f377bff6?w=600&q=70"],
-    submittedBy: { name: "Pak Anton", role: "Worker" },
-    assignedTo: null,
-    linkedTask: null,
-    taskHistory: [],
-    updates: [
-      { type: "comment", user: "Pak Anton", role: "Worker", message: "Logged during 7:30am rounds. Area cordoned.", timestamp: "2026-04-25T07:48:00" },
-    ],
-  },
-  {
-    id: "RPT-0311",
-    type: "report",
-    source: "worker",
-    title: "Spill cleaned up at lift lobby — for awareness",
-    description: "Coffee spill near lift bank. Cleaned and dried. Reporting for log only — no further action needed.",
-    category: "cleaning",
-    severity: "low",
-    location: "Tower A — Floor 3 Pantry",
-    status: "reviewed",
-    createdAt: "2026-04-25T06:55:00",
-    sla: { dueIn: 24, breached: false },
-    photos: [],
-    submittedBy: { name: "Bu Sri", role: "Worker" },
-    assignedTo: null,
-    linkedTask: null,
-    taskHistory: [],
-    updates: [
-      { type: "comment", user: "Bu Sri",  role: "Worker",     message: "Already cleaned. Logging for shift handover.", timestamp: "2026-04-25T06:55:00" },
-      { type: "system",  user: "System",  role: "System",     message: "Report reviewed by Bu Rina", timestamp: "2026-04-25T07:10:00" },
-      { type: "status",  user: "Bu Rina", role: "Supervisor", message: "Reviewed", timestamp: "2026-04-25T07:10:00" },
-    ],
-  },
-  {
-    id: "RPT-0310",
-    type: "report",
-    source: "worker",
-    title: "CCTV camera B2-03 offline",
-    description: "Parking B2 camera 03 not transmitting since 5am. Lens looks intact, suspect cabling. Recommend maintenance follow-up.",
-    category: "security",
-    severity: "medium",
-    location: "Tower B — Parking B2",
-    status: "reviewed",
-    createdAt: "2026-04-25T05:20:00",
-    sla: { dueIn: 18, breached: false },
-    photos: [],
-    submittedBy: { name: "Pak Anton", role: "Worker" },
-    assignedTo: { name: "Pak Hadi", role: "Worker" },
-    linkedTask: {
-      id: "TSK-1085",
-      assignedTo: { id: "w3", name: "Pak Hadi" },
-      taskType: "Inspection",
-      status: "assigned",
-      deadline: "2026-04-25T16:00:00",
-      notes: "Check cabling at junction box first. Replace if needed.",
-      createdAt: "2026-04-25T06:05:00",
-      startedAt: null,
-      completedAt: null,
-      evidence: [],
-    },
-    taskHistory: [],
-    updates: [
-      { type: "comment", user: "Pak Anton", role: "Worker",     message: "Noticed during overnight monitoring rotation.", timestamp: "2026-04-25T05:20:00" },
-      { type: "system",  user: "System",    role: "System",     message: "Report reviewed by Bu Rina", timestamp: "2026-04-25T06:00:00" },
-      { type: "status",  user: "Bu Rina",   role: "Supervisor", message: "Reviewed", timestamp: "2026-04-25T06:00:00" },
-      { type: "system",  user: "System",    role: "System",     message: "Task TSK-1085 created and assigned to Pak Hadi (optional follow-up)", timestamp: "2026-04-25T06:05:00" },
-    ],
-  },
 ];
 
 /* =========================================================================
@@ -349,8 +256,6 @@ const STATUS_META = {
   in_progress:  { label: "In Progress",  dot: "bg-blue-500",   pill: "bg-blue-50 text-blue-700 ring-blue-200",          icon: Loader2    },
   resolved:     { label: "Resolved",     dot: "bg-emerald-500",pill: "bg-emerald-50 text-emerald-700 ring-emerald-200", icon: CheckCheck },
   closed:       { label: "Closed",       dot: "bg-slate-700",  pill: "bg-slate-800 text-white ring-slate-800",          icon: Lock       },
-  logged:       { label: "Logged",       dot: "bg-sky-500",    pill: "bg-sky-50 text-sky-700 ring-sky-200",             icon: FileText   },
-  reviewed:     { label: "Reviewed",     dot: "bg-emerald-500",pill: "bg-emerald-50 text-emerald-700 ring-emerald-200", icon: CheckCheck },
 };
 
 const SEVERITY_META = {
@@ -369,32 +274,13 @@ const ROLE_META = {
 
 const CAT_META = Object.fromEntries(CATEGORIES.map(c => [c.id, c]));
 
-/** Determines who is currently expected to act on a complaint or report. */
-function computeNextAction(record) {
-  const t = record.linkedTask;
-
-  // ---- REPORT FLOW ----
-  if (record.type === "report") {
-    if (record.status === "closed") {
-      return { role: "None", label: "Report closed", tone: "done" };
-    }
-    if (record.status === "logged") {
-      return { role: "Supervisor", label: "Waiting for Supervisor to review", tone: "supervisor" };
-    }
-    if (record.status === "reviewed") {
-      // Reviewed = effectively complete unless an optional task is still running
-      if (t && t.status !== "completed") {
-        return { role: "Worker", label: `Optional follow-up: ${t.assignedTo.name}`, tone: "worker" };
-      }
-      return { role: "None", label: "Report reviewed — no action needed", tone: "done" };
-    }
-  }
-
-  // ---- COMPLAINT FLOW ----
-  if (record.status === "closed") {
+/** Determines who is currently expected to act on a complaint. */
+function computeNextAction(complaint) {
+  const t = complaint.linkedTask;
+  if (complaint.status === "closed") {
     return { role: "None", label: "Complaint closed", tone: "done" };
   }
-  if (record.status === "resolved") {
+  if (complaint.status === "resolved") {
     return { role: "Client", label: "Waiting for Client confirmation", tone: "client" };
   }
   if (!t) {
@@ -500,21 +386,6 @@ function CategoryChip({ category }) {
   );
 }
 
-function TypeBadge({ type, size = "md" }) {
-  const isReport = type === "report";
-  const pad = size === "sm" ? "px-1.5 py-0.5 text-[10px]" : "px-2 py-0.5 text-[11px]";
-  const Icon = isReport ? FileText : AlertCircle;
-  const cls = isReport
-    ? "bg-sky-50 text-sky-700 ring-sky-200"
-    : "bg-rose-50 text-rose-700 ring-rose-200";
-  return (
-    <span className={`inline-flex items-center gap-1 rounded-md ring-1 font-semibold uppercase tracking-wider ${cls} ${pad}`}>
-      <Icon className={size === "sm" ? "w-2.5 h-2.5" : "w-3 h-3"} strokeWidth={2.6}/>
-      {isReport ? "Report" : "Complaint"}
-    </span>
-  );
-}
-
 /* =========================================================================
    COMPLAINT CARD
    ========================================================================= */
@@ -528,7 +399,6 @@ function ComplaintCard({ complaint, onClick }) {
     >
       <div className="flex items-start justify-between gap-3 mb-2">
         <div className="flex items-center gap-2 flex-wrap">
-          <TypeBadge type={c.type} size="sm" />
           <CategoryChip category={c.category} />
           <span className="text-[11px] text-slate-400 font-mono">{c.id}</span>
         </div>
@@ -561,16 +431,15 @@ function ComplaintCard({ complaint, onClick }) {
    TIMELINE STATUS
    ========================================================================= */
 
-function TimelineStatus({ current, type = "complaint" }) {
-  const flow = getStatusFlow(type);
-  const idx = flow.indexOf(current);
+function TimelineStatus({ current }) {
+  const idx = STATUS_FLOW.indexOf(current);
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
       <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Status</h3>
 
       {/* Desktop horizontal */}
       <div className="hidden md:flex items-center">
-        {flow.map((s, i) => {
+        {STATUS_FLOW.map((s, i) => {
           const m = STATUS_META[s];
           const Icon = m.icon;
           const done   = i < idx;
@@ -592,7 +461,7 @@ function TimelineStatus({ current, type = "complaint" }) {
                   {m.label}
                 </span>
               </div>
-              {i < flow.length - 1 && (
+              {i < STATUS_FLOW.length - 1 && (
                 <div className={`h-0.5 flex-1 mx-1 transition-all ${i < idx ? "bg-emerald-500" : "bg-slate-200"}`}/>
               )}
             </React.Fragment>
@@ -602,7 +471,7 @@ function TimelineStatus({ current, type = "complaint" }) {
 
       {/* Mobile vertical */}
       <div className="md:hidden flex flex-col">
-        {flow.map((s, i) => {
+        {STATUS_FLOW.map((s, i) => {
           const m = STATUS_META[s];
           const Icon = m.icon;
           const done   = i < idx;
@@ -616,7 +485,7 @@ function TimelineStatus({ current, type = "complaint" }) {
                 }`}>
                   <Icon className="w-3.5 h-3.5" strokeWidth={2.5}/>
                 </div>
-                {i < flow.length - 1 && (
+                {i < STATUS_FLOW.length - 1 && (
                   <div className={`w-0.5 h-6 my-1 ${i < idx ? "bg-emerald-500" : "bg-slate-200"}`}/>
                 )}
               </div>
@@ -1229,76 +1098,38 @@ function UploadEvidenceModal({ open, onClose, onUpload }) {
 function ActionPanel({ role, complaint, onAction }) {
   const status = complaint.status;
   const task = complaint.linkedTask;
-  const isReport = complaint.type === "report";
   const actions = [];
 
-  if (isReport) {
-    /* ---------- REPORT FLOW ---------- */
-    if (role === "Supervisor") {
-      if (status === "logged") {
-        actions.push({ id: "review_report", label: "Mark as Reviewed", primary: true, icon: CheckCheck });
-      }
-      if (status !== "closed" && !task) {
-        actions.push({ id: "create_task", label: "Create Task (optional)", icon: Plus });
-      }
-      if (task && task.status !== "completed") {
+  if (role === "Supervisor") {
+    if (status !== "closed" && status !== "resolved") {
+      if (!task) {
+        actions.push({ id: "create_task", label: "Create Task", primary: true, icon: Plus });
+      } else if (task.status === "completed") {
+        // task done, awaiting client
+      } else {
         actions.push({ id: "reassign", label: "Reassign Worker", icon: UserCheck });
       }
-      if (status !== "closed") {
-        actions.push({ id: "close_report", label: "Close Report", icon: Lock });
-      }
-    } else if (role === "Worker") {
-      // Worker who submitted the report can comment, or act on optional task
-      if (task && task.assignedTo) {
-        if (task.status === "assigned") {
-          actions.push({ id: "start_task", label: "Start Task", primary: true, icon: PlayCircle });
-        }
-        if (task.status === "in_progress") {
-          actions.push({ id: "upload_evidence", label: "Upload Work Evidence", icon: Upload });
-          actions.push({ id: "complete_task", label: "Mark Task Completed", primary: true, icon: FileCheck2 });
-        }
-      }
-      // Always allow comment for workers on reports
-      if (actions.length === 0) {
-        actions.push({ id: "comment", label: "Add Comment", icon: Send });
-      }
-    } else if (role === "Client") {
-      // Client can only comment on reports — no resolution actions
-      // (action panel will fall through to "Nothing to do" empty state)
     }
-  } else {
-    /* ---------- COMPLAINT FLOW (existing) ---------- */
-    if (role === "Supervisor") {
-      if (status !== "closed" && status !== "resolved") {
-        if (!task) {
-          actions.push({ id: "create_task", label: "Create Task", primary: true, icon: Plus });
-        } else if (task.status === "completed") {
-          // task done, awaiting client
-        } else {
-          actions.push({ id: "reassign", label: "Reassign Worker", icon: UserCheck });
-        }
+    if (status !== "closed") {
+      actions.push({ id: "comment", label: "Add Comment", icon: Send });
+    }
+  } else if (role === "Worker") {
+    if (task && task.assignedTo) {
+      if (task.status === "assigned") {
+        actions.push({ id: "start_task", label: "Start Task", primary: true, icon: PlayCircle });
       }
-      if (status !== "closed") {
-        actions.push({ id: "comment", label: "Add Comment", icon: Send });
+      if (task.status === "in_progress") {
+        actions.push({ id: "upload_evidence", label: "Upload Work Evidence", icon: Upload });
+        actions.push({ id: "complete_task", label: "Mark Task Completed", primary: true, icon: FileCheck2 });
       }
-    } else if (role === "Worker") {
-      if (task && task.assignedTo) {
-        if (task.status === "assigned") {
-          actions.push({ id: "start_task", label: "Start Task", primary: true, icon: PlayCircle });
-        }
-        if (task.status === "in_progress") {
-          actions.push({ id: "upload_evidence", label: "Upload Work Evidence", icon: Upload });
-          actions.push({ id: "complete_task", label: "Mark Task Completed", primary: true, icon: FileCheck2 });
-        }
-      }
-    } else if (role === "Client") {
-      if (status === "resolved") {
-        actions.push({ id: "confirm", label: "Confirm Resolution", primary: true, icon: CheckCheck });
-        actions.push({ id: "reopen", label: "Reopen", icon: RotateCcw });
-      }
-      if (status === "closed") {
-        actions.push({ id: "reopen", label: "Reopen Complaint", icon: RotateCcw });
-      }
+    }
+  } else if (role === "Client") {
+    if (status === "resolved") {
+      actions.push({ id: "confirm", label: "Confirm Resolution", primary: true, icon: CheckCheck });
+      actions.push({ id: "reopen", label: "Reopen", icon: RotateCcw });
+    }
+    if (status === "closed") {
+      actions.push({ id: "reopen", label: "Reopen Complaint", icon: RotateCcw });
     }
   }
 
@@ -1387,37 +1218,20 @@ function ResolutionCard({ resolution }) {
 
 function ComplaintListPage({ complaints, onOpen, onCreate }) {
   const [tab, setTab] = useState("all");
-  const [typeFilter, setTypeFilter] = useState("all"); // all | complaint | report
   const [search, setSearch] = useState("");
   const [filterSite, setFilterSite] = useState("");
   const [filterCat, setFilterCat] = useState("");
   const [filterSev, setFilterSev] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  // Records visible after type filter (used to drive status-tab counts so they make sense)
-  const typeScoped = useMemo(() => {
-    if (typeFilter === "all") return complaints;
-    return complaints.filter(c => c.type === typeFilter);
-  }, [complaints, typeFilter]);
-
   const counts = useMemo(() => {
-    const out = {
-      all: typeScoped.length,
-      open: 0, in_progress: 0, resolved: 0, closed: 0,
-      logged: 0, reviewed: 0,
-    };
-    typeScoped.forEach(c => { if (out[c.status] !== undefined) out[c.status]++; });
+    const out = { all: complaints.length, open: 0, in_progress: 0, resolved: 0, closed: 0 };
+    complaints.forEach(c => { if (out[c.status] !== undefined) out[c.status]++; });
     return out;
-  }, [typeScoped]);
-
-  const typeCounts = useMemo(() => ({
-    all:       complaints.length,
-    complaint: complaints.filter(c => c.type === "complaint").length,
-    report:    complaints.filter(c => c.type === "report").length,
-  }), [complaints]);
+  }, [complaints]);
 
   const filtered = useMemo(() => {
-    return typeScoped.filter(c => {
+    return complaints.filter(c => {
       if (tab !== "all" && c.status !== tab) return false;
       if (filterSite && c.location !== filterSite) return false;
       if (filterCat && c.category !== filterCat) return false;
@@ -1425,93 +1239,37 @@ function ComplaintListPage({ complaints, onOpen, onCreate }) {
       if (search && !(`${c.title} ${c.description} ${c.id}`.toLowerCase().includes(search.toLowerCase()))) return false;
       return true;
     });
-  }, [typeScoped, tab, search, filterSite, filterCat, filterSev]);
+  }, [complaints, tab, search, filterSite, filterCat, filterSev]);
 
-  // Tabs adapt to which type is selected
-  const tabs = useMemo(() => {
-    if (typeFilter === "report") {
-      return [
-        { id: "all",      label: "All",      count: counts.all },
-        { id: "logged",   label: "Logged",   count: counts.logged },
-        { id: "reviewed", label: "Reviewed", count: counts.reviewed },
-        { id: "closed",   label: "Closed",   count: counts.closed },
-      ];
-    }
-    if (typeFilter === "complaint") {
-      return [
-        { id: "all",          label: "All",          count: counts.all },
-        { id: "open",         label: "Open",         count: counts.open },
-        { id: "in_progress",  label: "In Progress",  count: counts.in_progress },
-        { id: "resolved",     label: "Resolved",     count: counts.resolved },
-        { id: "closed",       label: "Closed",       count: counts.closed },
-      ];
-    }
-    // 'all' types — collapse to common buckets
-    return [
-      { id: "all",         label: "All",         count: counts.all },
-      { id: "open",        label: "Open",        count: counts.open },
-      { id: "logged",      label: "Logged",      count: counts.logged },
-      { id: "in_progress", label: "In Progress", count: counts.in_progress },
-      { id: "resolved",    label: "Resolved",    count: counts.resolved },
-      { id: "closed",      label: "Closed",      count: counts.closed },
-    ];
-  }, [typeFilter, counts]);
+  const tabs = [
+    { id: "all",         label: "All",         count: counts.all },
+    { id: "open",        label: "Open",        count: counts.open },
+    { id: "in_progress", label: "In Progress", count: counts.in_progress },
+    { id: "resolved",    label: "Resolved",    count: counts.resolved },
+    { id: "closed",      label: "Closed",      count: counts.closed },
+  ];
 
   const hasActiveFilters = filterSite || filterCat || filterSev;
-
-  // Reset status tab if it becomes invalid for the current type
-  React.useEffect(() => {
-    if (!tabs.some(t => t.id === tab)) setTab("all");
-  }, [tabs, tab]);
 
   return (
     <div className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
       {/* Page header */}
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Reports & Complaints</h1>
-          <p className="text-sm text-slate-500 mt-1">Unified log of internal reports and client complaints</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Complaints</h1>
+          <p className="text-sm text-slate-500 mt-1">Track and resolve issues across all sites</p>
         </div>
         <button
           onClick={onCreate}
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-sm shadow-indigo-600/20 transition-colors shrink-0"
         >
           <Plus className="w-4 h-4" strokeWidth={2.5}/>
-          <span className="hidden sm:inline">New Entry</span>
+          <span className="hidden sm:inline">Create Complaint</span>
           <span className="sm:hidden">New</span>
         </button>
       </div>
 
-      {/* Type filter (segmented) */}
-      <div className="inline-flex items-center gap-1 p-1 bg-slate-100 rounded-xl mb-4">
-        {[
-          { id: "all",       label: "All",        icon: LayoutGrid },
-          { id: "complaint", label: "Complaints", icon: AlertCircle },
-          { id: "report",    label: "Reports",    icon: FileText },
-        ].map(t => {
-          const Icon = t.icon;
-          const active = typeFilter === t.id;
-          return (
-            <button
-              key={t.id}
-              onClick={() => setTypeFilter(t.id)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
-                active ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" strokeWidth={2.4}/>
-              {t.label}
-              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
-                active ? "bg-slate-100 text-slate-700" : "bg-slate-200 text-slate-600"
-              }`}>
-                {typeCounts[t.id]}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Status tabs */}
+      {/* Tabs */}
       <div className="flex gap-1 overflow-x-auto pb-2 mb-4 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
         {tabs.map(t => (
           <button
@@ -1540,7 +1298,7 @@ function ComplaintListPage({ complaints, onOpen, onCreate }) {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search reports & complaints…"
+            placeholder="Search complaints…"
             className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all"
           />
         </div>
@@ -1610,13 +1368,13 @@ function EmptyState({ onCreate }) {
       <div className="w-16 h-16 rounded-2xl bg-slate-100 mx-auto flex items-center justify-center mb-4">
         <Inbox className="w-7 h-7 text-slate-400" strokeWidth={1.8}/>
       </div>
-      <h3 className="text-lg font-semibold text-slate-900 mb-1">Nothing matches</h3>
-      <p className="text-sm text-slate-500 mb-5">Try clearing filters or create a new entry.</p>
+      <h3 className="text-lg font-semibold text-slate-900 mb-1">No complaints match</h3>
+      <p className="text-sm text-slate-500 mb-5">Try clearing filters or create a new complaint.</p>
       <button
         onClick={onCreate}
         className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold transition-colors"
       >
-        <Plus className="w-4 h-4"/> New Entry
+        <Plus className="w-4 h-4"/> Create Complaint
       </button>
     </div>
   );
@@ -1626,10 +1384,7 @@ function EmptyState({ onCreate }) {
    PAGE: CREATE COMPLAINT
    ========================================================================= */
 
-function CreateComplaintPage({ onCancel, onSubmit, role = "Client" }) {
-  // Default: Worker → report, otherwise → complaint
-  const defaultType = role === "Worker" ? "report" : "complaint";
-  const [type, setType] = useState(defaultType);
+function CreateComplaintPage({ onCancel, onSubmit }) {
   const [location, setLocation] = useState("");
   const [category, setCategory] = useState("");
   const [severity, setSeverity] = useState("");
@@ -1640,10 +1395,8 @@ function CreateComplaintPage({ onCancel, onSubmit, role = "Client" }) {
 
   const submit = () => {
     if (!valid) return;
-    onSubmit({ type, location, category, severity, description, photos });
+    onSubmit({ location, category, severity, description, photos });
   };
-
-  const isReport = type === "report";
 
   return (
     <div className="max-w-3xl mx-auto p-4 sm:p-6 lg:p-8 pb-32 sm:pb-8">
@@ -1652,48 +1405,11 @@ function CreateComplaintPage({ onCancel, onSubmit, role = "Client" }) {
       </button>
 
       <div className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-          {isReport ? "New Report" : "New Complaint"}
-        </h1>
-        <p className="text-sm text-slate-500 mt-1">
-          {isReport
-            ? "Log an internal observation from your shift"
-            : "Report an issue you've spotted on-site"}
-        </p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">New Complaint</h1>
+        <p className="text-sm text-slate-500 mt-1">Report an issue you've spotted on-site</p>
       </div>
 
       <div className="space-y-5">
-        {/* Type selector */}
-        <Section title="Type" required>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              { id: "complaint", label: "Complaint", hint: "External — from a client", icon: AlertCircle, ring: "ring-rose-500", bg: "bg-rose-600" },
-              { id: "report",    label: "Report",    hint: "Internal — from worker",   icon: FileText,    ring: "ring-sky-500",  bg: "bg-sky-600"  },
-            ].map(t => {
-              const Icon = t.icon;
-              const active = type === t.id;
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setType(t.id)}
-                  className={`relative flex flex-col items-start text-left gap-1 p-4 rounded-xl transition-all ${
-                    active
-                      ? `${t.bg} text-white ring-2 ${t.ring} ring-offset-2`
-                      : "bg-white border border-slate-200 text-slate-700 hover:border-slate-300"
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon className="w-4 h-4" strokeWidth={2.4}/>
-                    <span className="text-sm font-bold">{t.label}</span>
-                  </div>
-                  <span className={`text-xs ${active ? "opacity-90" : "text-slate-500"}`}>{t.hint}</span>
-                </button>
-              );
-            })}
-          </div>
-        </Section>
-
         {/* Location */}
         <Section title="Location" required>
           <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-2.5">
@@ -1807,7 +1523,7 @@ function CreateComplaintPage({ onCancel, onSubmit, role = "Client" }) {
           disabled={!valid}
           className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-sm shadow-indigo-600/20 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none transition-all"
         >
-          {isReport ? "Submit Report" : "Submit Complaint"}
+          Submit Complaint
         </button>
       </div>
 
@@ -1817,7 +1533,7 @@ function CreateComplaintPage({ onCancel, onSubmit, role = "Client" }) {
           disabled={!valid}
           className="w-full px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-sm shadow-indigo-600/20 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none transition-all"
         >
-          {isReport ? "Submit Report" : "Submit Complaint"}
+          Submit Complaint
         </button>
       </div>
     </div>
@@ -1856,7 +1572,6 @@ function ComplaintDetailPage({ complaint, role, onBack, onAction, onComment }) {
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 mb-5">
         <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
           <div className="flex items-center gap-2 flex-wrap">
-            <TypeBadge type={c.type} />
             <CategoryChip category={c.category} />
             <span className="text-xs text-slate-400 font-mono">{c.id}</span>
           </div>
@@ -1887,7 +1602,7 @@ function ComplaintDetailPage({ complaint, role, onBack, onAction, onComment }) {
       <div className="grid lg:grid-cols-[1fr_320px] gap-5">
         {/* Main column */}
         <div className="space-y-5">
-          <TimelineStatus current={c.status} type={c.type} />
+          <TimelineStatus current={c.status} />
 
           {/* Description */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
@@ -1967,7 +1682,7 @@ function ComplaintDetailPage({ complaint, role, onBack, onAction, onComment }) {
 function Sidebar() {
   const items = [
     { icon: LayoutGrid, label: "Dashboard" },
-    { icon: FileText,   label: "Reports", active: true },
+    { icon: FileText,   label: "Complaints", active: true },
     { icon: Users,      label: "Workforce" },
     { icon: BarChart3,  label: "Reports" },
     { icon: Settings,   label: "Settings" },
@@ -2065,45 +1780,25 @@ export default function App() {
   const goCreate = () => setView({ name: "create" });
 
   const submitComplaint = (data) => {
-    const isReport = data.type === "report";
+    const id = `CMP-${2042 + complaints.filter(c => c.id.startsWith("CMP-204")).length}`;
     const now = new Date().toISOString();
-
-    // ID prefix + numbering by type
-    const prefix = isReport ? "RPT" : "CMP";
-    const sameTypeCount = complaints.filter(c =>
-      isReport ? c.id.startsWith("RPT-") : c.id.startsWith("CMP-")
-    ).length;
-    const baseN = isReport ? 313 : 2042;
-    const id = `${prefix}-${String(baseN + sameTypeCount).padStart(isReport ? 4 : 4, "0")}`;
-
-    const submitterRole = role === "Worker" ? "Worker" : "Client";
-    const source = isReport ? "worker" : "client";
-
     const newC = {
       id,
-      type: isReport ? "report" : "complaint",
-      source,
-      title: data.description.split(/[.\n]/)[0].slice(0, 60) || (isReport ? "New report" : "New complaint"),
+      title: data.description.split(/[.\n]/)[0].slice(0, 60) || "New complaint",
       description: data.description,
       category: data.category,
       severity: data.severity,
       location: data.location,
-      status: isReport ? "logged" : "open",
+      status: "open",
       createdAt: now,
       sla: { dueIn: 24, breached: false },
       photos: data.photos,
-      submittedBy: { name: "You", role: submitterRole },
+      submittedBy: { name: "You", role: "Client" },
       assignedTo: null,
       linkedTask: null,
       taskHistory: [],
       updates: [
-        {
-          type: "comment",
-          user: "You",
-          role: submitterRole,
-          message: isReport ? "Report submitted." : "Complaint submitted.",
-          timestamp: now,
-        },
+        { type: "comment", user: "You", role: "Client", message: "Complaint submitted.", timestamp: now }
       ],
     };
     setComplaints([newC, ...complaints]);
@@ -2150,43 +1845,24 @@ export default function App() {
 
       if (actionId === "start_task" && linkedTask) {
         linkedTask = { ...linkedTask, status: "in_progress", startedAt: now };
-        // Only sync complaint status; reports don't move on task start
-        if (c.type !== "report") status = "in_progress";
+        status = "in_progress";
         updates.push({ type: "system", user: "System", role: "System", message: `Task started by ${linkedTask.assignedTo.name}`, timestamp: now });
-        if (c.type !== "report") {
-          updates.push({ type: "status", user: userName, role, message: "In Progress", timestamp: now });
-        }
+        updates.push({ type: "status", user: userName, role, message: "In Progress", timestamp: now });
       }
 
       else if (actionId === "complete_task" && linkedTask) {
         linkedTask = { ...linkedTask, status: "completed", completedAt: now };
+        status = "resolved";
+        // Build resolution from latest "after" evidence (or fallback)
         const afterEv = [...(linkedTask.evidence || [])].reverse().find(e => e.phase === "after") || (linkedTask.evidence || []).slice(-1)[0];
-        if (c.type === "report") {
-          // Report: task completion is informational, doesn't change report status
-          updates.push({ type: "system", user: "System", role: "System", message: `Optional task completed by ${linkedTask.assignedTo.name}`, timestamp: now });
-        } else {
-          status = "resolved";
-          resolution = {
-            notes: afterEv?.notes || "Task completed. Awaiting client confirmation.",
-            resolvedBy: linkedTask.assignedTo.name,
-            resolvedAt: now,
-            photos: afterEv?.photos || [],
-          };
-          updates.push({ type: "system", user: "System", role: "System", message: "Task completed — complaint marked Resolved", timestamp: now });
-          updates.push({ type: "status", user: userName, role, message: "Resolved", timestamp: now });
-        }
-      }
-
-      else if (actionId === "review_report") {
-        status = "reviewed";
-        updates.push({ type: "system", user: "System", role: "System", message: `Report reviewed by ${userName}`, timestamp: now });
-        updates.push({ type: "status", user: userName, role, message: "Reviewed", timestamp: now });
-      }
-
-      else if (actionId === "close_report") {
-        status = "closed";
-        updates.push({ type: "system", user: "System", role: "System", message: `Report closed by ${userName}`, timestamp: now });
-        updates.push({ type: "status", user: userName, role, message: "Closed", timestamp: now });
+        resolution = {
+          notes: afterEv?.notes || "Task completed. Awaiting client confirmation.",
+          resolvedBy: linkedTask.assignedTo.name,
+          resolvedAt: now,
+          photos: afterEv?.photos || [],
+        };
+        updates.push({ type: "system", user: "System", role: "System", message: "Task completed — complaint marked Resolved", timestamp: now });
+        updates.push({ type: "status", user: userName, role, message: "Resolved", timestamp: now });
       }
 
       else if (actionId === "confirm") {
@@ -2196,16 +1872,15 @@ export default function App() {
       }
 
       else if (actionId === "reopen") {
-        // Move current task into history, reset to initial status
+        // Move current task into history, reset complaint to Open
         if (linkedTask) {
           taskHistory.push(linkedTask);
         }
         linkedTask = null;
         assignedTo = null;
-        status = c.type === "report" ? "logged" : "open";
+        status = "open";
         resolution = undefined;
-        const what = c.type === "report" ? "Report" : "Complaint";
-        updates.push({ type: "system", user: "System", role: "System", message: `${what} reopened by client`, timestamp: now });
+        updates.push({ type: "system", user: "System", role: "System", message: "Complaint reopened by client", timestamp: now });
         updates.push({ type: "comment", user: userName, role, message: "Reopened — issue not fully resolved.", timestamp: now });
       }
 
@@ -2322,7 +1997,6 @@ export default function App() {
             <CreateComplaintPage
               onCancel={goList}
               onSubmit={submitComplaint}
-              role={role}
             />
           )}
           {view.name === "detail" && detailComplaint && (
