@@ -1,0 +1,82 @@
+{
+  "type": "MENU",
+  "name": "Vertika Tekno Lokacipta",
+  "description": "Field Operations Platform",
+  "logoUrl": "https://firebasestorage.googleapis.com/v0/b/otq-01-ase2/o/id%2F2022%2Fvtl%2Ficon%2Fvtl-icon-90x90.png?alt=media&token=755ccd3e-5d41-4d14-80b2-7c3efc4e4def",
+  "email": "suryawdj@gmail.com",
+  "costCenters": "Induk◆Kantor Pusat◆Product Group",
+  "footer": "Powered by Consteon",
+  "children": [
+    "...Dashboard, Workforce, Attendance, etc. from Web Menu 2 N col (existing pipeline)...",
+    {
+      "label": "Patrol Report",
+      "icon": "UserStar",
+      "path": "/patrol",
+      "key": "patrolReport",
+      "parent": "patrol",
+      "pageData": {
+        "title": "Patrol Report",
+        "topbar": {
+          "alignment": "start",
+          "children": [
+            {
+              "type": "DROPDOWN",
+              "key": "costCenter",
+              "cell": "Patroli!F5",
+              "placeholder": "Choose cost center",
+              "options": "Semua◆Induk◆Kantor Pusat◆Product Group",
+              "emptyText": "Cost center not found",
+              "variant": "outline"
+            },
+            {
+              "type": "DATE",
+              "key": "startDate",
+              "cell": "Patroli!C5",
+              "placeholder": "Choose start date",
+              "variant": "outline"
+            },
+            {
+              "type": "DATE",
+              "key": "endDate",
+              "cell": "Patroli!C6",
+              "placeholder": "Choose end date",
+              "variant": "outline"
+            },
+            {
+              "type": "BUTTON",
+              "variant": "outline",
+              "size": "icon",
+              "icon": "FilterIcon",
+              "text": "Apply",
+              "data": "costCenter◆startDate◆endDate",
+              "onClick": {
+                "type": "SUBMIT",
+                "url": "https://autsorz.consteon.ai/api/spreadsheet",
+                "method": "POST",
+                "target": "mainContent",
+                "onSuccess": {
+                  "toast": "Filter applied successfully.",
+                  "then": "REFRESH_CONTENT"
+                },
+                "onError": {
+                  "toast": "Failed to load data."
+                }
+              }
+            }
+          ]
+        },
+        "spreadsheet": {
+          "id": "mainContent",
+          "src": "https://docs.google.com/spreadsheets/d/1bpuiI-71sIKx6AOiSyb5BvCO7UNwAgqi0n_Nxrla-oY/edit?gid=2099023861#gid=2099023861",
+          "permission": "C◆U◆D",
+          "rowHeader": 8,
+          "rowStartData": 9
+        },
+        "bottomBar": {
+          "alignment": "end",
+          "children": []
+        }
+      }
+    }
+  ]
+}
