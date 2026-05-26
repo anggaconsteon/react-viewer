@@ -1,0 +1,57 @@
+{
+  "label": "Sales Performance",
+  "icon": "ChartLine",
+  "path": "/sales/performance",
+  "key": "salesPerformance",
+  "parent": "salesMarketing",
+  "pageData": {
+    "title": "Sales Performance",
+    "topbar": {
+      "alignment": "start",
+      "children": [
+        {
+          "type": "DROPDOWN",
+          "key": "region",
+          "cell": "Dashboard!B2",
+          "placeholder": "Choose region",
+          "options": "Semua Region◆Jakarta◆Surabaya◆Bandung◆Medan",
+          "emptyText": "Region not found",
+          "variant": "outline"
+        },
+        {
+          "type": "SPACER"
+        },
+        {
+          "type": "BUTTON",
+          "variant": "outline",
+          "size": "icon",
+          "icon": "FilterIcon",
+          "text": "Apply",
+          "data": "region",
+          "onClick": {
+            "type": "SUBMIT",
+            "url": "https://autsorz.consteon.ai/api/spreadsheet",
+            "method": "POST",
+            "target": "mainContent",
+            "onSuccess": {
+              "toast": "Filter applied successfully.",
+              "then": ""
+            },
+            "onError": {
+              "toast": "Failed to load data."
+            }
+          }
+        }
+      ]
+    },
+    "spreadsheet": {
+      "id": "mainContent",
+      "src": "https://docs.google.com/spreadsheets/d/1B19envLgBiyxgM8MUKWNjxaIjQQ50M9mjkn-QgjAXtM/edit?gid=564995506#gid=564995506",
+      "permission": "C◆U◆D"
+    },
+    "bottomBar": {
+      "alignment": "end",
+      "children": []
+    }
+  }
+}
