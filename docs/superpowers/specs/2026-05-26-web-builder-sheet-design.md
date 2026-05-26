@@ -263,3 +263,29 @@ Adding more tokens later (`[CC_LIST_ALL]`, `[USER_NAME]`, etc.) = add one more S
 - **Sheet layout:** C4 — pure op1Screen mirror (header row + widget rows; col D auto-resolved; col E ARRAYFORMULA concat; col F TRUE/FALSE toggle).
 - **Menu RBAC scope:** A — global menu permission, independent of CC.
 - **Token set at launch:** `[CC_LIST]` only.
+
+## Implementation status (2026-05-26)
+
+Plan executed end-to-end: `docs/superpowers/plans/2026-05-26-web-builder-sheet.md`.
+
+**Landed:**
+- New tabs `Web Widget` (4 templates: DROPDOWN, DATE, SPACER, BUTTON_SUBMIT) and `Web Screen` (31-col schema).
+- Two reference pages live: `patrolReport` (with `[CC_LIST]` token in CC dropdown) and `salesPerformance` (literal Region options).
+- `Web JSON!C6` per-user spill upgraded to (a) append Web Screen pages to the children array and (b) substitute `[CC_LIST]` per user's `ccstr`.
+- Per-user output verified for 3 emails: `suryawdj@gmail.com`, `dsambas@vertesc.com`, `dyani.saryono@gmail.com`. CC dropdown options resolve correctly per user.
+- Fixtures: `json/web-screen-patrol-report.expected.json`, `json/web-screen-sales-performance.expected.json`, `json/web-json-suryawdj.expected.json`.
+
+**Adaptations from spec (discovered during implementation):**
+- Spreadsheet locale is `in_ID`. All formulas use `;` as the argument separator, not `,`. Inside string literals, commas remain literal.
+- The col E ARRAYFORMULA evolved from the spec's row-anchor-only form to detect ALL page-header rows: `IF(NOT(ISNUMBER(A:A)), "JSON", widget-logic)`. Required so multiple page-header rows in the same tab each render `"JSON"` as the col-E label.
+- Web JSON anchor row is `C6` (existing schema with metadata in rows 1–4 + header in row 5), not the spec's `C2`.
+- Existing pipeline uses `Otorisasi Cost Center` (v1, transposed: CCs in col B / emails in row 1) rather than the v2 matrix the spec proposed. Kept v1 — no migration done in this iteration.
+- Page children pipeline keeps `Web Menu 2!N` as the primary source (so existing menus like Dashboard/Workforce/Attendance/etc. keep working) and Web Screen pages are appended via `FILTER('Web Screen'!B$2:B$1000; ISTEXT('Web Screen'!A$2:A$1000))`. Future iteration could move all page authoring into Web Screen and have Web Menu 2 only hold hierarchy.
+- Spec's plan referenced `Web Menu 2!K:K` for the pageKey filter — col K is indeed `Menu Key`, but in this iteration we did not switch the children pipeline to filter by `Menu Key`, since the existing label-based filter still works for legacy menus.
+- Formula ranges use `:1000` instead of `:10000` to avoid an out-of-bounds REF! error in the freshly-created `Web Screen` tab. The plan's `:10000` may exceed the new tab's row count depending on default Google Sheets allocation.
+
+**Deferred / open:**
+- Add Web Screen pages (`patrolReport`, `salesPerformance`) to `Web Menu 2` so they participate in RBAC filtering. Currently they are appended unconditionally to every user's `children` array.
+- Migrate `Otorisasi Cost Center` v1 → v2 in the Web JSON formula.
+- Performance benchmark on large user/page counts.
+- Validation helper column flagging widget rows where col B's template references a `[TOKEN]` for which the corresponding column is unfilled.
