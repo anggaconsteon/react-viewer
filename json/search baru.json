@@ -1,0 +1,145 @@
+{
+    "type": "RBT",
+    "alignment": "spaceevenly",
+    "search": "2◼MENUNGGU",
+    "children": [
+        {
+            "text": "Kembalikan",
+            "action": "savesend",
+            "route": "vertikaTeknoLokaciptaLogIncident",
+            "delay": 5,
+            "gpsPosition": 2,
+            "flag": "report-incident",
+            "buttonColor": "red",
+            "textColor": "white",
+            "addToTable": "",
+            "chain": {
+                "type": "DO_DIALOG",
+                "title": "Kembalikan Laporan",
+                "children": [
+                    {
+                        "type": "TXT",
+                        "data": "Laporan dikembalikan ke pelapor."
+                    },
+                    {
+                        "type": "RBT",
+                        "alignment": "center",
+                        "children": [
+                            {
+                                "text": "Ok",
+                                "route": "vertikaTeknoLokaciptaLogIncident"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "text": "Terima",
+            "action": "savesend",
+            "route": "vertikaTeknoLokaciptaLogIncident",
+            "delay": 5,
+            "gpsPosition": 2,
+            "flag": "report-incident",
+            "buttonColor": "blue",
+            "textColor": "white",
+            "addToTable": "",
+            "updateTableRow": "$test/report-incident//vtl.report-incident⭘tablevid◼20342033315492⭘search◼1★<request_vid>⭘<2>◼DITINJAU",
+            "chain": {
+                "type": "DO_DIALOG",
+                "title": "Laporan Diterima",
+                "children": [
+                    {
+                        "type": "TXT",
+                        "data": "Laporan telah diterima dan akan ditinjau."
+                    },
+                    {
+                        "type": "RBT",
+                        "alignment": "center",
+                        "children": [
+                            {
+                                "text": "Ok",
+                                "route": "vertikaTeknoLokaciptaLogIncident"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "text": "Assign",
+            "action": "savesend",
+            "route": "vertikaTeknoLokaciptaLogIncident",
+            "delay": 5,
+            "gpsPosition": 2,
+            "flag": "report-incident",
+            "buttonColor": "green",
+            "textColor": "white",
+            "chain": {
+                "type": "DO_BOTTOM_SHEET",
+                "title": "Assign Petugas",
+                "height": "0.7",
+                "children": [
+                    {
+                        "type": "TXT",
+                        "data": "Pilih petugas yang akan ditugaskan:"
+                    },
+                    {
+                        "type": "TXF",
+                        "variant": "tableSearch",
+                        "com": "auz",
+                        "isEnabled": "",
+                        "table": "vtl.workforce",
+                        "qr": "uqr",
+                        "children": [
+                            {
+                                "type": "TXT",
+                                "data": "Nama (2) : <2>",
+                                "margin": "10,0,0,0"
+                            },
+                            {
+                                "type": "TXT",
+                                "data": "Position (5) : <5>",
+                                "margin": "0,10,0,0"
+                            },
+                            {
+                                "type": "TXT",
+                                "data": "Site (6) : <6>",
+                                "margin": "0,10,0,0"
+                            }
+                        ],
+                        "margin": "0,0,0,0",
+                        "icon": "account_box",
+                        "style": "",
+                        "currentValue": "",
+                        "size": 18,
+                        "format": "vtl.workforce",
+                        "position": 16,
+                        "text": "Pilih Nama Pengganti12◆Pilih◆Batal◆Scan QR di name tag◆Pencarian◆Tulis nama atau site◆{\\\"searchDisplayType\\\":\\\"text1\\\", \\\"content\\\":\\\"VID : <0>\\\\nNama : <1>\\\\nSite : <5>\\\"}◆Lokasi tidak ada dalam daftar◆Pengguna tidak ada dalam daftar◆Anda di luar batas lokasi yang ditentukan◆QR Tidak dikenal◆Error",
+                        "buttonIcon": "qr_code_scanner",
+                        "tableContentReference": "2◆18:1",
+                        "filter": "",
+                        "indexStart": 0
+                    },
+                    {
+                        "type": "RBT",
+                        "alignment": "spaceevenly",
+                        "children": [
+                            {
+                                "text": "Batal",
+                                "route": ""
+                            },
+                            {
+                                "text": "Assign",
+                                "action": "savesend",
+                                "com": "auz",
+                                "updateTableRow": "$test/report-incident//vtl.report-incident⭘tablevid◼20342033315492⭘search◼1★<request_vid>⭘<3>◼DITINJAU⭘<20>◼◁30▷⭘<22>◼87544551624342⭘<23>◼Agenia Demo-7⭘<24>◼◀2|T7|Ddd MMM yyyy HH:mm▶⭘<25>◼◀2▶",
+                                "route": "vertikaTeknoLokaciptaLogIncident"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

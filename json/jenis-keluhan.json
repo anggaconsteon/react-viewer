@@ -1,0 +1,10 @@
+{
+    "type": "SELECTABLE_BTN",
+    "variant": "grid",
+    "title": "JENIS KELUHAN",
+    "height": 48,
+    "maxGrid": 2,
+    "position": 7,
+    "bgSelected": "gray",
+    "text": "Kebersihan◆AC & pendingin◆Listrik & lampu◆Air & plumbing◆Keamanan◆Lainnya"
+}

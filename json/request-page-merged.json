@@ -1,0 +1,184 @@
+{
+  "title": "Request Approval",
+  "children": [
+    {
+      "type": "APPROVAL",
+      "role": "APPROVER",
+      "ledgerCode": "APPROVE-LEAVE",
+      "vidtable": "2321421421421",
+      "table": "$test/request-approval//vtl.leave-request",
+      "search": "7◼(Nomer CC)⭘2◼(Status)",
+      "conditions": "[[◀7▶◼VID CC 456◁1▷◼APPROVED,◁2▷◼PENDING], [◀7▶◼VID CC 123◁1▷◼PENDING]]",
+      "toDo": "[PENDING, APPROVED, REJECTED]",
+      "text": "Approvals◆<23> . <10>◆<22>◆<8>",
+      "typeField": 26,
+      "route": "vertikaTeknoLokaciptaRequestDetail⭘no_request◼<1>",
+      "buttons": [
+        {
+          "text": "Reject",
+          "color": "red",
+          "icon": "thumb_down",
+          "updateTableRow": "⭘tablevid◼<PLACEHOLDER_VID>⭘search◼1★<1>⭘<2>◼REJECTED⭘◁3▷◼12312312(VID proxy)◁4▷◼Angga(Dari proxy)⭘<20>◼◁1▷⭘<21>◼◁2▷⭘<27>◼◀1|T7|yyyy-MM-dd HH:mm:ss▶",
+          "chain": {
+            "type": "DO_DIALOG",
+            "title": "Request Rejected",
+            "children": [
+              {
+                "type": "TXT",
+                "data": "Request has been rejected."
+              },
+              {
+                "type": "RBT",
+                "alignment": "center",
+                "children": [
+                  {
+                    "text": "OK"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "text": "Approve",
+          "color": "green",
+          "icon": "thumb_up",
+          "updateTableRow": "⭘tablevid◼<PLACEHOLDER_VID>⭘search◼1★<1>⭘<2>◼APPROVED⭘◁3▷◼12312312(VID proxy)◁4▷◼Angga(Dari proxy)⭘<20>◼◁1▷⭘<21>◼◁2▷⭘<27>◼◀1|T7|yyyy-MM-dd HH:mm:ss▶",
+          "chain": {
+            "type": "DO_DIALOG",
+            "title": "Request Approved",
+            "children": [
+              {
+                "type": "TXT",
+                "data": "Request has been approved."
+              },
+              {
+                "type": "RBT",
+                "alignment": "center",
+                "children": [
+                  {
+                    "text": "OK"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "type": "WORKER_CARD_DETAIL",
+      "role": "APPROVER",
+      "table": "$<env>/<workspace>//vtl.request",
+      "search": "1◼<no_request>",
+      "conditions": "[[◀1▶◼<no_request>]]",
+      "text": "WORKER◆<23>◆<24> . <7> . <25>",
+      "avatar": "<23>"
+    },
+    {
+      "type": "APPROVAL",
+      "role": "APPROVER",
+      "variant": "detail",
+      "ledgerCode": "APPROVE-REQUEST-DETAIL",
+      "vidtable": "<PLACEHOLDER_VID>",
+      "table": "$<env>/<workspace>//vtl.request",
+      "search": "1◼<request_vid>",
+      "conditions": "[[◀1▶◼<request_vid>]]",
+      "text": "<10>◆Submitted <8>◆Date◆Start◆End◆Location◆Duration◆REASON",
+      "content": "<14>◆<14>◆<16>◆<7>◆<17> days",
+      "reason": "<11>",
+      "status": "<19>",
+      "image": "<12>"
+    },
+    {
+      "type": "COMMENT_DETAIL",
+      "role": "APPROVER",
+      "ledgerCode": "REQUEST-CONVERSATION",
+      "table": "$<env>/<workspace>//vtl.request-comment",
+      "search": "1◼<no_request>",
+      "conditions": "[[◀1▶◼<no_request>]]",
+      "text": "CONVERSATION",
+      "content": "<5>◆<6>◆<7>◆<8>"
+    },
+    {
+      "type": "txf",
+      "variant": "commentBox",
+      "role": "APPROVER",
+      "table": "$<env>/<workspace>//vtl.request-comment",
+      "text": "Add a comment...◆Send◆Attach file◆Komentar kosong",
+      "icon": "attach_file",
+      "label": "",
+      "hint": "Add a comment...",
+      "maxLength": 500,
+      "size": 18,
+      "position": 7,
+      "buttonIcon": "send",
+      "buttonLabel": "Send",
+      "disabledWhenEmpty": true,
+      "attachmentEnabled": true,
+      "attachmentFolder": "id/<workspace>/vtl/request-comment/<no_request>",
+      "attachmentFilename": "<no_request>-<timestamp>",
+      "attachmentMax": 3,
+      "addToTable": "$<env>/<workspace>//vtl.request-comment⭘retention◼4320⭘<2>◼<no_request>⭘<3>◼SUPERVISOR⭘<4>◼◁1▷⭘<5>◼◁2▷⭘<6>◼◀1|T7|yyyy-MM-dd HH:mm:ss▶⭘<7>◼◀3▶⭘<8>◼⭘<9>◼◀4▶"
+    },
+    {
+      "type": "RBT",
+      "role": "APPROVER",
+      "alignment": "end",
+      "children": [
+        {
+          "text": "Reject",
+          "color": "red",
+          "icon": "thumb_down",
+          "updateTableRow": "$<env>/<workspace>//vtl.request⭘tablevid◼<PLACEHOLDER_VID>⭘search◼1★<request_vid>⭘<19>◼REJECTED⭘<20>◼◁1▷⭘<21>◼◁2▷⭘<27>◼◀1|T7|yyyy-MM-dd HH:mm:ss▶",
+          "chain": {
+            "type": "DO_DIALOG",
+            "title": "Request Rejected",
+            "children": [
+              {
+                "type": "TXT",
+                "data": "Request has been rejected."
+              },
+              {
+                "type": "RBT",
+                "alignment": "center",
+                "children": [
+                  {
+                    "text": "OK",
+                    "route": "pending-approval-page"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "text": "Approve",
+          "color": "green",
+          "icon": "thumb_up",
+          "updateTableRow": "$<env>/<workspace>//vtl.request⭘tablevid◼<PLACEHOLDER_VID>⭘search◼1★<request_vid>⭘<19>◼APPROVED⭘<20>◼◁1▷⭘<21>◼◁2▷⭘<27>◼◀1|T7|yyyy-MM-dd HH:mm:ss▶",
+          "chain": {
+            "type": "DO_DIALOG",
+            "title": "Request Approved",
+            "children": [
+              {
+                "type": "TXT",
+                "data": "Request has been approved."
+              },
+              {
+                "type": "RBT",
+                "alignment": "center",
+                "children": [
+                  {
+                    "text": "OK",
+                    "route": "pending-approval-page"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

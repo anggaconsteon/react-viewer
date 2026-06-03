@@ -1,0 +1,13 @@
+CHECKOUT
+-- Bentuk Data nya
+0attendance-check-out◆1776652652172◆checkpoint◆◆-6.3163029◆106.6448089◆◆ID◆15345◆Banten◆Kabupaten Tangerang◆Kecamatan Cisauk◆Sampora◆Jalan Horizon Broadway◆26◆true-location⬤
+
+-- Format addToTable
+addToTable":vtl.attendance-check-out⭘retention◼4320⭘description◼check-out attendance data⭘flag◼attendance-check-out⭘<1>◼attendance-check-out⭘<2>◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶⭘<3>◼87544551624342⭘<4>◼Agenia Demo-7⭘<5>◼◀5▶⭘<6>◼◀6▶⭘<7>◼◀10▶⭘<8>◼◀11▶⭘<9>◼◀12▶⭘<10>◼◀13▶⭘<11>◼◀14▶⭘<12>◼◀15▶⭘<13>◼◀16▶⭘<14>◼◀3▶
+
+
+-- Hasilnya
+addToTable":vtl.attendance-check-out⭘retention◼4320⭘description◼check-out attendance data⭘flag◼attendance-check-out⭘<1>◼attendance-check-out⭘<2>◼Sat 19 Sep 2026 23:37:32⭘<3>◼87544551624342⭘<4>◼Agenia Demo-7⭘<5>◼-6.3163029⭘<6>◼106.6448089⭘<7>◼Banten⭘<8>◼Kabupaten Tangerang⭘<9>◼Kecamatan Cisauk⭘<10>◼Sampora⭘<11>◼Jalan Horizon Broadway⭘<12>◼26⭘<13>◼true-location⭘<14>◼checkpoint
+
+
+=auzSettings!J3&"⭘retention◼4320⭘description◼field-report⭘flag◼patrol⭘<1>◼"&K234&"⭘<2>◼◀2|T"&System!$B$3&"|Ddd MMM yyyy HH:mm▶⭘<3>◼"&Settings!$B$1&"⭘<4>◼"&Settings!$B$2&"⭘<5>◼◁5▷⭘<6>◼◁11▷⭘<7>◼◁10▷⭘<8>◼"&'op1'!$L$7&"⭘<9>◼"&'op1'!$L$8&"⭘<10>◼◁3▷⭘<11>◼◁12▷"

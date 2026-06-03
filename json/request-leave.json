@@ -1,0 +1,262 @@
+{
+    "title": "Vertika Tekno Lokacipta",
+    "children": [
+        {
+            "type": "HGR",
+            "width": 86,
+            "row": 1,
+            "fontSize": 13,
+            "beforeSpacing": 5,
+            "afterSpacing": 0,
+            "sortBy": "alphabetically",
+            "children": [
+                {
+                    "url": "https://firebasestorage.googleapis.com/v0/b/otq-01-ase2/o/c%2Fautsorz%2Ficon%2Fautsorz-icon-90x90.png?alt=media&token=094f1974-8b12-44d0-9841-8d7ab75cf061",
+                    "text": "Autsorz",
+                    "route": "autsorz"
+                },
+                {
+                    "url": "https://firebasestorage.googleapis.com/v0/b/otq-01-ase2/o/id%2F2022%2Fvtl%2Ficon%2Fvtl-icon-90x90.png?alt=media&token=755ccd3e-5d41-4d14-80b2-7c3efc4e4def",
+                    "text": "VTL",
+                    "route": "vertikaTeknoLokacipta"
+                },
+                {
+                    "url": "https://firebasestorage.googleapis.com/v0/b/otq-01-ase2/o/c%2Finfo%2Finfo-icon-90x90.png?alt=media&token=5f67937c-a214-4399-b768-338456d6a732",
+                    "text": "Info",
+                    "route": "info"
+                }
+            ]
+        },
+        {
+            "type": "TXT",
+            "afterSpacing": 0,
+            "size": 4,
+            "data": " "
+        },
+        {
+            "type": "TXT",
+            "size": 14,
+            "data": "Permohonan Cuti"
+        },
+        {
+            "type": "TXT",
+            "afterSpacing": 0,
+            "size": 4,
+            "data": " "
+        },
+        {
+            "type": "NUMBER",
+            "text": "No. Permohonan:◆Akan di buat otomatis",
+            "template": "REQ-{{YYYY}}-{{COUNTER(vtl.request,6)}}",
+            "textColor": "blue_700",
+            "size": 18,
+            "executable": "execute1,generate_number",
+            "position": 17,
+            "margin": "8,16,8,16"
+        },
+        {
+            "type": "DRD",
+            "margin": "0,0,0,0",
+            "labelPosition": "left",
+            "alignment": "SPACEBETWEEN",
+            "size": 18,
+            "currentValue": "",
+            "position": 10,
+            "label": "Jenis Cuti",
+            "style": "",
+            "option": [
+                "Cuti Tahunan",
+                "Cuti Khusus",
+                "Cuti Melahirkan",
+                "Cuti Besar",
+                "Cuti Tanpa Gaji"
+            ],
+            "data": [
+                "Cuti Tahunan",
+                "Cuti Khusus",
+                "Cuti Melahirkan",
+                "Cuti Besar",
+                "Cuti Tanpa Gaji"
+            ],
+            "hint": "Pilih Jenis Cuti"
+        },
+        {
+            "type": "TXF",
+            "variant": "date",
+            "margin": "0,0,0,0",
+            "icon": "59615",
+            "label": "Tanggal Mulai",
+            "style": "[STYLE]",
+            "currentValue": "",
+            "hint": "Tap disini untuk pilih waktu",
+            "size": 16,
+            "position": 5,
+            "format": "d-MMM-yyyy"
+        },
+        {
+            "type": "TXF",
+            "variant": "date",
+            "margin": "0,0,0,0",
+            "icon": "59615",
+            "label": "Tanggal Selesai",
+            "style": "[STYLE]",
+            "currentValue": "",
+            "hint": "Tap disini untuk pilih waktu",
+            "size": 16,
+            "position": 6,
+            "format": "d-MMM-yyyy"
+        },
+        {
+            "type": "TXT",
+            "afterSpacing": 0,
+            "size": 4,
+            "data": " "
+        },
+        {
+            "type": "TXF",
+            "variant": "numeric",
+            "icon": 59375,
+            "label": "Jumlah Hari Cuti",
+            "currentValue": "",
+            "hint": "",
+            "maxLength": 0,
+            "size": 18,
+            "position": 7
+        },
+        {
+            "type": "TXF",
+            "variant": "tableSearch",
+            "com": "auz",
+            "isEnabled": "",
+            "table": "vtl.workforce",
+            "qr": "uqr",
+            "children": [
+                {
+                    "type": "TXT",
+                    "data": "Nama (2) : <2>",
+                    "margin": "10,0,0,0"
+                },
+                {
+                    "type": "TXT",
+                    "data": "Position (5) : <5>",
+                    "margin": "0,10,0,0"
+                },
+                {
+                    "type": "TXT",
+                    "data": "Site (6) : <6>",
+                    "margin": "0,10,0,0"
+                }
+            ],
+            "margin": "0,0,0,0",
+            "icon": "account_box",
+            "style": "",
+            "currentValue": "",
+            "size": 18,
+            "format": "vtl.workforce",
+            "position": 22,
+            "text": "Pilih Nama Pengganti◆Pilih◆Batal◆Scan QR di name tag◆Pencarian◆Tulis nama atau site◆{\\\"searchDisplayType\\\":\\\"text1\\\", \\\"content\\\":\\\"VID : <0>\\\\nNama : <1>\\\\nSite : <5>\\\"}◆Lokasi tidak ada dalam daftar◆Pengguna tidak ada dalam daftar◆Anda di luar batas lokasi yang ditentukan◆QR Tidak dikenal◆Error",
+            "buttonIcon": "qr_code_scanner",
+            "tableContentReference": "2◆23:1",
+            "filter": "",
+            "indexStart": 0
+        },
+        {
+            "type": "TXF",
+            "variant": "generic",
+            "icon": 59389,
+            "label": "Nama Pengganti",
+            "currentValue": "",
+            "hint": "Nama Pengganti",
+            "maxLength": 0,
+            "size": 18,
+            "position": 23,
+            "isEnabled": "FALSE"
+        },
+        {
+            "type": "TXF",
+            "variant": "text",
+            "icon": 57527,
+            "label": "Keterangan",
+            "currentValue": "",
+            "hint": "",
+            "maxLength": 0,
+            "size": 18,
+            "position": 3,
+            "line": 3,
+            "border": true
+        },
+        {
+            "type": "GET_IMAGES",
+            "margin": "0,0,0,50",
+            "size": 18,
+            "position": 4,
+            "label": "Dokumen Pendukung",
+            "style": "Normal",
+            "labelPosition": "end",
+            "size": 18,
+            "alignment": "spaceEvenly",
+            "text": "+",
+            "previewSize": 120,
+            "camera": 1,
+            "folder": "id/2022/vtl/field-report/agenia-demo-7",
+            "filename": "87544551624342-2026-05-11-13-09-05",
+            "imageParameter": "400,400,80",
+            "currentValue": "",
+            "max": 5
+        },
+        {
+            "type": "TXF",
+            "variant": "static",
+            "margin": "[MARGIN]",
+            "icon": "59472",
+            "label": "Status",
+            "style": "[STYLE]",
+            "hint": "[HINT]",
+            "currentValue": "PENDING",
+            "size": 16,
+            "position": 9
+        },
+        {
+            "type": "RBT",
+            "alignment": "spaceevenly",
+            "children": [
+                {
+                    "position": 251,
+                    "text": "Kirim",
+                    "run": "3:disable◆4:disable◆6:disable◆7:disable◆10:disable◆11:disable◆15:disable◆16:disable◆18:disable◆17:generate_number◆251:disable",
+                    "action": "savesend",
+                    "com": "auz",
+                    "width": "full",
+                    "height": 64,
+                    "buttonColor": "grey",
+                    "textColor": "",
+                    "route": "",
+                    "delay": 5,
+                    "gpsPosition": 2,
+                    "flag": "request-leave",
+                    "addToTable": "$test/request-approval//vtl.trial-approval⭘retention◼4320⭘description◼Leave request for vtl⭘flag◼leave-request⭘tablevid◼20342033315492⭘index◼1★S◼5★N◼7★N◼9★N◼13★S◼2★S⭘<1>◼◁17▷⭘<2>◼◁9▷⭘<3>◼[]⭘<4>◼[[1, PENDING, , , ], [2, PENDING, , , ]]⭘<5>◼87544551624342⭘<6>◼Agenia Demo-7⭘<7>◼83674161979544⭘<8>◼Product Group⭘<9>◼83674161979544⭘<10>◼Product Group⭘<11>◼◀2|T7|Ddd MMM yyyy HH:mm▶⭘<12>◼◀2▶⭘<13>◼◁10▷⭘<14>◼◁3▷⭘<15>◼◁4▷ ⭘<16>◼◁5▷  ⭘<17>◼◁5|T7|Ddd MMM yyyy HH:mm▷⭘<18>◼◁6▷  ⭘<19>◼◁6|T7|Ddd MMM yyyy HH:mm▷⭘<20>◼◁7▷⭘<21>◼◁8▷⭘<22>◼◁22▷⭘<23>◼◁23▷⭘<24>◼Sekuriti⭘<30>◼Tanggal ◁5|T7|Ddd MMM yyyy▷ sampai ◁6|T7|Ddd MMM yyyy▷, jumlah ◁7▷ hari, dengan pengganti ◁23▷",
+                    "chain": {
+                        "type": "DO_DIALOG",
+                        "title": "Permohonan Cuti",
+                        "children": [
+                            {
+                                "type": "TXT",
+                                "data": "Terkirim"
+                            },
+                            {
+                                "type": "RBT",
+                                "alignment": "center",
+                                "children": [
+                                    {
+                                        "text": "Ok",
+                                        "route": ""
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

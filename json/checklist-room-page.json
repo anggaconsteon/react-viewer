@@ -1,0 +1,246 @@
+{
+    "title": "Vertika Tekno Lokacipta",
+    "children": [
+        {
+            "type": "HGR",
+            "width": 86,
+            "row": 1,
+            "fontSize": 13,
+            "beforeSpacing": 5,
+            "afterSpacing": 0,
+            "sortBy": "alphabetically",
+            "children": [
+                {
+                    "url": "https://firebasestorage.googleapis.com/v0/b/otq-01-ase2/o/c%2Fautsorz%2Ficon%2Fautsorz-icon-90x90.png?alt=media&token=094f1974-8b12-44d0-9841-8d7ab75cf061",
+                    "text": "Autsorz",
+                    "route": "autsorz"
+                },
+                {
+                    "url": "https://firebasestorage.googleapis.com/v0/b/otq-01-ase2/o/id%2F2022%2Fvtl%2Ficon%2Fvtl-icon-90x90.png?alt=media&token=755ccd3e-5d41-4d14-80b2-7c3efc4e4def",
+                    "text": "VTL",
+                    "route": "vertikaTeknoLokacipta"
+                },
+                {
+                    "url": "https://firebasestorage.googleapis.com/v0/b/otq-01-ase2/o/c%2Finfo%2Finfo-icon-90x90.png?alt=media&token=5f67937c-a214-4399-b768-338456d6a732",
+                    "text": "Info",
+                    "route": "info"
+                }
+            ]
+        },
+        {
+            "type": "TXT",
+            "afterSpacing": 0,
+            "size": 4,
+            "data": " "
+        },
+        {
+            "type": "TXT",
+            "size": 28,
+            "data": "Checklist Rest Room"
+        },
+        {
+            "type": "txf",
+            "variant": "qrScan",
+            "qr": "lqr",
+            "table": "",
+            "text": "Lokasi◆Kode lokasi◆Batal◆Scan QR lokasi◆Pencarian◆Tulis nama atau site◆{\\\"searchDisplayType\\\":\\\"text1\\\", \\\"content\\\":\\\"Lokasi : <1>\\\\nToleransi : <4> meter\\\"}◆Lokasi tidak ada dalam daftar◆Lokasi tidak dalam daftar◆Anda di luar batas lokasi◆QR Tidak dikenal◆QR Tidak dikenal",
+            "margin": "10,0,0,0",
+            "icon": "pin_drop",
+            "label": "",
+            "hint": "Scan QR atau isi lokasi",
+            "maxLength": 0,
+            "size": 18,
+            "position": 5,
+            "buttonIcon": "qr_code_2",
+            "locationNamePosition": 11
+        },
+        {
+            "type": "TXT",
+            "afterSpacing": 0,
+            "size": 4,
+            "data": " "
+        },
+        {
+            "type": "PROGRESS_BAR",
+            "bgColor": "#FFF",
+            "lineColor": "#000",
+            "showPercent": "TRUE",
+            "showCount": "TRUE",
+            "width": 100,
+            "height": 20,
+            "borderRadius": 10,
+            "positionId": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8
+            ],
+            "text": "Kondisi Area◆◆·◆◆/◆✓◆Verified◆tasks◆%"
+        },
+        {
+            "type": "TXT",
+            "afterSpacing": 0,
+            "size": 4,
+            "data": " "
+        },
+        {
+            "type": "TASKLIST",
+            "position": 1,
+            "width": "100",
+            "height": 40,
+            "borderRadius": 10,
+            "category": "12",
+            "margin": "0,5,0,0",
+            "text": "Bersihkan kloset◆Selesai◆Tidak tersedia di area ini◆Dilewati - Kunjungi kembali nanti◆Masalah - jelaskan dalam laporan.",
+            "options": "✓◆Selesai◆Tandai Selesai◆✖◆Tidak Tersedia◆Barang tidak ada di area ini◆>◆Dilewati◆Kembali lagi nanti"
+        },
+        {
+            "type": "TASKLIST",
+            "position": 2,
+            "width": "100",
+            "height": 40,
+            "borderRadius": 10,
+            "category": "13",
+            "margin": "0,5,0,0",
+            "text": "Bersihkan wastafel◆Selesai◆Tidak tersedia di area ini◆Dilewati - Kunjungi kembali nanti◆Masalah - jelaskan dalam laporan.",
+            "options": "✓◆Selesai◆Tandai Selesai◆✖◆Tidak Tersedia◆Barang tidak ada di area ini◆>◆Dilewati◆Kembali lagi nanti"
+        },
+        {
+            "type": "TASKLIST",
+            "position": 3,
+            "width": "100",
+            "height": 40,
+            "borderRadius": 10,
+            "category": "14",
+            "margin": "0,5,0,0",
+            "text": "Bersihkan kaca◆Selesai◆Tidak tersedia di area ini◆Dilewati - Kunjungi kembali nanti◆Masalah - jelaskan dalam laporan.",
+            "options": "✓◆Selesai◆Tandai Selesai◆✖◆Tidak Tersedia◆Barang tidak ada di area ini◆>◆Dilewati◆Kembali lagi nanti"
+        },
+        {
+            "type": "TASKLIST",
+            "position": 4,
+            "width": "100",
+            "height": 40,
+            "borderRadius": 10,
+            "category": "15",
+            "margin": "0,5,0,0",
+            "text": "Isi ulang sabun◆Selesai◆Tidak tersedia di area ini◆Dilewati - Kunjungi kembali nanti◆Masalah - jelaskan dalam laporan.",
+            "options": "✓◆Selesai◆Tandai Selesai◆✖◆Tidak Tersedia◆Barang tidak ada di area ini◆>◆Dilewati◆Kembali lagi nanti"
+        },
+        {
+            "type": "TASKLIST",
+            "position": 5,
+            "width": "100",
+            "height": 40,
+            "borderRadius": 10,
+            "category": "16",
+            "margin": "0,5,0,0",
+            "text": "Isi ulang tissue◆Selesai◆Tidak tersedia di area ini◆Dilewati - Kunjungi kembali nanti◆Masalah - jelaskan dalam laporan.",
+            "options": "✓◆Selesai◆Tandai Selesai◆✖◆Tidak Tersedia◆Barang tidak ada di area ini◆>◆Dilewati◆Kembali lagi nanti"
+        },
+        {
+            "type": "TASKLIST",
+            "position": 6,
+            "width": "100",
+            "height": 40,
+            "borderRadius": 10,
+            "category": "17",
+            "margin": "0,5,0,0",
+            "text": "Buang sampah◆Selesai◆Tidak tersedia di area ini◆Dilewati - Kunjungi kembali nanti◆Masalah - jelaskan dalam laporan.",
+            "options": "✓◆Selesai◆Tandai Selesai◆✖◆Tidak Tersedia◆Barang tidak ada di area ini◆>◆Dilewati◆Kembali lagi nanti"
+        },
+        {
+            "type": "TASKLIST",
+            "position": 7,
+            "width": "100",
+            "height": 40,
+            "borderRadius": 10,
+            "category": "18",
+            "margin": "0,5,0,0",
+            "text": "Pel lantai◆Selesai◆Tidak tersedia di area ini◆Dilewati - Kunjungi kembali nanti◆Masalah - jelaskan dalam laporan.",
+            "options": "✓◆Selesai◆Tandai Selesai◆✖◆Tidak Tersedia◆Barang tidak ada di area ini◆>◆Dilewati◆Kembali lagi nanti"
+        },
+        {
+            "type": "TASKLIST",
+            "position": 8,
+            "width": "100",
+            "height": 40,
+            "borderRadius": 10,
+            "category": "19",
+            "margin": "0,5,0,0",
+            "text": "Semprot pewangi◆Selesai◆Tidak tersedia di area ini◆Dilewati - Kunjungi kembali nanti◆Masalah - jelaskan dalam laporan.",
+            "options": "✓◆Selesai◆Tandai Selesai◆✖◆Tidak Tersedia◆Barang tidak ada di area ini◆>◆Dilewati◆Kembali lagi nanti"
+        },
+        {
+            "type": "TXF",
+            "variant": "text",
+            "icon": 57527,
+            "label": "Keterangan",
+            "currentValue": "",
+            "hint": "",
+            "maxLength": 0,
+            "size": 18,
+            "position": 10,
+            "line": 3,
+            "border": true
+        },
+        {
+            "type": "GET_IMAGES",
+            "margin": "0,0,0,50",
+            "size": 18,
+            "position": 3,
+            "label": "Dokumen Pendukung",
+            "style": "Normal",
+            "labelPosition": "end",
+            "size": 18,
+            "alignment": "spaceEvenly",
+            "text": "+",
+            "previewSize": 120,
+            "camera": 1,
+            "folder": "id/2022/vtl/field-report/agenia-demo-7",
+            "filename": "87544551624342-2026-05-08-08-23-38",
+            "imageParameter": "400,400,80",
+            "currentValue": "",
+            "max": 3
+        },
+        {
+            "type": "RBT",
+            "alignment": "spaceevenly",
+            "children": [
+                {
+                    "text": "Kirim",
+                    "action": "savesend",
+                    "route": "vertikaTeknoLokacipta",
+                    "delay": 5,
+                    "gpsPosition": 2,
+                    "flag": "report-restroom-checklist",
+                    "addToTable": "vtl.report-package⭘retention◼4320⭘description◼field-report⭘flag◼package⭘<1>◼⭘<2>◼◀2|T7|Ddd MMM yyyy HH:mm▶⭘<3>◼87544551624342⭘<4>◼Agenia Demo-7⭘<5>◼◁4▷⭘<6>◼◁11▷⭘<7>◼◁10▷⭘<8>◼Product Group⭘<9>◼Product Group⭘<10>◼◁3▷",
+                    "chain": {
+                        "type": "DO_DIALOG",
+                        "title": "Laporan Ceklis Umum",
+                        "children": [
+                            {
+                                "type": "TXT",
+                                "data": "Terkirim"
+                            },
+                            {
+                                "type": "RBT",
+                                "alignment": "center",
+                                "children": [
+                                    {
+                                        "text": "Ok",
+                                        "route": "vertikaTeknoLokacipta"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

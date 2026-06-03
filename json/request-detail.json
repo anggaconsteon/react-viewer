@@ -1,0 +1,80 @@
+{
+  "type": "APPROVAL",
+  "ledgerCode": "APPROVE-REQUEST-DETAIL",
+  "vidTable": "<PLACEHOLDER_VID>",
+  "table": "$<env>/<workspace>//vtl.request",
+  "search": "1◼(Request VID)",
+  "conditions": "[[◀1▶◼<request_vid>]]",
+  "typeConfig": {
+    "izin": {
+      "icon": "flight",
+      "iconColor": "#7C3AED",
+      "bgTint": "#EDE9FE",
+      "label": "Leave"
+    },
+    "lembur": {
+      "icon": "schedule",
+      "iconColor": "#B45309",
+      "bgTint": "#FEF3C7",
+      "label": "Overtime"
+    },
+    "absen-manual": {
+      "icon": "edit",
+      "iconColor": "#BE185D",
+      "bgTint": "#FFE4E6",
+      "label": "Manual Check-In"
+    },
+    "cuti": {
+      "icon": "beach_access",
+      "iconColor": "#0891B2",
+      "bgTint": "#CFFAFE",
+      "label": "Annual Leave"
+    },
+    "tukar-shift": {
+      "icon": "swap_horiz",
+      "iconColor": "#4338CA",
+      "bgTint": "#E0E7FF",
+      "label": "Shift Swap"
+    },
+    "sakit": {
+      "icon": "local_hospital",
+      "iconColor": "#16A34A",
+      "bgTint": "#DCFCE7",
+      "label": "Sick"
+    }
+  },
+  "sections": ["worker", "request", "actionBar"],
+  "workerSection": {
+    "headerLabel": "WORKER",
+    "headerIcon": "shield",
+    "avatar": "derived from <3>",
+    "name": "<3>",
+    "subtitle": "<4> · <5> · <6>"
+  },
+  "requestSection": {
+    "headerLabel": "typeConfig[<8>].label uppercased",
+    "headerIcon": "typeConfig[<8>].icon",
+    "topBorderColor": "typeConfig[<8>].iconColor",
+    "statusBadge": "<18>",
+    "title": "<9>",
+    "submittedAt": "<17>",
+    "metaRows": "Date: <10>\nStart time: <11>\nEnd time: <12>\nLocation: <13>\nShift affected: <15>",
+    "reasonHeader": "REASON",
+    "reasonBody": "<16>"
+  },
+  "buttons": [
+    {
+      "label": "APPROVED",
+      "color": "green",
+      "icon": "thumb_up",
+      "actions": "<18>◼APPROVED⭘<19>◼◁1▷⭘<20>◼◁2▷⭘<21>◼◀1|T7|yyyy-MM-dd HH:mm:ss▶"
+    },
+    {
+      "label": "REJECTED",
+      "color": "red",
+      "icon": "thumb_down",
+      "disabledWhenEmpty": true,
+      "actions": "<18>◼REJECTED⭘<19>◼◁1▷⭘<20>◼◁2▷⭘<21>◼◀1|T7|yyyy-MM-dd HH:mm:ss▶◆$<env>/<workspace>//vtl.request-comment⭘<1>◼◀2▶⭘<2>◼◁3▷⭘<3>◼SUPERVISOR⭘<4>◼◁1▷⭘<5>◼◁2▷⭘<6>◼◀1|T7|yyyy-MM-dd HH:mm:ss▶⭘<7>◼◀3▶⭘<8>◼Rejected"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "type": "APPROVAL",
+  "ledgerCode": "APPROVE-LEAVE", // DARI PROXY
+  "vidTable": "2321421421421",
+  "table": "test/request-approval//vtl.leave-request",
+  "search": "4◼(Nomer CC)⭘13◼(Status)",
+  "conditions": "[[◀4▶◼VID CC 456◁1▷◼APPROVED,◁2▷◼PENDING], [◀4▶◼VID CC 123◁1▷◼PENDING]]",
+  "toDo": "[PENDING, APPROVED, REJECTED]",
+  "rowKey": "<1>",
+  "text": "Pending Approvals◆WORKER◆<4> · <5> · <6>◆<9>◆Submitted <17>◆Date◆Start time◆End time◆Location◆Shift affected◆REASON◆CONVERSATION◆Add a comment...",
+  "content": "Date: <10>\nStart time: <11>\nEnd time: <12>\nLocation: <13>\nShift affected: <15>",
+  "reason": "<16>",
+  "worker": "<3>◆<4> · <5> · <6>",
+  "commentTable": "$<env>/<workspace>//vtl.request-comment",
+  "commentSearch": "2◼(Request VID)",
+  "commentConditions": "[[◀2▶◼<request_vid>]]",
+  "commentOrderBy": "6 ASC",
+  "comment": "<5>◆<6>◆<7>◆<8>",
+  "commentAddToTable": "$<env>/<workspace>//vtl.request-comment⭘<1>◼◀2▶⭘<2>◼◁3▷⭘<3>◼◁4▷⭘<4>◼◁1▷⭘<5>◼◁2▷⭘<6>◼◀1|T7|yyyy-MM-dd HH:mm:ss▶⭘<7>◼◀3▶⭘<8>◼",
+  "buttons": [
+    {
+      "label": "APPROVED",
+      "color": "green",
+      "actions": "<18>◼APPROVED⭘<19>◼◁1▷⭘<20>◼◁2▷⭘<21>◼◀1|T7|yyyy-MM-dd HH:mm:ss▶"
+    },
+    {
+      "label": "REJECTED",
+      "color": "red",
+      "actions": "<18>◼REJECTED⭘<19>◼◁1▷⭘<20>◼◁2▷⭘<21>◼◀1|T7|yyyy-MM-dd HH:mm:ss▶◆$<env>/<workspace>//vtl.request-comment⭘<1>◼◀2▶⭘<2>◼◁3▷⭘<3>◼SUPERVISOR⭘<4>◼◁1▷⭘<5>◼◁2▷⭘<6>◼◀1|T7|yyyy-MM-dd HH:mm:ss▶⭘<7>◼◀3▶⭘<8>◼Rejected"
+    }
+  ]
+}

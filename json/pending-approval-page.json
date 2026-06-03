@@ -1,0 +1,65 @@
+{
+  "type": "APPROVAL",
+  "ledgerCode": "APPROVE-LEAVE",
+  "vidtable": "20342033315492",
+  "table": "$test/request-approval//vtl.trial-approval",
+  "search": "7◼(Nomer CC)⭘2◼(Status)",
+  "conditions": "[[◀7▶◼VID CC 456◁1▷◼APPROVED,◁2▷◼PENDING], [◀7▶◼VID CC 123◁1▷◼PENDING]]",
+  "toDo": "[PENDING, APPROVED, REJECTED]",
+  "role": "APPROVER",
+  "text": "Approvals◆<6>◆<13>◆<11>",
+  "typeField": 26,
+  "route": "vertikaTeknoLokaciptaRequestDetail⭘no_request◼<1>",
+  "buttons": [
+    {
+      "text": "Rejected",
+      "color": "green",
+      "actions": "<2>◼REJECTED⭘<3>◼87544551624342⭘<4>◼Agenia Demo-7⭘<5>◼◀5|T7|Ddd MMM yyyy HH:mm▶⭘<6>◼◀5▶",
+      "chain": {
+        "type": "DO_DIALOG",
+        "title": "Request Rejected",
+        "children": [
+          {
+            "type": "TXT",
+            "data": "Request has been rejected."
+          },
+          {
+            "type": "RBT",
+            "alignment": "center",
+            "children": [
+              {
+                "text": "OK",
+                "route": "vertikaTeknoLokaciptaRequestApproval"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "text": "Approved",
+      "color": "green",
+      "actions": "<2>◼APPROVED⭘<3>◼87544551624342⭘<4>◼Agenia Demo-7⭘<5>◼◀5|T7|Ddd MMM yyyy HH:mm▶⭘<6>◼◀5▶",
+      "chain": {
+        "type": "DO_DIALOG",
+        "title": "Request Approved",
+        "children": [
+          {
+            "type": "TXT",
+            "data": "Request has been approved."
+          },
+          {
+            "type": "RBT",
+            "alignment": "center",
+            "children": [
+              {
+                "text": "OK",
+                "route": "vertikaTeknoLokaciptaRequestApproval"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

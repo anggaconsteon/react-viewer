@@ -1,0 +1,12 @@
+{
+  "type": "LIST_ITEM_CARD",
+  "ledgerCode": "REPORT-INCIDENT",
+  "vidtable": "20342033315492",
+  "table": "$test/report-incident//vtl.report-incident",
+  "search": "7◼87544551624342",
+  "toDo": "[SEMUA, MENUNGGU, DITINJAU, SELESAI, DITUTUP]",
+  "text": "◆<6>◆<13>◆<11>◆Cari Laporan◆Ketik Untuk Mencari◆Doni Hermawan◆Belum di-assign",
+  "route": "vertikaTeknoLokaciptaIncidentDetail",
+  "showIcon": "FALSE",
+  "showProgress": "FALSE"
+}

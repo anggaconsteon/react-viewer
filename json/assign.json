@@ -1,0 +1,116 @@
+{
+    "type": "RBT",
+    "alignment": "spaceevenly",
+    "conditions": "[[◀3▶◼MENUNGGU]]",
+    "children": [
+        {
+            "text": "Kembalikan",
+            "action": "savesend",
+            "route": "vertikaTeknoLokaciptaLogIncident",
+            "delay": 5,
+            "gpsPosition": 2,
+            "flag": "report-incident",
+            "buttonColor": "red",
+            "textColor": "white",
+            "addToTable": "",
+            "chain": {
+                "type": "DO_DIALOG",
+                "title": "Kembalikan Laporan",
+                "children": [
+                    {
+                        "type": "TXT",
+                        "data": "Laporan dikembalikan ke pelapor."
+                    },
+                    {
+                        "type": "RBT",
+                        "alignment": "center",
+                        "children": [
+                            {
+                                "text": "Ok",
+                                "route": "vertikaTeknoLokaciptaLogIncident"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "text": "Terima",
+            "action": "savesend",
+            "route": "vertikaTeknoLokaciptaLogIncident",
+            "delay": 5,
+            "gpsPosition": 2,
+            "flag": "report-incident",
+            "buttonColor": "blue",
+            "textColor": "white",
+            "addToTable": "",
+            "updateTableRow": "$test/report-incident//vtl.report-incident⭘tablevid◼20342033315492⭘search◼1★<request_vid>⭘<2>◼DITINJAU",
+            "chain": {
+                "type": "DO_DIALOG",
+                "title": "Laporan Diterima",
+                "children": [
+                    {
+                        "type": "TXT",
+                        "data": "Laporan telah diterima dan akan ditinjau."
+                    },
+                    {
+                        "type": "RBT",
+                        "alignment": "center",
+                        "children": [
+                            {
+                                "text": "Ok",
+                                "route": "vertikaTeknoLokaciptaLogIncident"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "text": "Assign",
+            "action": "savesend",
+            "route": "vertikaTeknoLokaciptaLogIncident",
+            "delay": 5,
+            "gpsPosition": 2,
+            "flag": "report-incident",
+            "buttonColor": "green",
+            "textColor": "white",
+            "chain": {
+                "type": "DO_DIALOG",
+                "title": "Assign Petugas",
+                "children": [
+                    {
+                        "type": "TXT",
+                        "data": "Pilih petugas yang akan ditugaskan:"
+                    },
+                    {
+                        "type": "DRD",
+                        "position": 30,
+                        "label": "Petugas",
+                        "hint": "Pilih petugas",
+                        "option": "Ahmad Saputra◆Budi Santoso◆Charlie Wijaya",
+                        "data": "90001111111111◆90002222222222◆90003333333333",
+                        "size": 18
+                    },
+                    {
+                        "type": "RBT",
+                        "alignment": "spaceevenly",
+                        "children": [
+                            {
+                                "text": "Batal",
+                                "route": ""
+                            },
+                            {
+                                "text": "Assign",
+                                "action": "savesend",
+                                "com": "auz",
+                                "updateTableRow": "$test/report-incident//vtl.report-incident⭘tablevid◼20342033315492⭘search◼1★<request_vid>⭘<3>◼DITINJAU⭘<20>◼◁30▷⭘<22>◼87544551624342⭘<23>◼Agenia Demo-7⭘<24>◼◀2|T7|Ddd MMM yyyy HH:mm▶⭘<25>◼◀2▶",
+                                "route": "vertikaTeknoLokaciptaLogIncident"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

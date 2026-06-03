@@ -1,20 +1,26 @@
+,
 {
     "type": "RBT",
     "alignment": "spaceevenly",
     "children": [
         {
-            "text": "Kirim◆Lokasi tidak valid◆Nonaktifkan Fake GPS◆Diluar Area Absensi◆Silahkan menuju lokasi yang ditentukan",
+            "position": 251,
+            "text": "Kirim",
+            "run": "3:disable◆4:disable◆6:disable◆7:disable◆10:disable◆11:disable◆15:disable◆16:disable◆18:disable◆17:generate_number◆251:disable",
             "action": "savesend",
-            "route": "vertikaTeknoLokacipta",
+            "com": "auz",
+            "width": "full",
+            "height": 64,
+            "buttonColor": "grey",
+            "textColor": "",
+            "route": "",
             "delay": 5,
             "gpsPosition": 2,
-            "flag": "report-patrol",
-            "fakeGpsAllowed": false,
-            "outPositionAllowed": false,
-            "addToTable": "vtl.report-patrol⭘retention◼4320⭘description◼field-report⭘flag◼patrol⭘<1>◼report-patrol⭘<2>◼◀️2|T7|Ddd MMM yyyy HH:mm▶️⭘<3>◼85924392055168⭘<4>◼Muhamad Angga⭘<5>◼◁5▷⭘<6>◼◁1 1▷⭘<7>◼◁10▷⭘<8>◼Product Group⭘<9>◼Product Group⭘<10>◼◁3▷⭘<11>◼◁12▷",
+            "flag": "request-leave",
+            "addToTable": "$test/request-approval//vtl.trial-approval⭘retention◼4320⭘description◼Leave request for vtl⭘flag◼leave-request⭘tablevid◼20342033315492⭘index◼1★S◼5★N◼7★N◼9★N◼13★S◼2★S⭘<1>◼◁17▷⭘<2>◼◁15▷⭘<3>◼[]⭘<4>◼[[1, PENDING, , , , ], [2, PENDING, , , , ], [3, PENDING, , , , ]]⭘<5>◼87544551624342⭘<6>◼Agenia Demo-7⭘<7>◼83674161979544⭘<8>◼Product Group⭘<9>◼83674161979544⭘<10>◼Product Group⭘<11>◼◀2|T7|Ddd MMM yyyy HH:mm▶⭘<12>◼◀2▶⭘<13>◼◁4▷⭘<14>◼◁3▷⭘<15>◼◁4▷ ⭘<16>◼◁6▷⭘<17>◼◁6|T7|Ddd MMM yyyy HH:mm▷⭘<18>◼◁7▷⭘<19>◼◁7|T7|Ddd MMM yyyy HH:mm▷⭘<20>◼◁11▷⭘<21>◼◁8▷⭘<22>◼◁16▷⭘<23>◼◁18▷⭘<24>◼Sekuriti⭘<25>◼https://firebasestorage.googleapis.com/v0/b/otq-01-ase2/o/c%2Fautsorz%2Ficon2%2Ficon-190210-request-vacation-leave-90x90.png?alt=media&token=d121e040-361d-42e8-befe-92db28ca56fa⭘<30>◼Tanggal ◁6|T7|Ddd MMM yyyy▷ sampai ◁7|T7|Ddd MMM yyyy▷, jumlah ◁11▷ hari, dengan pengganti ◁23▷",
             "chain": {
                 "type": "DO_DIALOG",
-                "title": "Laporan Patroli",
+                "title": "Permohonan Cuti",
                 "children": [
                     {
                         "type": "TXT",
@@ -26,7 +32,7 @@
                         "children": [
                             {
                                 "text": "Ok",
-                                "route": "vertikaTeknoLokacipta"
+                                "route": ""
                             }
                         ]
                     }

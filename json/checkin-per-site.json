@@ -1,0 +1,179 @@
+{
+  "_meta": {
+    "uxPattern": "A - Peek expand. Single page, 1 collapse level. Expanded site card shows top-N priority workers inline + 'Lihat semua (N)' tail CTA -> drill to CheckinSiteDetail for full list.",
+    "designSource": "consteon-worker-app.html#s-routes-grouped (Smart-group shell) + consteon-supervisor-app.html#s-attendance (data shape)",
+    "pages": [
+      "CheckinPerSite (main)",
+      "CheckinSiteDetail (Lihat semua drill)"
+    ],
+    "tables": {
+      "vtl.area-stats": "Aggregated per-area attendance snapshot. One row per area per shift.",
+      "vtl.checkin-active": "Live worker check-in records. One row per worker. Filtered by area_id on detail. Includes priorityRank column for peek sort."
+    },
+    "widgetTabExtensionRequired": {
+      "type": "displayList",
+      "newVariant": "tableCardPeek",
+      "newProps": {
+        "peekTable": "child table joined by foreign key",
+        "peekJoinOn": "<N> = <M>",
+        "peekLimit": "int, top-N rows shown inline when expanded",
+        "peekSort": "<N> asc|desc, sort key for priority ordering",
+        "peekContent": "child-row text using ◆ delim",
+        "peekRowImage": "<N> child column",
+        "peekTrailingText": "<N> child column",
+        "peekTailCta": "tail row text with <peekCount> token, e.g. 'Lihat semua (<peekCount>)'",
+        "peekTailRoute": "route to drill page",
+        "peekTailPassParams": "siteId=<N>"
+      },
+      "rationale": "Existing tableCardInteractive renders flat rows only. Peek variant needed to render N child rows + CTA inline inside parent card body."
+    },
+    "proxyMap_areaStats": {
+      "1": "areaId",
+      "2": "areaName",
+      "3": "areaIcon (building-skyscraper / parking / store)",
+      "4": "hadirCount",
+      "5": "totalAssigned",
+      "6": "pct",
+      "7": "summaryLine ('12/12 hadir · 100%')",
+      "8": "statusKey (success/warning/danger)",
+      "9": "absentCount",
+      "10": "areaSubMeta",
+      "11": "trailingIcon (circle-check / alert-circle)"
+    },
+    "proxyMap_checkinActive": {
+      "1": "recordId",
+      "2": "checkinTs",
+      "3": "workerName",
+      "4": "workerInitial",
+      "5": "areaId",
+      "6": "areaName",
+      "7": "currentActivity",
+      "8": "statusKey",
+      "9": "lastSeenLocation",
+      "10": "priorityRank (1=absent, 2=paused/warning, 3=active, 4=standby) - drives peek sort",
+      "11": "ctaLabel (Reassign / Hubungi / empty)",
+      "12": "ctaRoute"
+    },
+    "peekPriorityOrder": "asc on <10> -> absent first, then paused, active, standby"
+  },
+  "CheckinPerSite": [
+    {
+      "type": "TXT",
+      "variant": "kpiBanner",
+      "margin": "8,12,8,4",
+      "text": "TOTAL HARI INI◆<1>/<2> hadir◆<3>%◆attendance rate",
+      "bgColor": "info"
+    },
+    {
+      "type": "HORIZONTAL_BUTTON_CHOICE",
+      "margin": "8,8,8,4",
+      "alignment": "start",
+      "text": "Semua area◆Hadir lengkap◆Ada absen◆Critical",
+      "default": "Semua area",
+      "filterTarget": "siteList"
+    },
+    {
+      "type": "displayList",
+      "variant": "tableCardPeek",
+      "name": "siteList",
+      "margin": "0,4,0,4",
+      "alignment": "start",
+      "text": "Check-in per site◆Cari area◆Ketik nama area",
+      "size": 14,
+      "height": 600,
+      "table": "vtl.area-stats",
+      "sort": "asc",
+      "indexStart": 1,
+      "icon": "<3>",
+      "content": "<2>◆<7>",
+      "trailingIcon": "<11>",
+      "expandable": true,
+      "expandedByDefault": "<8>◼warning◆<8>◼danger",
+      "filter": "<8>",
+      "peekTable": "vtl.checkin-active",
+      "peekJoinOn": "<5>=<1>",
+      "peekLimit": 3,
+      "peekSort": "<10> asc",
+      "peekContent": "<3>◆<7>",
+      "peekRowImage": "<4>",
+      "peekTrailingText": "<2|T7|HH:mm>",
+      "peekRowBgByStatus": "<8>",
+      "peekRowCta": "<11>",
+      "peekRowCtaRoute": "<12>",
+      "peekTailCta": "Lihat semua (<peekCount>) →",
+      "peekTailRoute": "checkinSiteDetail",
+      "peekTailPassParams": "siteId=<1>★siteName=<2>"
+    },
+    {
+      "type": "TXT",
+      "variant": "infoBanner",
+      "margin": "12,12,12,12",
+      "icon": "bulb",
+      "bgColor": "info",
+      "text": "Smart suggest:◆<4> area lengkap. <5> area butuh perhatian — tap untuk lihat siapa yang absen."
+    }
+  ],
+  "CheckinSiteDetail": [
+    {
+      "type": "TXT",
+      "variant": "areaSummaryHeader",
+      "margin": "8,12,8,4",
+      "text": "<1>◆<2>/<3> hadir · <4>%◆Shift pagi · <5>",
+      "icon": "<6>",
+      "bgColor": "<7>"
+    },
+    {
+      "type": "HORIZONTAL_BUTTON_CHOICE",
+      "margin": "8,4,8,4",
+      "alignment": "start",
+      "text": "Semua◆Absen◆Aktif patroli◆Standby◆Paused",
+      "default": "Semua",
+      "filterTarget": "workerList"
+    },
+    {
+      "type": "displayList",
+      "variant": "tableCardInteractive",
+      "name": "workerList",
+      "margin": "0,4,0,4",
+      "alignment": "start",
+      "text": "Worker site ini",
+      "size": 13,
+      "height": 560,
+      "table": "vtl.checkin-active",
+      "search": "5★<siteId>",
+      "sort": "asc",
+      "sortKey": "<10>",
+      "indexStart": 1,
+      "icon": "user",
+      "content": "<3>◆<7>",
+      "detail": "Aktivitas: <7>\nLokasi terakhir: <9>\nClock-in: <2|T7|HH:mm>",
+      "filter": "<8>",
+      "image": "<4>",
+      "trailingText": "<2|T7|HH:mm>",
+      "rowBgByStatus": "<8>",
+      "rowCta": "<11>",
+      "rowCtaRoute": "<12>"
+    },
+    {
+      "type": "RBT",
+      "alignment": "spaceevenly",
+      "margin": "12,16,12,12",
+      "children": [
+        {
+          "text": "Reassign worker absen",
+          "action": "route",
+          "route": "vertikaTeknoLokaciptaReassignWorker",
+          "buttonColor": "danger",
+          "textColor": "white",
+          "icon": "user-shield",
+          "width": "full",
+          "height": 48,
+          "passParams": "siteId=<siteId>"
+        }
+      ]
+    }
+  ]
+}
+
+
+$test/84214220504259/⭘r◼4320⭘tablevid◼20342033315492⭘fc◼report-patrol⭘ty◼report-patrol⭘p◼vertikaTeknoLokaciptaReportPatrol⭘ts◼◀2|T7|Ddd MMM yyyy HH:mm▶⭘cv◼87544551624342⭘cn◼Agenia Demo-7⭘an◼83674161979544⭘sn◼◁5▷⭘sv◼◁11▷⭘d◼◁10▷⭘i◼◁3▷

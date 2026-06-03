@@ -1,0 +1,102 @@
+{
+    "type": "MENU",
+    "name": "Vertika Tekno Lokacipta",
+    "description": "Electronic Distribution & Marketing Management System",
+    "logoUrl": "",
+    "email": "admin@vertikatekno.com",
+    "costCenters": "Head Office◆Sales Division◆Retail Channel◆Modern Trade◆E-Commerce",
+    "footer": "Powered by Consteon",
+    "children": [
+        {
+            "label": "Patrol",
+            "icon": "UserStar",
+            "path": "",
+            "key": "patrol",
+            "urlSheet": "",
+            "children": [
+                {
+                    "label": "Patrol Report",
+                    "icon": "UserStar",
+                    "path": "/patrol",
+                    "key": "patrolReport",
+                    "urlSheet": "https: //docs.google.com/spreadsheets/d/1bpuiI-71sIKx6AOiSyb5BvCO7UNwAgqi0n_Nxrla-oY/edit?gid=2099023861#gid=2099023861",
+                    "parent": "Patrol",
+                    "pageData": {
+                        "title": "Patrol Report",
+                        "description": "Patrol report details",
+                        "topbar": {
+                            "alignment": "start",
+                            "children": [
+                                {
+                                    "type": "DROPDOWN",
+                                    "key": "costCenter",
+                                    "variant": "outline",
+                                    "cell": "Patroli!F5",
+                                    "placeholder": "Choose cost center",
+                                    "emptyText": "Cost center not found",
+                                    "options": "Semua◆GoTo Kemang Timur◆GoTo Bekasi"
+                                },
+                                {
+                                    "type": "DATE",
+                                    "key": "startDate",
+                                    "variant": "outline",
+                                    "cell": "Patroli!C5",
+                                    "placeholder": "Choose start date"
+                                },
+                                {
+                                    "type": "DATE",
+                                    "key": "endDate",
+                                    "variant": "outline",
+                                    "cell": "Patroli!C6",
+                                    "placeholder": "Choose end date"
+                                },
+                                {
+                                    "type": "BUTTON",
+                                    "variant": "outline",
+                                    "size": "icon",
+                                    "icon": "FilterIcon",
+                                    "text": "Apply",
+                                    "data": "costCenter◆startDate◆endDate",
+                                    "onClick": {
+                                        "type": "SUBMIT",
+                                        "url": "https: //autsorz.consteon.ai/api/spreadsheet",
+                                        "method": "POST",
+                                        "target": "mainContent",
+                                        "onSuccess": {
+                                            "toast": "Filter applied successfully.",
+                                            "then": "REFRESH_CONTENT"
+                                        },
+                                        "onError": {
+                                            "toast": "Failed to load data."
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        "content": [
+                            {
+                                "type": "SPREADSHEET",
+                                "id": "mainContent",
+                                "src": "https: //docs.google.com/spreadsheets/d/1bpuiI-71sIKx6AOiSyb5BvCO7UNwAgqi0n_Nxrla-oY/edit?gid=2099023861#gid=2099023861",
+                                "permission": "CUD",
+                                "rowHeader": 8,
+                                "rowStartData": 9,
+                                "visibleSheets": "Patroli◆Laporan",
+                                "sheetName": "Patroli"
+                            },
+                            // INI BISA DITAMBAHKAN LAGI MISAL MAP
+                            {
+                                "type": "MAP"
+                                // field nya masih belum tahu
+                            }
+                        ],
+                        "bottomBar": {
+                            "alignment": "end",
+                            "children": []
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

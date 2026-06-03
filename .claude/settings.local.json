@@ -5,7 +5,21 @@
       "Bash(pip install:*)",
       "Bash(python3 gen_location_doc.py)",
       "Bash(python3 gen_timeline_doc.py)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "mcp__gsheets__get_sheet_data",
+      "mcp__gsheets__update_cells",
+      "mcp__gsheets__list_sheets",
+      "mcp__gsheets__batch_update_cells",
+      "mcp__gsheets__create_sheet",
+      "Skill(widget-workflow)",
+      "Bash(where pandoc *)",
+      "Bash(pandoc --version)",
+      "Bash(python -c \"import markdown; print\\('markdown ok'\\)\")",
+      "Bash(python -c \"import reportlab; print\\('reportlab ok'\\)\")",
+      "Bash(python -c \"import weasyprint; print\\('weasyprint ok'\\)\")",
+      "Bash(python -c \"import xhtml2pdf; print\\('xhtml2pdf ok'\\)\")",
+      "Bash(python *)",
+      "Bash(PYTHONIOENCODING=utf-8 python .tmp_formula_gen.py)"
     ]
   }
 }

@@ -1,0 +1,567 @@
+{
+    "type": "MENU",
+    "name": "Vertika Tekno Lokacipta",
+    "description": "Field Operations Platform",
+    "logoUrl": "https://firebasestorage.googleapis.com/v0/b/otq-01-ase2/o/id%2F2022%2Fvtl%2Ficon%2Fvtl-icon-90x90.png?alt=media&token=755ccd3e-5d41-4d14-80b2-7c3efc4e4def",
+    "email": "suryawdj@gmail.com",
+    "costCenters": "Induk",
+    "footer": "Powered by Consteon",
+    "children": [
+        {
+            "label": "Dashboard",
+            "icon": "LayoutDashboard",
+            "path": "/dashboard",
+            "key": "dashboard",
+            "pageData": {
+                "title": "Dashboard",
+                "description": "",
+                "topbar": {
+                    "alignment": "start",
+                    "children": []
+                },
+                "content": [
+                    {
+                        "type": "SPREADSHEET",
+                        "id": "mainContent",
+                        "src": "https://docs.google.com/spreadsheets/d/1FTaIACxtt0KEfj5ycXH50s_MhpmK9eDgibju5K7Hb4A/edit?pli=1&gid=815108501#gid=815108501",
+                        "permission": "C◆U◆D",
+                        "visibleSheets": "",
+                        "sheetName": "",
+                        "rowHeader": 1,
+                        "rowStartData": 2
+                    }
+                ],
+                "bottomBar": {
+                    "alignment": "end",
+                    "children": []
+                }
+            }
+        },
+        {
+            "label": "Workforce",
+            "icon": "LayoutDashboard",
+            "path": "",
+            "key": "workforce",
+            "children": [
+                {
+                    "label": "Daftar Pegawai",
+                    "icon": "UsersRound",
+                    "path": "/employee",
+                    "key": "daftarPegawai",
+                    "parent": "Workforce",
+                    "pageData": {
+                        "title": "Daftar Pegawai",
+                        "description": "",
+                        "topbar": {
+                            "alignment": "start",
+                            "children": []
+                        },
+                        "content": [
+                            {
+                                "type": "SPREADSHEET",
+                                "id": "mainContent",
+                                "src": "https://docs.google.com/spreadsheets/d/1FTaIACxtt0KEfj5ycXH50s_MhpmK9eDgibju5K7Hb4A/edit?pli=1&gid=74580014#gid=74580014",
+                                "permission": "C◆U◆D",
+                                "visibleSheets": "",
+                                "sheetName": "",
+                                "rowHeader": 1,
+                                "rowStartData": 2
+                            }
+                        ],
+                        "bottomBar": {
+                            "alignment": "end",
+                            "children": []
+                        }
+                    }
+                },
+                {
+                    "label": "Pendaftaran Pegawai",
+                    "icon": "UsersRound",
+                    "path": "/employee/change",
+                    "key": "pendaftaranPegawai",
+                    "parent": "Workforce",
+                    "pageData": {
+                        "title": "Pendaftaran Pegawai",
+                        "description": "",
+                        "topbar": {
+                            "alignment": "start",
+                            "children": []
+                        },
+                        "content": [
+                            {
+                                "type": "SPREADSHEET",
+                                "id": "mainContent",
+                                "src": "https://docs.google.com/spreadsheets/d/1FTaIACxtt0KEfj5ycXH50s_MhpmK9eDgibju5K7Hb4A/edit?pli=1&gid=862885426#gid=862885426",
+                                "permission": "C◆U◆D",
+                                "visibleSheets": "",
+                                "sheetName": "",
+                                "rowHeader": 1,
+                                "rowStartData": 2
+                            }
+                        ],
+                        "bottomBar": {
+                            "alignment": "end",
+                            "children": []
+                        }
+                    }
+                },
+                {
+                    "label": "Perubahan Data",
+                    "icon": "UsersRound",
+                    "path": "/employee/data",
+                    "key": "perubahanData",
+                    "parent": "Workforce",
+                    "pageData": {
+                        "title": "Perubahan Data",
+                        "description": "",
+                        "topbar": {
+                            "alignment": "start",
+                            "children": []
+                        },
+                        "content": [
+                            {
+                                "type": "SPREADSHEET",
+                                "id": "mainContent",
+                                "src": "https://docs.google.com/spreadsheets/d/1FTaIACxtt0KEfj5ycXH50s_MhpmK9eDgibju5K7Hb4A/edit?pli=1&gid=1209827602#gid=1209827602",
+                                "permission": "C◆U◆D",
+                                "visibleSheets": "",
+                                "sheetName": "",
+                                "rowHeader": 1,
+                                "rowStartData": 2
+                            }
+                        ],
+                        "bottomBar": {
+                            "alignment": "end",
+                            "children": []
+                        }
+                    }
+                },
+                {
+                    "label": "Mutasi",
+                    "icon": "UsersRound",
+                    "path": "/employee/mutasi",
+                    "key": "mutasi",
+                    "parent": "Workforce",
+                    "children": [
+                        {
+                            "label": "PHK",
+                            "icon": "UsersRound",
+                            "path": "/employee/phk",
+                            "key": "phk",
+                            "parent": "Mutasi",
+                            "pageData": {
+                                "title": "PHK",
+                                "description": "",
+                                "topbar": {
+                                    "alignment": "start",
+                                    "children": []
+                                },
+                                "content": [
+                                    {
+                                        "type": "SPREADSHEET",
+                                        "id": "mainContent",
+                                        "src": "https://docs.google.com/spreadsheets/d/1FTaIACxtt0KEfj5ycXH50s_MhpmK9eDgibju5K7Hb4A/edit?pli=1&gid=185069194#gid=185069194",
+                                        "permission": "C◆U◆D",
+                                        "visibleSheets": "",
+                                        "sheetName": "",
+                                        "rowHeader": 1,
+                                        "rowStartData": 2
+                                    }
+                                ],
+                                "bottomBar": {
+                                    "alignment": "end",
+                                    "children": []
+                                }
+                            }
+                        }
+                    ],
+                    "pageData": {
+                        "title": "Mutasi",
+                        "description": "",
+                        "topbar": {
+                            "alignment": "start",
+                            "children": []
+                        },
+                        "content": [
+                            {
+                                "type": "SPREADSHEET",
+                                "id": "mainContent",
+                                "src": "https://docs.google.com/spreadsheets/d/1FTaIACxtt0KEfj5ycXH50s_MhpmK9eDgibju5K7Hb4A/edit?pli=1&gid=167968070#gid=167968070",
+                                "permission": "C◆U◆D",
+                                "visibleSheets": "",
+                                "sheetName": "",
+                                "rowHeader": 1,
+                                "rowStartData": 2
+                            }
+                        ],
+                        "bottomBar": {
+                            "alignment": "end",
+                            "children": []
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "label": "Attendance",
+            "icon": "UsersRound",
+            "path": "",
+            "key": "attendance",
+            "children": [
+                {
+                    "label": "Log Presensi",
+                    "icon": "UsersRound",
+                    "path": "/attendance/log",
+                    "key": "logPresensi",
+                    "parent": "Attendance",
+                    "pageData": {
+                        "title": "Log Presensi",
+                        "description": "",
+                        "topbar": {
+                            "alignment": "start",
+                            "children": []
+                        },
+                        "content": [
+                            {
+                                "type": "SPREADSHEET",
+                                "id": "mainContent",
+                                "src": "https://docs.google.com/spreadsheets/d/1r2cZvs0Kwp4O_-9g-XAVicO2D19j3wBERDZ6d5ZLYn8/edit?gid=47742641#gid=47742641",
+                                "permission": "C◆U◆D",
+                                "visibleSheets": "",
+                                "sheetName": "",
+                                "rowHeader": 1,
+                                "rowStartData": 2
+                            }
+                        ],
+                        "bottomBar": {
+                            "alignment": "end",
+                            "children": []
+                        }
+                    }
+                },
+                {
+                    "label": "Detail Presensi",
+                    "icon": "UsersRound",
+                    "path": "/attendance/detail",
+                    "key": "detailPresensi",
+                    "parent": "Attendance",
+                    "pageData": {
+                        "title": "Detail Presensi",
+                        "description": "",
+                        "topbar": {
+                            "alignment": "start",
+                            "children": []
+                        },
+                        "content": [
+                            {
+                                "type": "SPREADSHEET",
+                                "id": "mainContent",
+                                "src": "https://docs.google.com/spreadsheets/d/1r2cZvs0Kwp4O_-9g-XAVicO2D19j3wBERDZ6d5ZLYn8/edit?gid=2122951928#gid=2122951928",
+                                "permission": "C◆U◆D",
+                                "visibleSheets": "",
+                                "sheetName": "",
+                                "rowHeader": 1,
+                                "rowStartData": 2
+                            }
+                        ],
+                        "bottomBar": {
+                            "alignment": "end",
+                            "children": []
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "label": "Operations",
+            "icon": "LayoutDashboard",
+            "path": "",
+            "key": "operations",
+            "children": [
+                {
+                    "label": "Task & Assignment",
+                    "icon": "LayoutDashboard",
+                    "path": "",
+                    "key": "taskAssignment",
+                    "parent": "Operations"
+                },
+                {
+                    "label": "Monitoring (Live)",
+                    "icon": "LayoutDashboard",
+                    "path": "",
+                    "key": "monitoringLive",
+                    "parent": "Operations"
+                },
+                {
+                    "label": "Patrol Report",
+                    "icon": "UserStar",
+                    "path": "/patrol",
+                    "key": "patrolReport",
+                    "parent": "Operations",
+                    "pageData": {
+                        "title": "Patrol Report",
+                        "description": "",
+                        "topbar": {
+                            "alignment": "start",
+                            "children": [
+                                {
+                                    "type": "DROPDOWN",
+                                    "key": "costCenter",
+                                    "cell": "Patroli!F5",
+                                    "placeholder": "Choose cost center",
+                                    "options": "Induk",
+                                    "emptyText": "Cost center not found",
+                                    "variant": "outline"
+                                },
+                                {
+                                    "type": "DATE",
+                                    "key": "startDate",
+                                    "cell": "Patroli!C5",
+                                    "placeholder": "Choose start date",
+                                    "variant": "outline"
+                                },
+                                {
+                                    "type": "DATE",
+                                    "key": "endDate",
+                                    "cell": "Patroli!C6",
+                                    "placeholder": "Choose end date",
+                                    "variant": "outline"
+                                },
+                                {
+                                    "type": "BUTTON",
+                                    "variant": "outline",
+                                    "size": "icon",
+                                    "icon": "FilterIcon",
+                                    "text": "Apply",
+                                    "data": "costCenter◆startDate◆endDate",
+                                    "onClick": {
+                                        "type": "SUBMIT",
+                                        "url": "https://autsorz.consteon.ai/api/spreadsheet",
+                                        "method": "POST",
+                                        "onSuccess": {
+                                            "toast": "Filter applied successfully.",
+                                            "then": "REFRESH_CONTENT"
+                                        },
+                                        "onError": {
+                                            "toast": "Failed to load data."
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        "content": [
+                            {
+                                "type": "SPREADSHEET",
+                                "id": "mainContent",
+                                "src": "https://docs.google.com/spreadsheets/d/1bpuiI-71sIKx6AOiSyb5BvCO7UNwAgqi0n_Nxrla-oY/edit?gid=2099023861#gid=2099023861",
+                                "permission": "C◆U◆D",
+                                "visibleSheets": "",
+                                "sheetName": "",
+                                "rowHeader": 8,
+                                "rowStartData": 9
+                            }
+                        ],
+                        "bottomBar": {
+                            "alignment": "end",
+                            "children": []
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "label": "Reports",
+            "icon": "LayoutDashboard",
+            "path": "",
+            "key": "reports",
+            "children": [
+                {
+                    "label": "Laporan Pekerjaan",
+                    "icon": "BookOpenText",
+                    "path": "/work-report",
+                    "key": "laporanPekerjaan",
+                    "parent": "Reports",
+                    "pageData": {
+                        "title": "Laporan Pekerjaan",
+                        "description": "",
+                        "topbar": {
+                            "alignment": "start",
+                            "children": []
+                        },
+                        "content": [
+                            {
+                                "type": "SPREADSHEET",
+                                "id": "mainContent",
+                                "src": "https://docs.google.com/spreadsheets/d/1BXA0naHnb0Nwj_RylntELcGaryN1ZeXjUQE5sFSjT-A",
+                                "permission": "C◆U◆D",
+                                "visibleSheets": "",
+                                "sheetName": "",
+                                "rowHeader": 1,
+                                "rowStartData": 2
+                            }
+                        ],
+                        "bottomBar": {
+                            "alignment": "end",
+                            "children": []
+                        }
+                    }
+                },
+                {
+                    "label": "Laporan Insiden",
+                    "icon": "BookOpenText",
+                    "path": "",
+                    "key": "laporanInsiden",
+                    "parent": "Reports"
+                },
+                {
+                    "label": "Rekap Absensi",
+                    "icon": "UsersRound",
+                    "path": "/presence",
+                    "key": "rekapAbsensi",
+                    "parent": "Reports",
+                    "pageData": {
+                        "title": "Rekap Absensi",
+                        "description": "",
+                        "topbar": {
+                            "alignment": "start",
+                            "children": []
+                        },
+                        "content": [
+                            {
+                                "type": "SPREADSHEET",
+                                "id": "mainContent",
+                                "src": "https://docs.google.com/spreadsheets/d/1r2cZvs0Kwp4O_-9g-XAVicO2D19j3wBERDZ6d5ZLYn8",
+                                "permission": "C◆U◆D",
+                                "visibleSheets": "",
+                                "sheetName": "",
+                                "rowHeader": 1,
+                                "rowStartData": 2
+                            }
+                        ],
+                        "bottomBar": {
+                            "alignment": "end",
+                            "children": []
+                        }
+                    }
+                },
+                {
+                    "label": "Rekap Payroll",
+                    "icon": "UsersRound",
+                    "path": "/payroll",
+                    "key": "rekapPayroll",
+                    "parent": "Reports",
+                    "pageData": {
+                        "title": "Rekap Payroll",
+                        "description": "",
+                        "topbar": {
+                            "alignment": "start",
+                            "children": []
+                        },
+                        "content": [
+                            {
+                                "type": "SPREADSHEET",
+                                "id": "mainContent",
+                                "src": "https://docs.google.com/spreadsheets/d/1ixNarZBqwadf3f6NpGXb5GzmhtAIMonh3uYcwWeydkY",
+                                "permission": "C◆U◆D",
+                                "visibleSheets": "",
+                                "sheetName": "",
+                                "rowHeader": 1,
+                                "rowStartData": 2
+                            }
+                        ],
+                        "bottomBar": {
+                            "alignment": "end",
+                            "children": []
+                        }
+                    }
+                },
+                {
+                    "label": "Sales Performance",
+                    "icon": "ChartLine",
+                    "path": "/sales/performance",
+                    "key": "salesPerformance",
+                    "parent": "Reports",
+                    "pageData": {
+                        "title": "Sales Performance",
+                        "description": "",
+                        "topbar": {
+                            "alignment": "start",
+                            "children": [
+                                {
+                                    "type": "DROPDOWN",
+                                    "key": "region",
+                                    "cell": "Dashboard!B2",
+                                    "placeholder": "Choose region",
+                                    "options": "Semua Region◆Jakarta◆Surabaya◆Bandung◆Medan",
+                                    "emptyText": "Region not found",
+                                    "variant": "outline"
+                                },
+                                {
+                                    "type": "SPACER"
+                                },
+                                {
+                                    "type": "BUTTON",
+                                    "variant": "outline",
+                                    "size": "icon",
+                                    "icon": "FilterIcon",
+                                    "text": "Apply",
+                                    "onClick": {
+                                        "type": "FETCH_CONTENT",
+                                        "url": "https://autsorz.consteon.ai/api/spreadsheet",
+                                        "method": "POST",
+                                        "target": "mainContent",
+                                        "onSuccess": {
+                                            "toast": "Filter applied successfully.",
+                                            "then": "REFRESH_CONTENT"
+                                        },
+                                        "onError": {
+                                            "toast": "Failed to load data."
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        "content": [
+                            {
+                                "type": "SPREADSHEET",
+                                "id": "mainContent",
+                                "src": "https://docs.google.com/spreadsheets/d/1B19envLgBiyxgM8MUKWNjxaIjQQ50M9mjkn-QgjAXtM/edit?gid=564995506#gid=564995506",
+                                "permission": "C◆U◆D",
+                                "visibleSheets": "",
+                                "sheetName": "",
+                                "rowHeader": 1,
+                                "rowStartData": 2
+                            }
+                        ],
+                        "bottomBar": {
+                            "alignment": "end",
+                            "children": []
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "label": "Request & Approval",
+            "icon": "LayoutDashboard",
+            "path": "",
+            "key": "requestApproval",
+            "children": [
+                {
+                    "label": "All Requests",
+                    "icon": "BookOpenText",
+                    "path": "",
+                    "key": "allRequests",
+                    "parent": "Request & Approval"
+                },
+                {
+                    "label": "Approval Queue",
+                    "icon": "BookOpenText",
+                    "path": "",
+                    "key": "approvalQueue",
+                    "parent": "Request & Approval"
+                }
+            ]
+        }
+    ]
+}

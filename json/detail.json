@@ -1,0 +1,128 @@
+{
+    "title": "Vertika Tekno Lokacipta",
+    "hideBottomBar": true,
+    "children": [
+        {
+            "type": "TXT",
+            "afterSpacing": 0,
+            "size": 4,
+            "data": " "
+        },
+        {
+            "type": "TXT",
+            "size": 18,
+            "data": "Review Request"
+        },
+        {
+            "type": "TXT",
+            "afterSpacing": 0,
+            "size": 4,
+            "data": " "
+        },
+        {
+            "type": "WORKER_CARD_DETAIL",
+            "table": "$test/request-approval//vtl.trial-approval",
+            "search": "1◼<no_request>",
+            "conditions": "[[◀1▶◼<no_request>]]",
+            "text": "WORKER◆<6>◆<24> . <8>"
+        },
+        {
+            "type": "ITEM_CARD_DETAIL",
+            "variant": "detail",
+            "ledgerCode": "APPROVE-REQUEST-DETAIL",
+            "table": "$test/request-approval//vtl.trial-approval",
+            "search": "1◼<request_vid>",
+            "conditions": "[[◀1▶◼<request_vid>]]",
+            "text": "<1>◆<13>◆Submitted <11>◆Start Date◆End Date◆Duration◆Replacement Name◆REASON◆Document",
+            "content": "<17>◆<19>◆<20> days◆<23> ",
+            "reason": "<14>",
+            "status": "<2>",
+            "image": "<15>"
+        },
+        {
+            "type": "COMMENT_DETAIL",
+            "ledgerCode": "REQUEST-CONVERSATION",
+            "table": "$test/request-approval/vtl.trial-approval/content/{docId}//comment",
+            "text": "CONVERSATION"
+        },
+        {
+            "type": "txf",
+            "variant": "commentBox",
+            "table": "$test/request-approval/vtl.trial-approval/content/{docId}//comment",
+            "text": "Add a comment...◆Send◆Attach file◆Komentar kosong",
+            "icon": "attach_file",
+            "label": "",
+            "hint": "Add a comment...",
+            "maxLength": 500,
+            "size": 12,
+            "position": 7,
+            "buttonIcon": "send",
+            "buttonLabel": "Send",
+            "disabledWhenEmpty": "TRUE",
+            "attachmentEnabled": "TRUE",
+            "attachmentFolder": "id/2026/vtl/request-comment//<no_request>",
+            "attachmentFilename": "<no_request>-<timestamp>",
+            "attachmentMax": 3,
+            "addToTable": "$test/request-approval/vtl.trial-approval/content/{docId}//comment⭘retention◼4320⭘tablevid◼⭘<1>◼Agenia Demo-7⭘<2>◼87544551624342⭘<3>◼◁7▷⭘<4>◼◀2|T7|Ddd MMM yyyy HH:mm▶⭘<5>◼⭘<6>◼",
+            "source": "camera◆gallery"
+        },
+        {
+            "type": "RBT",
+            "alignment": "end",
+            "children": [
+                {
+                    "text": "Rejected",
+                    "buttonColor": "red",
+                    "textColor": "white",
+                    "actions": "<2>◼REJECTED⭘<3>◼85924392055168⭘<4>◼Muhamad Angga⭘<5>◼◀5|T7|Ddd MMM yyyy HH:mm▶⭘<6>◼◀5▶",
+                    "chain": {
+                        "type": "DO_DIALOG",
+                        "title": "Request Rejected",
+                        "children": [
+                            {
+                                "type": "TXT",
+                                "data": "Terkirim."
+                            },
+                            {
+                                "type": "RBT",
+                                "alignment": "center",
+                                "children": [
+                                    {
+                                        "text": "OK",
+                                        "route": "vertikaTeknoLokaciptaRequestApprover"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "text": "Approved",
+                    "buttonColor": "green",
+                    "textColor": "white",
+                    "actions": "<2>◼APPROVED⭘<3>◼85924392055168⭘<4>◼Muhamad Angga⭘<5>◼◀5|T7|Ddd MMM yyyy HH:mm▶⭘<6>◼◀5▶",
+                    "chain": {
+                        "type": "DO_DIALOG",
+                        "title": "Request Approved",
+                        "children": [
+                            {
+                                "type": "TXT",
+                                "data": "Terkirim."
+                            },
+                            {
+                                "type": "RBT",
+                                "alignment": "center",
+                                "children": [
+                                    {
+                                        "text": "OK",
+                                        "route": "vertikaTeknoLokaciptaRequestApprover"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,18 @@
+{
+    "type": "displayList",
+    "variant": "tableCardInteractive",
+    "margin": "0,0,0,0",
+    "alignment": "end",
+    "style": "BOLD",
+    "text": "Laporan pekerjaan◆Cari di laporan◆Tulis yang anda ingin lihat",
+    "size": 18,
+    "height": 600,
+    "table": "vtl.report-patrol",
+    "content": "Tanggal: <2>\nNama: <4>\nLokasi: <6>\nSite: <8>\nKondisi: <11>\nKeterangan: <7>",
+    "filter": "Product Group",
+    "icon": "search",
+    "image": "<10>",
+    "detail": "Tanggal: <2>\nNama: <4>\nLokasi: <6>\nSite: <8>\nKondisi: <11>\nKeterangan: <7>",
+    "sort": "desc",
+    "indexStart": 1
+}
