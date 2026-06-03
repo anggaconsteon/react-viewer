@@ -237,12 +237,11 @@ routeKeys.forEach((k) => setSrcOverride(routes[k].target, routes[k].src))
 const hasCellWrites = keys.some((k) => filtered.cells[k])
 
 // Pure ROUTED (no cell writes): the src swap already triggered a refresh — done.
+// NOTE: RESET already returned at the top of handleAction, so onClick.type is
+// narrowed to "FETCH_CONTENT" | "SUBMIT" here — do NOT re-check !== "RESET"
+// (TS2367: no overlap).
 if (!hasCellWrites) {
-  if (
-    routeKeys.length > 0 &&
-    item.onClick.type !== "RESET" &&
-    item.onClick.onSuccess?.toast
-  ) {
+  if (routeKeys.length > 0 && item.onClick.onSuccess?.toast) {
     toast.success("Success!", { description: item.onClick.onSuccess.toast })
   }
   return
