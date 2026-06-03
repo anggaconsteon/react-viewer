@@ -25,7 +25,12 @@ Tiap web page hardcode satu spreadsheet `src`. Tapi tiap cost center punya **fil
 
 FILTER = perilaku sekarang (patrolReport, salesPerformance). Spec ini cuma soal **ROUTED**. Filter lain (tanggal/site) tetap tulis-cell di kedua mode.
 
-Beda key dropdown: ROUTED = `costCenterSrc` (value=URL); FILTER = `costCenter` (value=nama CC).
+**Pembeda FILTER vs ROUTED = field di dropdown, BUKAN key.** Key itu unique ID per widget (jadi id di website) → gak boleh dibebani semantik mode.
+
+- Dropdown punya `cell` → **FILTER**: value ditulis ke cell, file tetap, re-filter.
+- Dropdown punya `target` (tanpa `cell`) → **ROUTED**: value = URL, swap `src` dari content yang `id`-nya = target.
+
+Key-independent: dev gak perlu naming convention `costCenterSrc`/`costCenter`. Cukup pilih widget yang benar (`dropdown` vs `dropdownSrc`). FE pun sudah pakai diskriminator ini (`DropdownChild.cell` vs `DropdownChild.target`).
 
 ---
 
@@ -68,20 +73,29 @@ MCP gsheets tidak bisa set data-validation; user set sekali via UI (Data → Dat
 
 ---
 
-## 5. Tab `Web Screen` — kolom `mode` (BELUM)
+## 5. Tab `Web Screen` — widget `dropdownSrc` (SUDAH diimplementasi 2026-06-03)
 
-Tiap page di Web Screen punya HEADER row (A=page key, B=pageData JSON, dst). Tambah kolom `mode` di header row:
+**Tidak ada kolom `mode` dan tidak ada `pageWrapperRouted`.** Web Screen sudah berbasis widget-row (1 baris = 1 widget; B=widget type, D=JSON hasil VLOOKUP+SUBSTITUTE dari Web Widget). ROUTED dibuat cukup dengan **memilih widget yang benar** di baris page:
 
-- Nilai: `ROUTED` atau kosong (=FILTER, default, tak berubah).
-- Builder pageData (col B) bercabang:
-  - `mode` kosong → bangun pageData seperti sekarang (src statis dari G).
-  - `mode=ROUTED` → bangun pageData versi dropdown: topbar dapat DROPDOWN `costCenterSrc` + BUTTON SUBMIT, `content[0].src` = token `[SRC]`, dropdown `options` = token `[CC_OPTIONS]`. Token dibiarkan literal (di-resolve di _Helper).
+| Baris widget | Widget | Token di-resolve _Helper |
+|---|---|---|
+| dropdown CC | **`dropdownSrc`** (baru: punya `target`, TANPA `cell`) | `options` = `[CC_OPTIONS:<page>]` |
+| spacer | `spacer` | — |
+| tombol | `buttonSubmit` (SUBMIT, tanpa target) | — |
+| konten | `contentSpreadsheet` | `src` = `[SRC:<page>]` |
 
-Template ROUTED (Web Widget base baru, mis. `pageWrapperRouted`): sama seperti `pageWrapper` tapi topbar prefilled dropdown+button dan src=`[SRC]`. Lihat contoh JSON final di contract §5a.
+Widget `dropdownSrc` (Web Widget J3):
+```json
+{"type":"DROPDOWN","key":"[KEY]","target":"[TARGET]","placeholder":"[PLACEHOLDER]","options":"[OPTIONS]","emptyText":"[EMPTY_TEXT]","variant":"[VARIANT]"}
+```
+- `target` = id content yang src-nya di-swap (mis. `mainContent`). Side col H.
+- `options` = `[CC_OPTIONS:<page>]` (di-resolve _Helper per-user). Side col J.
+
+**Col D tetap pattern VLOOKUP+SUBSTITUTE seperti baris lain** — yang diisi cuma data side-column sesuai placeholder. Contoh live: salesPerformance rows 42-45 (`dropdownSrc`/`spacer`/`buttonSubmit`/`contentSpreadsheet`), D42 resolve ke dropdown `target:"mainContent"` + `options:"[CC_OPTIONS:salesPerformance]"`, D45 resolve ke spreadsheet `src:"[SRC:salesPerformance]"`. Token dibiarkan literal di Web Screen → di-resolve _Helper.
 
 ---
 
-## 6. Resolusi per-user di `_Helper Web JSON` (BELUM — inti)
+## 6. Resolusi per-user di `_Helper Web JSON` (SUDAH diimplementasi 2026-06-03 — inti)
 
 ### Kenapa di _Helper
 `[CC_OPTIONS]`/`[SRC]` = fungsi **(page × user)**. Hanya `_Helper` yang tahu CC per-user (col B, hasil RBAC). Web Screen user-agnostic. Sama seperti `[CC_LIST]` yang baru di-substitute per-user di assembly akhir.
@@ -109,16 +123,18 @@ Untuk page `K`, user di baris `r` (CC list di `$B{r}`, ◆-joined):
 ```
 Ambil URL setelah `▶` pertama, sebelum `◆` pertama.
 
-### Injeksi token (chained SUBSTITUTE, bounded)
-Routed pages JUMLAHNYA SEDIKIT & diketahui (admin set `mode=ROUTED`). Bungkus children per-user dengan SUBSTITUTE berantai, satu pasang per routed page:
+### Injeksi token (chained SUBSTITUTE di chokepoint C2:C6)
+Routed pages JUMLAHNYA SEDIKIT & diketahui. Resolusi di-inline di **chokepoint `_Helper Web JSON!C2:C6`** (assembly per-user) sebagai SUBSTITUTE berantai, satu pasang per routed page:
 ```
 SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(rawChildren;
-  "[CC_OPTIONS:dashboard]"; optDashboard);
-  "[SRC:dashboard]"; srcDashboard);
+  "[CC_OPTIONS:salesPerformance]"; optSalesPerformance);
+  "[SRC:salesPerformance]"; srcSalesPerformance);
   "[CC_OPTIONS:<page2>]"; opt2);
   "[SRC:<page2>]"; src2)
 ```
-Tiap `optX`/`srcX` = formula §6 untuk page X. Verbose tapi idiom-legal (no MAP/LAMBDA). Tambah routed page = tambah 1 pasang SUBSTITUTE (dev edit, jarang). Letakkan helper `optX`/`srcX` di kolom helper per-user supaya formula chokepoint tetap kebaca.
+Tiap `optX`/`srcX` = formula §6 (Options / SRC) untuk page X. Verbose tapi idiom-legal (no MAP/LAMBDA). Tambah routed page = tambah 1 pasang SUBSTITUTE (dev edit, jarang).
+
+**Live verified (suryawdj, CC=Induk):** `[CC_OPTIONS:salesPerformance]` → `Induk▶https://docs.google.com/spreadsheets/d/1B19envLgBiyxgM8MUKWNjxaIjQQ50M9mjkn-QgjAXtM/edit?gid=564995506#gid=564995506`; `[SRC:salesPerformance]` → URL Induk yang sama. Sisa tree (dashboard, patrolReport FILTER `[CC_LIST]`) gak tersentuh.
 
 ---
 
@@ -140,15 +156,20 @@ Tiap `optX`/`srcX` = formula §6 untuk page X. Verbose tapi idiom-legal (no MAP/
 - [x] Web URL direstruktur + seed contoh (dashboard × 3 CC) + rumus A/D — live 2026-06-03.
 - [ ] Dropdown B/C (user setup manual via UI).
 - [ ] Conditional formatting anti-dup (user setup manual via UI).
-- [ ] Web Screen kolom `mode` + cabang builder pageData ROUTED.
-- [ ] Web Widget template `pageWrapperRouted` (atau token di pageWrapper existing).
-- [ ] _Helper resolusi `[CC_OPTIONS:key]`/`[SRC:key]` (helper cols + chained SUBSTITUTE).
-- [ ] Verifikasi end-to-end di Web JSON per-user.
+- [x] Web Widget template `dropdownSrc` (J3) — punya `target`, tanpa `cell`. (Ganti rencana `mode` column / `pageWrapperRouted`.)
+- [x] Web Screen salesPerformance pakai `dropdownSrc`+`buttonSubmit`+`contentSpreadsheet` (rows 42-45), col D tetap VLOOKUP+SUBSTITUTE.
+- [x] _Helper resolusi `[CC_OPTIONS:key]`/`[SRC:key]` di chokepoint C2:C6 (chained SUBSTITUTE).
+- [x] Verifikasi end-to-end di Web JSON per-user (suryawdj/Induk).
+- [x] FE: routing button-triggered + pure client (3 file diubah; lihat contract §6-§7).
 
 ---
 
 ## 9. Open items
 
 - Konfirmasi gid: kalau workbook per-CC di-clone (gid sama), bisa simplify ke file(Cost Center)+gid(Web Screen) dan Web URL jadi opsional. Saat ini asumsi URL penuh per (page×CC) (kasus paling aman).
-- Nama token final (`[CC_OPTIONS:key]` / `[SRC:key]`) — konfirmasi tidak bentrok dengan token existing.
-- Shape response backend untuk `REFRESH_CONTENT` (samakan dgn FILTER) — domain FE/BE, lihat contract §10.
+- Dropdown B/C + conditional formatting anti-dup di Web URL masih manual setup (UI) — MCP gak bisa set data-validation/CF.
+
+**Sudah closed:**
+- ~~Diskriminator FILTER/ROUTED~~ → field `cell` vs `target` (key-independent). FE sudah pakai ini.
+- ~~Nama token~~ → `[CC_OPTIONS:<page>]` / `[SRC:<page>]`, gak bentrok, live.
+- ~~ROUTED pakai backend?~~ → TIDAK. ROUTED murni client-side src swap (`srcOverrides` store). Backend contract (`/api/spreadsheet`) gak berubah. FILTER tetap POST cell-write, `spreadsheetId` = file hasil swap.
