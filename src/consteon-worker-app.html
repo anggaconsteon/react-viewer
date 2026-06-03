@@ -1,0 +1,2632 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consteon Worker App — Prototype</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.1.0/tabler-icons.min.css">
+    <style>
+        :root {
+            --color-text-primary: #1a1a1a;
+            --color-text-secondary: #6b7280;
+            --color-text-tertiary: #9ca3af;
+            --color-text-info: #185fa5;
+            --color-text-success: #15803d;
+            --color-text-warning: #b45309;
+            --color-text-danger: #b91c1c;
+            --color-background-primary: #ffffff;
+            --color-background-secondary: #f5f5f4;
+            --color-background-tertiary: #ebebe9;
+            --color-background-info: #dbeafe;
+            --color-background-success: #dcfce7;
+            --color-background-warning: #fef3c7;
+            --color-background-danger: #fee2e2;
+            --color-border-primary: #d4d4d4;
+            --color-border-secondary: #d4d4d4;
+            --color-border-tertiary: #e5e5e5;
+            --border-radius-md: 8px;
+            --border-radius-lg: 12px;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-sans);
+            color: var(--color-text-primary);
+            background: #fafaf9;
+            line-height: 1.5;
+        }
+
+        body {
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        button {
+            font-family: inherit;
+            font-size: 13px;
+            padding: 8px 14px;
+            background: var(--color-background-primary);
+            color: var(--color-text-primary);
+            border: 0.5px solid var(--color-border-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        button:hover:not(:disabled) {
+            background: var(--color-background-secondary);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        textarea,
+        select {
+            font-family: inherit;
+            font-size: 13px;
+            padding: 8px 12px;
+            border: 0.5px solid var(--color-border-tertiary);
+            border-radius: 6px;
+            background: var(--color-background-primary);
+            color: var(--color-text-primary);
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--color-text-info);
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        .proto-container {
+            background: var(--color-background-secondary);
+            border-radius: var(--border-radius-lg);
+            padding: 1.25rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .proto-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 0.5px solid var(--color-border-tertiary);
+        }
+
+        .proto-title {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .proto-subtitle {
+            font-size: 11px;
+            color: var(--color-text-secondary);
+            margin-top: 2px;
+        }
+
+        .proto-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 32px;
+            height: 18px;
+            background: var(--color-border-secondary);
+            border-radius: 9px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .toggle-switch.on {
+            background: var(--color-text-info);
+        }
+
+        .toggle-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 14px;
+            height: 14px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.2s;
+        }
+
+        .toggle-switch.on .toggle-thumb {
+            transform: translateX(14px);
+        }
+
+        .toggle-label {
+            font-size: 11px;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .proto-main {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 16px;
+            align-items: start;
+        }
+
+        .nav-sidebar {
+            background: var(--color-background-primary);
+            border: 0.5px solid var(--color-border-tertiary);
+            border-radius: var(--border-radius-md);
+            padding: 8px 6px;
+            max-height: 760px;
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            font-size: 10px;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+            padding: 8px 8px 4px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--color-text-secondary);
+            transition: background 0.15s;
+        }
+
+        .nav-item:hover {
+            background: var(--color-background-secondary);
+            color: var(--color-text-primary);
+        }
+
+        .nav-item.active {
+            background: var(--color-background-info);
+            color: var(--color-text-info);
+            font-weight: 500;
+        }
+
+        .nav-item i {
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .nav-num {
+            font-size: 9px;
+            color: var(--color-text-tertiary);
+            margin-left: auto;
+        }
+
+        .nav-item.active .nav-num {
+            color: var(--color-text-info);
+        }
+
+        .nav-badge {
+            font-size: 8px;
+            background: var(--color-text-success);
+            color: white;
+            padding: 1px 5px;
+            border-radius: 6px;
+            margin-left: 4px;
+            font-weight: 500;
+        }
+
+        .nav-badge-new {
+            background: var(--color-text-info);
+        }
+
+        .phone-stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .phone-frame {
+            width: 320px;
+            background: var(--color-background-primary);
+            border: 0.5px solid var(--color-border-tertiary);
+            border-radius: 28px;
+            min-height: 680px;
+            max-height: 720px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .screen-content {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .screen-content.active {
+            display: flex;
+        }
+
+        .flow-bar {
+            margin-top: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--color-background-primary);
+            border: 0.5px solid var(--color-border-tertiary);
+            border-radius: var(--border-radius-md);
+            padding: 8px 12px;
+            width: 320px;
+        }
+
+        .flow-info {
+            font-size: 11px;
+            color: var(--color-text-secondary);
+            flex: 1;
+            text-align: center;
+        }
+
+        .flow-info strong {
+            color: var(--color-text-primary);
+        }
+
+        .flow-btn {
+            background: transparent;
+            border: 0.5px solid var(--color-border-secondary);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+
+        .flow-btn:hover:not(:disabled) {
+            background: var(--color-background-secondary);
+        }
+
+        .flow-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .annotation {
+            position: absolute;
+            background: var(--color-background-info);
+            color: var(--color-text-info);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 10px;
+            line-height: 1.4;
+            border: 0.5px solid var(--color-text-info);
+            max-width: 160px;
+            z-index: 10;
+            transition: opacity 0.2s;
+        }
+
+        .annotation.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .clickable {
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+
+        .clickable:hover {
+            opacity: 0.85;
+        }
+
+        .recording-pulse {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .scan-overlay-corner {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border: 3px solid white;
+        }
+
+        .scan-line-anim {
+            position: absolute;
+            left: 8%;
+            right: 8%;
+            height: 2px;
+            background: var(--color-text-success);
+            box-shadow: 0 0 8px var(--color-text-success);
+            animation: scanLine 2s ease-in-out infinite;
+        }
+
+        @keyframes scanLine {
+            0% {
+                top: 12%;
+            }
+
+            50% {
+                top: 88%;
+            }
+
+            100% {
+                top: 12%;
+            }
+        }
+
+        @keyframes flashIn {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.7);
+            }
+
+            60% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .flash-in {
+            animation: flashIn 0.4s ease-out;
+        }
+
+        .pattern-btn {
+            background: var(--color-background-primary);
+            border: 0.5px solid var(--color-border-secondary);
+            color: var(--color-text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .pattern-btn:hover {
+            background: var(--color-background-secondary);
+        }
+
+        .pattern-btn.pattern-active {
+            background: var(--color-text-info);
+            color: white;
+            border-color: var(--color-text-info);
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2 class="sr-only">Prototype Worker app Consteon final dengan QR scan dan route selection: 15 screen lengkap,
+        sidebar navigator, 3 hero flow interaktif</h2>
+
+    <div class="proto-container">
+
+        <div class="proto-header">
+            <div>
+                <div class="proto-title">Consteon Worker App — final v4 (QR + Route selection)</div>
+                <div class="proto-subtitle">15 screens · 3 hero flow interactive · Standalone HTML prototype</div>
+            </div>
+            <div class="proto-controls">
+                <label class="toggle-label">Annotation</label>
+                <div class="toggle-switch on"
+                    onclick="this.classList.toggle('on'); document.querySelectorAll('.annotation').forEach(a => a.classList.toggle('hidden'));">
+                    <div class="toggle-thumb"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="proto-main">
+
+            <div class="nav-sidebar">
+                <div class="nav-section">Identity</div>
+                <div class="nav-item active" data-screen="s-login" onclick="switchScreen('s-login', 0)"><i
+                        class="ti ti-key"></i><span>Login PIN</span><span class="nav-num">1</span></div>
+                <div class="nav-item" data-screen="s-clockin" onclick="switchScreen('s-clockin', 1)"><i
+                        class="ti ti-camera"></i><span>Clock-in</span><span class="nav-num">2</span></div>
+                <div class="nav-item" data-screen="s-home" onclick="switchScreen('s-home', 2)"><i
+                        class="ti ti-home"></i><span>Home</span><span class="nav-num">3</span><span
+                        class="nav-badge nav-badge-new">UPD</span></div>
+
+                <div class="nav-section">Patroli</div>
+                <div class="nav-item" data-screen="s-routes" onclick="switchScreen('s-routes', 3)"><i
+                        class="ti ti-list-check"></i><span>List routes</span><span class="nav-num">3a</span><span
+                        class="nav-badge nav-badge-new">UPD</span></div>
+                <div class="nav-item" data-screen="s-site-detail" onclick="switchScreen('s-site-detail', 4)"><i
+                        class="ti ti-map-pin"></i><span>Site detail</span><span class="nav-num">3b</span><span
+                        class="nav-badge nav-badge-new">NEW</span></div>
+                <div class="nav-item" data-screen="s-routes-map" onclick="switchScreen('s-routes-map', 5)"><i
+                        class="ti ti-map"></i><span>Routes map</span><span class="nav-num">3c</span><span
+                        class="nav-badge nav-badge-new">NEW</span></div>
+                <div class="nav-item" data-screen="s-routes-grouped" onclick="switchScreen('s-routes-grouped', 6)"><i
+                        class="ti ti-stack-2"></i><span>Smart grouping</span><span class="nav-num">3d</span><span
+                        class="nav-badge nav-badge-new">NEW</span></div>
+                <div class="nav-item" data-screen="s-briefing" onclick="switchScreen('s-briefing', 7)"><i
+                        class="ti ti-route"></i><span>Briefing</span><span class="nav-num">4</span><span
+                        class="nav-badge nav-badge-new">UPD</span></div>
+                <div class="nav-item" data-screen="s-aktif" onclick="switchScreen('s-aktif', 8)"><i
+                        class="ti ti-map-2"></i><span>Patroli aktif</span><span class="nav-num">5</span></div>
+                <div class="nav-item" data-screen="s-qr-brief" onclick="switchScreen('s-qr-brief', 9)"><i
+                        class="ti ti-qrcode"></i><span>Scan QR brief</span><span class="nav-num">6a</span><span
+                        class="nav-badge">QR</span></div>
+                <div class="nav-item" data-screen="s-qr-scan" onclick="switchScreen('s-qr-scan', 10)"><i
+                        class="ti ti-scan"></i><span>Scanner aktif</span><span class="nav-num">6b</span><span
+                        class="nav-badge">QR</span></div>
+                <div class="nav-item" data-screen="s-qr-photo" onclick="switchScreen('s-qr-photo', 11)"><i
+                        class="ti ti-photo"></i><span>Foto evidence</span><span class="nav-num">6c</span><span
+                        class="nav-badge">QR</span></div>
+                <div class="nav-item" data-screen="s-skip" onclick="switchScreen('s-skip', 12)"><i
+                        class="ti ti-x"></i><span>Skip checkpoint</span><span class="nav-num">7</span></div>
+
+                <div class="nav-section">Lapor</div>
+                <div class="nav-item" data-screen="s-insiden" onclick="switchScreen('s-insiden', 13)"><i
+                        class="ti ti-alert-triangle"></i><span>Lapor insiden</span><span class="nav-num">8</span></div>
+                <div class="nav-item" data-screen="s-sos" onclick="switchScreen('s-sos', 14)"><i
+                        class="ti ti-urgent"></i><span>SOS mode</span><span class="nav-num">9</span></div>
+                <div class="nav-item" data-screen="s-tamu" onclick="switchScreen('s-tamu', 15)"><i
+                        class="ti ti-user-check"></i><span>Tamu masuk</span><span class="nav-num">10</span></div>
+
+                <div class="nav-section">Pendukung</div>
+                <div class="nav-item" data-screen="s-handover" onclick="switchScreen('s-handover', 16)"><i
+                        class="ti ti-file-text"></i><span>Shift handover</span><span class="nav-num">11</span></div>
+                <div class="nav-item" data-screen="s-clockout" onclick="switchScreen('s-clockout', 17)"><i
+                        class="ti ti-logout"></i><span>Clock-out</span><span class="nav-num">12</span></div>
+            </div>
+
+            <div class="phone-stage">
+
+                <div class="phone-frame">
+
+                    <div class="screen-content active" id="s-login">
+                        <div style="padding: 28px 16px 18px; text-align: center;">
+                            <div
+                                style="width: 60px; height: 60px; background: var(--color-background-info); border-radius: 14px; margin: 0 auto 14px; display: flex; align-items: center; justify-content: center;">
+                                <i class="ti ti-shield" style="font-size: 30px; color: var(--color-text-info);"></i>
+                            </div>
+                            <div style="font-size: 19px; font-weight: 500;">Consteon Worker</div>
+                            <div style="font-size: 12px; color: var(--color-text-secondary); margin-top: 4px;">Masuk
+                                untuk mulai shift</div>
+                        </div>
+                        <div style="padding: 20px 16px;">
+                            <div
+                                style="text-align: center; margin-bottom: 24px; font-size: 13px; color: var(--color-text-secondary);">
+                                Masukkan PIN 4 digit</div>
+                            <div style="display: flex; gap: 14px; justify-content: center; margin-bottom: 28px;"
+                                id="pin-dots">
+                                <div style="width: 14px; height: 14px; border-radius: 50%; background: var(--color-border-tertiary);"
+                                    data-dot="0"></div>
+                                <div style="width: 14px; height: 14px; border-radius: 50%; background: var(--color-border-tertiary);"
+                                    data-dot="1"></div>
+                                <div style="width: 14px; height: 14px; border-radius: 50%; background: var(--color-border-tertiary);"
+                                    data-dot="2"></div>
+                                <div style="width: 14px; height: 14px; border-radius: 50%; background: var(--color-border-tertiary);"
+                                    data-dot="3"></div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 240px; margin: 0 auto;"
+                                id="pin-keypad">
+                                <button style="height: 58px; font-size: 22px;" data-num="1">1</button>
+                                <button style="height: 58px; font-size: 22px;" data-num="2">2</button>
+                                <button style="height: 58px; font-size: 22px;" data-num="3">3</button>
+                                <button style="height: 58px; font-size: 22px;" data-num="4">4</button>
+                                <button style="height: 58px; font-size: 22px;" data-num="5">5</button>
+                                <button style="height: 58px; font-size: 22px;" data-num="6">6</button>
+                                <button style="height: 58px; font-size: 22px;" data-num="7">7</button>
+                                <button style="height: 58px; font-size: 22px;" data-num="8">8</button>
+                                <button style="height: 58px; font-size: 22px;" data-num="9">9</button>
+                                <button style="height: 58px; visibility: hidden;"></button>
+                                <button style="height: 58px; font-size: 22px;" data-num="0">0</button>
+                                <button style="height: 58px;" data-action="erase"><i class="ti ti-backspace"
+                                        style="font-size: 20px;"></i></button>
+                            </div>
+                            <div style="text-align: center; margin-top: 22px;"><a href="#"
+                                    onclick="event.preventDefault();"
+                                    style="font-size: 12px; color: var(--color-text-info);">Lupa PIN?</a></div>
+                        </div>
+                        <div class="annotation" style="top: 60px; right: 8px;"><strong>Hero flow:</strong> tap 4 angka
+                            untuk simulasi PIN, auto-transition ke clock-in</div>
+                    </div>
+
+                    <div class="screen-content" id="s-clockin">
+                        <div
+                            style="padding: 14px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <i class="ti ti-arrow-left clickable" style="font-size: 20px;"
+                                onclick="switchScreen('s-login', 0)"></i>
+                            <div style="flex: 1;">
+                                <div style="font-size: 15px; font-weight: 500;">Clock-in</div>
+                                <div style="font-size: 11px; color: var(--color-text-secondary);">06:32 WIB · Senin 22
+                                    Mei</div>
+                            </div>
+                        </div>
+                        <div
+                            style="padding: 12px 16px; background: var(--color-background-success); display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <i class="ti ti-map-pin" style="font-size: 18px; color: var(--color-text-success);"></i>
+                            <div style="flex: 1; font-size: 13px; color: var(--color-text-success); font-weight: 500;">
+                                Di area gedung Permata Hijau</div>
+                            <i class="ti ti-circle-check"
+                                style="font-size: 18px; color: var(--color-text-success);"></i>
+                        </div>
+                        <div
+                            style="padding: 32px 16px; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                            <div id="selfie-circle"
+                                style="width: 220px; height: 220px; background: var(--color-background-secondary); border: 2px dashed var(--color-border-secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 22px; position: relative;">
+                                <i class="ti ti-camera" style="font-size: 50px; color: var(--color-text-tertiary);"
+                                    id="selfie-icon"></i>
+                                <div id="selfie-badge"
+                                    style="position: absolute; bottom: -8px; background: var(--color-background-info); padding: 4px 12px; border-radius: 12px; font-size: 11px; color: var(--color-text-info); font-weight: 500;">
+                                    Posisikan wajah</div>
+                            </div>
+                            <div
+                                style="font-size: 14px; color: var(--color-text-secondary); text-align: center; margin-bottom: 8px;">
+                                Selfie verification</div>
+                            <div style="font-size: 12px; color: var(--color-text-tertiary); text-align: center;">Wajah
+                                harus terlihat jelas</div>
+                        </div>
+                        <div style="padding: 16px; border-top: 0.5px solid var(--color-border-tertiary);">
+                            <button id="clockin-btn"
+                                style="width: 100%; background: var(--color-text-info); color: white; border: none; height: 52px; border-radius: 8px; font-size: 14px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px;"
+                                onclick="simulateClockIn()">
+                                <i class="ti ti-camera" style="font-size: 18px;"></i>
+                                <span id="clockin-btn-text">Ambil foto &amp; clock-in</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="screen-content" id="s-home">
+                        <div
+                            style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <div>
+                                <div style="font-size: 12px; color: var(--color-text-secondary);">Halo</div>
+                                <div style="font-size: 17px; font-weight: 500;">Pak Rahmat</div>
+                                <div style="display: flex; align-items: center; gap: 4px; margin-top: 3px;"><span
+                                        style="width: 6px; height: 6px; background: var(--color-text-success); border-radius: 50%;"></span><span
+                                        style="font-size: 11px; color: var(--color-text-success); font-weight: 500;">On
+                                        duty · shift pagi</span></div>
+                            </div>
+                            <i class="ti ti-bell" style="font-size: 22px; color: var(--color-text-secondary);"></i>
+                        </div>
+                        <div
+                            style="padding: 12px 16px; background: var(--color-background-secondary); border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <div
+                                style="font-size: 10px; color: var(--color-text-secondary); margin-bottom: 8px; font-weight: 500; letter-spacing: 0.5px;">
+                                RINGKASAN HARI INI</div>
+                            <div style="display: flex; gap: 8px;">
+                                <div
+                                    style="flex: 1; background: var(--color-background-primary); padding: 10px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 18px; font-weight: 500;">1/4</div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary); margin-top: 2px;">
+                                        Patroli</div>
+                                </div>
+                                <div
+                                    style="flex: 1; background: var(--color-background-primary); padding: 10px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 18px; font-weight: 500;">0</div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary); margin-top: 2px;">
+                                        Insiden</div>
+                                </div>
+                                <div
+                                    style="flex: 1; background: var(--color-background-primary); padding: 10px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 18px; font-weight: 500;">2</div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary); margin-top: 2px;">
+                                        Tamu</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="padding: 16px; flex: 1;">
+
+                            <div
+                                style="background: var(--color-background-info); border-left: 3px solid var(--color-text-info); border-radius: 0 12px 12px 0; padding: 14px; margin-bottom: 10px; position: relative;">
+                                <div
+                                    style="position: absolute; top: 8px; right: 10px; font-size: 9px; background: var(--color-text-info); color: white; padding: 2px 8px; border-radius: 10px; font-weight: 500;">
+                                    DISARANKAN</div>
+                                <div
+                                    style="font-size: 10px; color: var(--color-text-info); font-weight: 500; margin-bottom: 4px; letter-spacing: 0.3px;">
+                                    PATROLI BERIKUTNYA · 30 menit lagi</div>
+                                <div
+                                    style="font-size: 15px; font-weight: 500; color: var(--color-text-info); margin-bottom: 2px;">
+                                    Tower A pagi</div>
+                                <div style="font-size: 11px; color: var(--color-text-info); opacity: 0.85;">12 QR
+                                    checkpoint · estimasi 22 menit</div>
+                                <div style="display: flex; gap: 8px; margin-top: 12px;">
+                                    <button class="clickable"
+                                        style="flex: 1; background: var(--color-text-info); color: white; border: none; padding: 10px; border-radius: 6px; font-size: 12px; font-weight: 500;"
+                                        onclick="switchScreen('s-briefing', 7)">Mulai patroli ini</button>
+                                    <button class="clickable"
+                                        style="background: transparent; border: 0.5px solid var(--color-text-info); color: var(--color-text-info); padding: 10px 12px; border-radius: 6px; font-size: 12px;"
+                                        onclick="switchScreen('s-routes', 3)">Lihat semua &raquo;</button>
+                                </div>
+                            </div>
+
+                            <div
+                                style="font-size: 10px; color: var(--color-text-tertiary); margin-bottom: 12px; padding: 0 4px;">
+                                3 route lain tersedia hari ini · bebas pilih mana dulu</div>
+
+                            <div
+                                style="font-size: 10px; color: var(--color-text-secondary); font-weight: 500; margin: 14px 0 10px; letter-spacing: 0.5px;">
+                                AKSI CEPAT</div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                                <button class="clickable" onclick="switchScreen('s-insiden', 13)"
+                                    style="padding: 12px 6px; flex-direction: column; gap: 6px; min-height: 76px; height: auto;"><i
+                                        class="ti ti-alert-triangle"
+                                        style="font-size: 22px; color: var(--color-text-warning);"></i><span
+                                        style="font-size: 11px;">Lapor insiden</span></button>
+                                <button class="clickable" onclick="switchScreen('s-tamu', 15)"
+                                    style="padding: 12px 6px; flex-direction: column; gap: 6px; min-height: 76px; height: auto;"><i
+                                        class="ti ti-user-check"
+                                        style="font-size: 22px; color: var(--color-text-info);"></i><span
+                                        style="font-size: 11px;">Tamu masuk</span></button>
+                                <button class="clickable" onclick="switchScreen('s-sos', 14)"
+                                    style="padding: 12px 6px; flex-direction: column; gap: 6px; min-height: 76px; height: auto; border-color: var(--color-text-danger);"><i
+                                        class="ti ti-urgent"
+                                        style="font-size: 22px; color: var(--color-text-danger);"></i><span
+                                        style="font-size: 11px; color: var(--color-text-danger); font-weight: 500;">SOS</span></button>
+                            </div>
+                        </div>
+
+                        <div
+                            style="border-top: 0.5px solid var(--color-border-tertiary); display: flex; background: var(--color-background-primary);">
+                            <div style="flex: 1; padding: 10px; text-align: center;"><i class="ti ti-home"
+                                    style="font-size: 20px; color: var(--color-text-info);"></i>
+                                <div
+                                    style="font-size: 10px; color: var(--color-text-info); margin-top: 3px; font-weight: 500;">
+                                    Beranda</div>
+                            </div>
+                            <div style="flex: 1; padding: 10px; text-align: center;" class="clickable"
+                                onclick="switchScreen('s-routes', 3)"><i class="ti ti-route"
+                                    style="font-size: 20px; color: var(--color-text-secondary);"></i>
+                                <div style="font-size: 10px; color: var(--color-text-secondary); margin-top: 3px;">
+                                    Patroli</div>
+                            </div>
+                            <div style="flex: 1; padding: 10px; text-align: center;" class="clickable"
+                                onclick="switchScreen('s-insiden', 13)"><i class="ti ti-flag"
+                                    style="font-size: 20px; color: var(--color-text-secondary);"></i>
+                                <div style="font-size: 10px; color: var(--color-text-secondary); margin-top: 3px;">Lapor
+                                </div>
+                            </div>
+                            <div style="flex: 1; padding: 10px; text-align: center;" class="clickable"
+                                onclick="switchScreen('s-clockout', 17)"><i class="ti ti-user"
+                                    style="font-size: 20px; color: var(--color-text-secondary);"></i>
+                                <div style="font-size: 10px; color: var(--color-text-secondary); margin-top: 3px;">Saya
+                                </div>
+                            </div>
+                        </div>
+                        <div class="annotation" style="top: 230px; right: 4px;"><strong>UPDATED:</strong> Hero card
+                            dengan badge DISARANKAN + tombol "Lihat semua" untuk free pick</div>
+                    </div>
+
+                    <div class="screen-content" id="s-routes">
+                        <div
+                            style="padding: 14px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <i class="ti ti-arrow-left clickable" style="font-size: 20px;"
+                                onclick="switchScreen('s-home', 2)"></i>
+                            <div style="flex: 1;">
+                                <div style="font-size: 15px; font-weight: 500;">Route hari ini</div>
+                                <div style="font-size: 11px; color: var(--color-text-secondary);" id="routes-subtitle">
+                                    Pilih mana dulu</div>
+                            </div>
+                            <i class="ti ti-stack-2 clickable" id="group-toggle-icon"
+                                style="font-size: 22px; color: var(--color-text-info); display: none; margin-right: 4px;"
+                                onclick="switchScreen('s-routes-grouped', 6)" title="Smart grouping"></i>
+                            <i class="ti ti-map clickable" id="map-toggle-icon"
+                                style="font-size: 22px; color: var(--color-text-info); display: none;"
+                                onclick="switchScreen('s-routes-map', 5)" title="Lihat peta"></i>
+                        </div>
+
+                        <div
+                            style="padding: 10px 16px; background: var(--color-background-secondary); border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <div
+                                style="font-size: 9px; color: var(--color-text-tertiary); margin-bottom: 6px; font-weight: 500; letter-spacing: 0.5px;">
+                                DEMO PATTERN — TAP UNTUK GANTI</div>
+                            <div style="display: flex; gap: 4px;">
+                                <button class="pattern-btn pattern-active" data-pattern="single"
+                                    onclick="switchPattern('single')"
+                                    style="flex: 1; padding: 6px 4px; font-size: 10px;">Single-site</button>
+                                <button class="pattern-btn" data-pattern="cluster" onclick="switchPattern('cluster')"
+                                    style="flex: 1; padding: 6px 4px; font-size: 10px;">Cluster</button>
+                                <button class="pattern-btn" data-pattern="multi" onclick="switchPattern('multi')"
+                                    style="flex: 1; padding: 6px 4px; font-size: 10px;">Multi-site</button>
+                            </div>
+                        </div>
+
+                        <div id="pattern-single" class="pattern-data">
+                            <div
+                                style="padding: 10px 16px; background: var(--color-background-tertiary); border-bottom: 0.5px solid var(--color-border-tertiary);">
+                                <div style="display: flex; gap: 8px; font-size: 11px;">
+                                    <div
+                                        style="flex: 1; display: flex; align-items: center; gap: 4px; color: var(--color-text-success);">
+                                        <i class="ti ti-circle-check" style="font-size: 14px;"></i><span>1
+                                            selesai</span></div>
+                                    <div
+                                        style="flex: 1; display: flex; align-items: center; gap: 4px; color: var(--color-text-warning);">
+                                        <i class="ti ti-clock" style="font-size: 14px;"></i><span>3 tersisa</span></div>
+                                    <div
+                                        style="flex: 1; display: flex; align-items: center; gap: 4px; color: var(--color-text-secondary);">
+                                        <i class="ti ti-flag" style="font-size: 14px;"></i><span>4 total</span></div>
+                                </div>
+                            </div>
+
+                            <div style="padding: 14px 16px; flex: 1; overflow-y: auto;">
+                                <div
+                                    style="background: var(--color-background-success); border: 0.5px solid var(--color-text-success); border-radius: 12px; padding: 12px; margin-bottom: 10px;">
+                                    <div
+                                        style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
+                                        <div
+                                            style="font-size: 13px; font-weight: 500; color: var(--color-text-success);">
+                                            <i class="ti ti-circle-check" style="font-size: 14px;"></i> Lobby &amp;
+                                            entrance</div>
+                                        <span
+                                            style="font-size: 9px; background: var(--color-text-success); color: white; padding: 2px 6px; border-radius: 8px; font-weight: 500;">SELESAI</span>
+                                    </div>
+                                    <div style="font-size: 10px; color: var(--color-text-success); opacity: 0.85;">06:32
+                                        - 06:54 · 22 menit · 8/8 QR ✓</div>
+                                </div>
+
+                                <div class="clickable" onclick="switchScreen('s-briefing', 7)"
+                                    style="background: var(--color-background-info); border: 1.5px solid var(--color-text-info); border-radius: 12px; padding: 12px; margin-bottom: 10px; position: relative;">
+                                    <div
+                                        style="position: absolute; top: 8px; right: 10px; font-size: 9px; background: var(--color-text-info); color: white; padding: 2px 6px; border-radius: 8px; font-weight: 500;">
+                                        DISARANKAN</div>
+                                    <div
+                                        style="font-size: 13px; font-weight: 500; color: var(--color-text-info); margin-bottom: 6px;">
+                                        Tower A pagi</div>
+                                    <div
+                                        style="display: flex; gap: 10px; font-size: 10px; color: var(--color-text-info); opacity: 0.85;">
+                                        <span><i class="ti ti-qrcode" style="font-size: 12px;"></i> 12 checkpoint</span>
+                                        <span><i class="ti ti-clock" style="font-size: 12px;"></i> 22 menit</span>
+                                    </div>
+                                    <div
+                                        style="font-size: 10px; color: var(--color-text-info); opacity: 0.7; margin-top: 4px;">
+                                        Last patroli: 4 jam lalu · prioritas tinggi</div>
+                                </div>
+
+                                <div class="clickable" onclick="switchScreen('s-briefing', 7)"
+                                    style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: 12px; padding: 12px; margin-bottom: 10px;">
+                                    <div style="font-size: 13px; font-weight: 500; margin-bottom: 6px;">Basement parkir
+                                    </div>
+                                    <div
+                                        style="display: flex; gap: 10px; font-size: 10px; color: var(--color-text-secondary);">
+                                        <span><i class="ti ti-qrcode" style="font-size: 12px;"></i> 8 checkpoint</span>
+                                        <span><i class="ti ti-clock" style="font-size: 12px;"></i> 15 menit</span>
+                                    </div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary); margin-top: 4px;">
+                                        Last patroli: 2 jam lalu</div>
+                                </div>
+
+                                <div class="clickable" onclick="switchScreen('s-briefing', 7)"
+                                    style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: 12px; padding: 12px; margin-bottom: 10px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                                        <div>
+                                            <div style="font-size: 13px; font-weight: 500; margin-bottom: 6px;">Rooftop
+                                                &amp; area teknis</div>
+                                            <div
+                                                style="display: flex; gap: 10px; font-size: 10px; color: var(--color-text-secondary);">
+                                                <span><i class="ti ti-qrcode" style="font-size: 12px;"></i> 6
+                                                    checkpoint</span>
+                                                <span><i class="ti ti-clock" style="font-size: 12px;"></i> 18
+                                                    menit</span>
+                                            </div>
+                                            <div
+                                                style="font-size: 10px; color: var(--color-text-warning); margin-top: 4px;">
+                                                <i class="ti ti-info-circle" style="font-size: 11px;"></i> Belum
+                                                di-patrol hari ini</div>
+                                        </div>
+                                        <span
+                                            style="font-size: 9px; background: var(--color-background-warning); color: var(--color-text-warning); padding: 2px 6px; border-radius: 8px; font-weight: 500; align-self: start;">URGENT</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="pattern-cluster" class="pattern-data" style="display: none;">
+                            <div
+                                style="padding: 10px 16px; background: var(--color-background-tertiary); border-bottom: 0.5px solid var(--color-border-tertiary);">
+                                <div style="display: flex; gap: 8px; font-size: 11px;">
+                                    <div
+                                        style="flex: 1; display: flex; align-items: center; gap: 4px; color: var(--color-text-success);">
+                                        <i class="ti ti-circle-check" style="font-size: 14px;"></i><span>0
+                                            selesai</span></div>
+                                    <div
+                                        style="flex: 1; display: flex; align-items: center; gap: 4px; color: var(--color-text-warning);">
+                                        <i class="ti ti-clock" style="font-size: 14px;"></i><span>3 tersisa</span></div>
+                                    <div
+                                        style="flex: 1; display: flex; align-items: center; gap: 4px; color: var(--color-text-secondary);">
+                                        <i class="ti ti-flag" style="font-size: 14px;"></i><span>3 putaran</span></div>
+                                </div>
+                            </div>
+
+                            <div style="padding: 14px 16px; flex: 1; overflow-y: auto;">
+                                <div
+                                    style="background: var(--color-background-info); padding: 10px 12px; border-radius: 8px; margin-bottom: 14px; display: flex; gap: 8px; align-items: start;">
+                                    <i class="ti ti-info-circle"
+                                        style="font-size: 13px; color: var(--color-text-info); margin-top: 2px;"></i>
+                                    <div style="font-size: 11px; color: var(--color-text-info); line-height: 1.5;">
+                                        <strong>Pola cluster:</strong> 1 kompleks dengan 12 titik checkpoint tersebar di
+                                        multiple blok. Worker keliling pakai motor antar blok.</div>
+                                </div>
+
+                                <div class="clickable" onclick="switchScreen('s-briefing', 7)"
+                                    style="background: var(--color-background-info); border: 1.5px solid var(--color-text-info); border-radius: 12px; padding: 12px; margin-bottom: 10px; position: relative;">
+                                    <div
+                                        style="position: absolute; top: 8px; right: 10px; font-size: 9px; background: var(--color-text-info); color: white; padding: 2px 6px; border-radius: 8px; font-weight: 500;">
+                                        DISARANKAN</div>
+                                    <div
+                                        style="font-size: 13px; font-weight: 500; color: var(--color-text-info); margin-bottom: 6px;">
+                                        Patroli pagi · Cluster Asri Hijau</div>
+                                    <div
+                                        style="display: flex; gap: 10px; font-size: 10px; color: var(--color-text-info); opacity: 0.85; margin-bottom: 4px;">
+                                        <span><i class="ti ti-qrcode" style="font-size: 12px;"></i> 12 checkpoint</span>
+                                        <span><i class="ti ti-clock" style="font-size: 12px;"></i> 45 menit</span>
+                                    </div>
+                                    <div style="font-size: 10px; color: var(--color-text-info); opacity: 0.7;">Blok A ·
+                                        Blok B · Blok C · Pos satpam · Pintu utama · Taman tengah</div>
+                                </div>
+
+                                <div class="clickable" onclick="switchScreen('s-briefing', 7)"
+                                    style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: 12px; padding: 12px; margin-bottom: 10px;">
+                                    <div style="font-size: 13px; font-weight: 500; margin-bottom: 6px;">Patroli siang ·
+                                        Cluster Asri Hijau</div>
+                                    <div
+                                        style="display: flex; gap: 10px; font-size: 10px; color: var(--color-text-secondary); margin-bottom: 4px;">
+                                        <span><i class="ti ti-qrcode" style="font-size: 12px;"></i> 12 checkpoint</span>
+                                        <span><i class="ti ti-clock" style="font-size: 12px;"></i> 45 menit</span>
+                                    </div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary);">Mulai 13:00 · sama
+                                        dengan pagi</div>
+                                </div>
+
+                                <div class="clickable" onclick="switchScreen('s-briefing', 7)"
+                                    style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: 12px; padding: 12px; margin-bottom: 10px;">
+                                    <div style="font-size: 13px; font-weight: 500; margin-bottom: 6px;">Ruko Komersial ·
+                                        circuit pagi</div>
+                                    <div
+                                        style="display: flex; gap: 10px; font-size: 10px; color: var(--color-text-secondary); margin-bottom: 4px;">
+                                        <span><i class="ti ti-qrcode" style="font-size: 12px;"></i> 18 checkpoint</span>
+                                        <span><i class="ti ti-clock" style="font-size: 12px;"></i> 60 menit</span>
+                                    </div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary);">Ruko blok A1-A12 ·
+                                        ruko B1-B6</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="pattern-multi" class="pattern-data" style="display: none;">
+                            <div
+                                style="padding: 10px 16px; background: var(--color-background-tertiary); border-bottom: 0.5px solid var(--color-border-tertiary);">
+                                <div
+                                    style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 6px;">
+                                    <span style="color: var(--color-text-secondary);">Progress hari ini</span>
+                                    <span style="font-weight: 500;">3 dari 12 site · 25%</span>
+                                </div>
+                                <div style="display: flex; gap: 3px;">
+                                    <div
+                                        style="flex: 1; height: 6px; background: var(--color-text-success); border-radius: 3px;">
+                                    </div>
+                                    <div
+                                        style="flex: 1; height: 6px; background: var(--color-text-success); border-radius: 3px;">
+                                    </div>
+                                    <div
+                                        style="flex: 1; height: 6px; background: var(--color-text-success); border-radius: 3px;">
+                                    </div>
+                                    <div
+                                        style="flex: 1; height: 6px; background: var(--color-text-warning); border-radius: 3px;">
+                                    </div>
+                                    <div
+                                        style="flex: 1; height: 6px; background: var(--color-border-tertiary); border-radius: 3px;">
+                                    </div>
+                                    <div
+                                        style="flex: 1; height: 6px; background: var(--color-border-tertiary); border-radius: 3px;">
+                                    </div>
+                                    <div
+                                        style="flex: 1; height: 6px; background: var(--color-border-tertiary); border-radius: 3px;">
+                                    </div>
+                                    <div
+                                        style="flex: 1; height: 6px; background: var(--color-border-tertiary); border-radius: 3px;">
+                                    </div>
+                                    <div
+                                        style="flex: 1; height: 6px; background: var(--color-border-tertiary); border-radius: 3px;">
+                                    </div>
+                                    <div
+                                        style="flex: 1; height: 6px; background: var(--color-border-tertiary); border-radius: 3px;">
+                                    </div>
+                                    <div
+                                        style="flex: 1; height: 6px; background: var(--color-border-tertiary); border-radius: 3px;">
+                                    </div>
+                                    <div
+                                        style="flex: 1; height: 6px; background: var(--color-border-tertiary); border-radius: 3px;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="padding: 12px 16px; flex: 1; overflow-y: auto;">
+                                <div
+                                    style="font-size: 10px; color: var(--color-text-secondary); font-weight: 500; margin-bottom: 8px; letter-spacing: 0.3px;">
+                                    SELESAI · 3 SITE</div>
+                                <div
+                                    style="background: var(--color-background-success); border-radius: 10px; padding: 8px 12px; margin-bottom: 12px; font-size: 11px; color: var(--color-text-success);">
+                                    <div style="display: flex; justify-content: space-between; padding: 2px 0;"><span><i
+                                                class="ti ti-circle-check" style="font-size: 12px;"></i> BP Gading
+                                            Serpong</span><span style="font-size: 10px; opacity: 0.7;">06:32</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; padding: 2px 0;"><span><i
+                                                class="ti ti-circle-check" style="font-size: 12px;"></i> BP BSD
+                                            Serpong</span><span style="font-size: 10px; opacity: 0.7;">07:18</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; padding: 2px 0;"><span><i
+                                                class="ti ti-circle-check" style="font-size: 12px;"></i> BP Alam
+                                            Sutera</span><span style="font-size: 10px; opacity: 0.7;">08:05</span></div>
+                                </div>
+
+                                <div
+                                    style="font-size: 10px; color: var(--color-text-info); font-weight: 500; margin-bottom: 8px; letter-spacing: 0.3px;">
+                                    SEDANG DI SINI</div>
+                                <div class="clickable" onclick="switchScreen('s-site-detail', 4)"
+                                    style="background: var(--color-background-info); border: 1.5px solid var(--color-text-info); border-radius: 12px; padding: 12px; margin-bottom: 12px;">
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                                        <div
+                                            style="font-size: 13px; font-weight: 500; color: var(--color-text-info); flex: 1;">
+                                            BP Bintaro Sektor 7</div>
+                                        <span
+                                            style="font-size: 9px; background: var(--color-text-info); color: white; padding: 2px 6px; border-radius: 8px; font-weight: 500;">2/4
+                                            ✓</span>
+                                    </div>
+                                    <div style="font-size: 10px; color: var(--color-text-info); opacity: 0.85;"><i
+                                            class="ti ti-clock" style="font-size: 11px;"></i> Mulai 08:42 · sudah 18
+                                        menit</div>
+                                    <div
+                                        style="font-size: 10px; color: var(--color-text-info); opacity: 0.7; margin-top: 6px;">
+                                        <i class="ti ti-arrow-right" style="font-size: 11px;"></i> Tap untuk lihat
+                                        checkpoint dalam site</div>
+                                </div>
+
+                                <div
+                                    style="font-size: 10px; color: var(--color-text-secondary); font-weight: 500; margin-bottom: 8px; letter-spacing: 0.3px;">
+                                    BERIKUTNYA · 8 SITE</div>
+
+                                <div class="clickable" onclick="switchScreen('s-site-detail', 4)"
+                                    style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px;">
+                                    <div
+                                        style="width: 26px; height: 26px; background: var(--color-background-secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: var(--color-text-secondary);">
+                                        5</div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 12px; font-weight: 500;">BP Pondok Indah</div>
+                                        <div style="font-size: 10px; color: var(--color-text-secondary);"><i
+                                                class="ti ti-route" style="font-size: 11px;"></i> 8 km · 22 menit drive
+                                        </div>
+                                    </div>
+                                    <i class="ti ti-chevron-right"
+                                        style="font-size: 16px; color: var(--color-text-tertiary);"></i>
+                                </div>
+
+                                <div class="clickable" onclick="switchScreen('s-site-detail', 4)"
+                                    style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px;">
+                                    <div
+                                        style="width: 26px; height: 26px; background: var(--color-background-secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: var(--color-text-secondary);">
+                                        6</div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 12px; font-weight: 500;">BP Kemang</div>
+                                        <div style="font-size: 10px; color: var(--color-text-secondary);"><i
+                                                class="ti ti-route" style="font-size: 11px;"></i> 6 km · 15 menit drive
+                                        </div>
+                                    </div>
+                                    <i class="ti ti-chevron-right"
+                                        style="font-size: 16px; color: var(--color-text-tertiary);"></i>
+                                </div>
+
+                                <div class="clickable" onclick="switchScreen('s-site-detail', 4)"
+                                    style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px;">
+                                    <div
+                                        style="width: 26px; height: 26px; background: var(--color-background-secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: var(--color-text-secondary);">
+                                        7</div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 12px; font-weight: 500;">BP Cilandak</div>
+                                        <div style="font-size: 10px; color: var(--color-text-secondary);"><i
+                                                class="ti ti-route" style="font-size: 11px;"></i> 4 km · 10 menit</div>
+                                    </div>
+                                    <i class="ti ti-chevron-right"
+                                        style="font-size: 16px; color: var(--color-text-tertiary);"></i>
+                                </div>
+
+                                <div
+                                    style="text-align: center; font-size: 10px; color: var(--color-text-tertiary); padding: 8px;">
+                                    + 5 site lainnya</div>
+                            </div>
+                        </div>
+
+                        <div class="annotation" style="top: 80px; right: 4px;"><strong>3 PATTERN:</strong> Sama UI
+                            shell, beda data shape. Single-site (gedung), Cluster (kompleks ruko), Multi-site (BP 12
+                            outlet)</div>
+                    </div>
+
+                    <div class="screen-content" id="s-routes-grouped">
+                        <div
+                            style="padding: 14px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <i class="ti ti-arrow-left clickable" style="font-size: 20px;"
+                                onclick="switchScreen('s-routes', 3)"></i>
+                            <div style="flex: 1;">
+                                <div style="font-size: 15px; font-weight: 500;">Smart grouping</div>
+                                <div style="font-size: 11px; color: var(--color-text-secondary);">12 lokasi · group by
+                                    proximity</div>
+                            </div>
+                            <i class="ti ti-list clickable"
+                                style="font-size: 20px; color: var(--color-text-secondary); margin-right: 4px;"
+                                onclick="switchScreen('s-routes', 3)" title="List view"></i>
+                            <i class="ti ti-map clickable" style="font-size: 20px; color: var(--color-text-secondary);"
+                                onclick="switchScreen('s-routes-map', 5)" title="Map view"></i>
+                        </div>
+
+                        <div
+                            style="padding: 12px 16px; background: var(--color-background-secondary); border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <div style="display: flex; gap: 8px;">
+                                <div class="kpi-card" style="flex: 1; padding: 8px;">
+                                    <div style="font-size: 18px; font-weight: 500; color: var(--color-text-success);">3
+                                    </div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary);">Selesai</div>
+                                </div>
+                                <div class="kpi-card" style="flex: 1; padding: 8px;">
+                                    <div style="font-size: 18px; font-weight: 500; color: var(--color-text-info);">1
+                                    </div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary);">Aktif</div>
+                                </div>
+                                <div class="kpi-card" style="flex: 1; padding: 8px;">
+                                    <div style="font-size: 18px; font-weight: 500;">8</div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary);">Berikutnya</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="flex: 1; overflow-y: auto;">
+
+                            <div style="padding: 12px 16px 8px;">
+                                <div
+                                    style="font-size: 10px; color: var(--color-text-secondary); font-weight: 500; letter-spacing: 0.5px;">
+                                    SUDAH SELESAI</div>
+                            </div>
+                            <div class="clickable" onclick="toggleClusterSection('done')"
+                                style="padding: 10px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--color-border-tertiary); background: var(--color-background-primary);">
+                                <div
+                                    style="width: 32px; height: 32px; background: var(--color-background-success); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="ti ti-circle-check"
+                                        style="font-size: 18px; color: var(--color-text-success);"></i></div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 13px; font-weight: 500;">Selesai</div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary);">3 site · 14km
+                                        drive · 1j 23m total</div>
+                                </div>
+                                <i class="ti ti-chevron-right" id="chev-done"
+                                    style="font-size: 16px; color: var(--color-text-tertiary);"></i>
+                            </div>
+                            <div id="section-done"
+                                style="display: none; padding: 8px 16px; background: var(--color-background-secondary);">
+                                <div
+                                    style="display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                                    <div
+                                        style="width: 24px; height: 24px; background: var(--color-background-success); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; color: var(--color-text-success);">
+                                        1</div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 11px;">BP Kelapa Gading</div>
+                                        <div style="font-size: 9px; color: var(--color-text-secondary);">4/4 checkpoint
+                                            · 06:42</div>
+                                    </div>
+                                    <i class="ti ti-circle-check"
+                                        style="font-size: 14px; color: var(--color-text-success);"></i>
+                                </div>
+                                <div
+                                    style="display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                                    <div
+                                        style="width: 24px; height: 24px; background: var(--color-background-success); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; color: var(--color-text-success);">
+                                        2</div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 11px;">BP BSD City</div>
+                                        <div style="font-size: 9px; color: var(--color-text-secondary);">4/4 checkpoint
+                                            · 07:18</div>
+                                    </div>
+                                    <i class="ti ti-circle-check"
+                                        style="font-size: 14px; color: var(--color-text-success);"></i>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px; padding: 6px 0;">
+                                    <div
+                                        style="width: 24px; height: 24px; background: var(--color-background-success); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; color: var(--color-text-success);">
+                                        3</div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 11px;">BP Alam Sutera</div>
+                                        <div style="font-size: 9px; color: var(--color-text-secondary);">4/4 checkpoint
+                                            · 07:54</div>
+                                    </div>
+                                    <i class="ti ti-circle-check"
+                                        style="font-size: 14px; color: var(--color-text-success);"></i>
+                                </div>
+                            </div>
+
+                            <div style="padding: 14px 16px 8px;">
+                                <div
+                                    style="font-size: 10px; color: var(--color-text-secondary); font-weight: 500; letter-spacing: 0.5px;">
+                                    SEDANG DI SINI</div>
+                            </div>
+                            <div class="clickable" onclick="switchScreen('s-site-detail', 4)"
+                                style="padding: 12px 16px; display: flex; align-items: center; gap: 10px; background: var(--color-background-info); border: 1.5px solid var(--color-text-info); margin: 0 16px; border-radius: 10px;">
+                                <div
+                                    style="width: 36px; height: 36px; background: var(--color-background-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--color-text-info); font-size: 13px;">
+                                    4</div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 13px; font-weight: 500; color: var(--color-text-info);">BP
+                                        Bintaro Sektor 7</div>
+                                    <div style="font-size: 10px; color: var(--color-text-info); opacity: 0.85;">2/4
+                                        checkpoint · sudah 18 menit · tap untuk detail</div>
+                                </div>
+                                <i class="ti ti-arrow-right"
+                                    style="font-size: 18px; color: var(--color-text-info);"></i>
+                            </div>
+
+                            <div style="padding: 14px 16px 8px;">
+                                <div
+                                    style="font-size: 10px; color: var(--color-text-secondary); font-weight: 500; letter-spacing: 0.5px;">
+                                    SITE BERIKUTNYA · GROUPED BY PROXIMITY</div>
+                            </div>
+
+                            <div class="clickable" onclick="toggleClusterSection('cluster-selatan')"
+                                style="padding: 12px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--color-border-tertiary); background: var(--color-background-primary);">
+                                <div
+                                    style="width: 36px; height: 36px; background: var(--color-background-info); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="ti ti-map-pin"
+                                        style="font-size: 18px; color: var(--color-text-info);"></i></div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 13px; font-weight: 500;">Cluster Jakarta Selatan</div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary);">3 site · 12km ·
+                                        22m drive total</div>
+                                    <div style="font-size: 10px; color: var(--color-text-info); margin-top: 2px;"><i
+                                            class="ti ti-bolt" style="font-size: 11px;"></i> Disarankan · paling dekat
+                                        dari Bintaro</div>
+                                </div>
+                                <i class="ti ti-chevron-down" id="chev-cluster-selatan"
+                                    style="font-size: 16px; color: var(--color-text-info);"></i>
+                            </div>
+                            <div id="section-cluster-selatan"
+                                style="display: block; padding: 4px 16px 8px; background: var(--color-background-secondary);">
+                                <div class="clickable" onclick="switchScreen('s-site-detail', 4)"
+                                    style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--color-background-primary); border-radius: 8px; border: 0.5px solid var(--color-border-tertiary); margin: 6px 0;">
+                                    <div
+                                        style="width: 26px; height: 26px; background: var(--color-background-secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500;">
+                                        5</div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 12px; font-weight: 500;">BP Pondok Indah</div>
+                                        <div style="font-size: 9px; color: var(--color-text-secondary);">4 checkpoint ·
+                                            4km · 8m drive</div>
+                                    </div>
+                                    <i class="ti ti-chevron-right"
+                                        style="font-size: 14px; color: var(--color-text-tertiary);"></i>
+                                </div>
+                                <div class="clickable" onclick="switchScreen('s-site-detail', 4)"
+                                    style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--color-background-primary); border-radius: 8px; border: 0.5px solid var(--color-border-tertiary); margin: 6px 0;">
+                                    <div
+                                        style="width: 26px; height: 26px; background: var(--color-background-secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500;">
+                                        6</div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 12px; font-weight: 500;">BP Kemang</div>
+                                        <div style="font-size: 9px; color: var(--color-text-secondary);">4 checkpoint ·
+                                            4km · 7m drive</div>
+                                    </div>
+                                    <i class="ti ti-chevron-right"
+                                        style="font-size: 14px; color: var(--color-text-tertiary);"></i>
+                                </div>
+                                <div class="clickable" onclick="switchScreen('s-site-detail', 4)"
+                                    style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--color-background-warning); border-radius: 8px; border: 0.5px solid var(--color-text-warning); margin: 6px 0;">
+                                    <div
+                                        style="width: 26px; height: 26px; background: var(--color-background-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; color: var(--color-text-warning);">
+                                        7</div>
+                                    <div style="flex: 1;">
+                                        <div
+                                            style="font-size: 12px; font-weight: 500; color: var(--color-text-warning);">
+                                            BP Cilandak</div>
+                                        <div style="font-size: 9px; color: var(--color-text-warning); opacity: 0.85;">4
+                                            checkpoint · 4km · URGENT · sudah 8j lewat batas</div>
+                                    </div>
+                                    <i class="ti ti-alert-triangle"
+                                        style="font-size: 14px; color: var(--color-text-warning);"></i>
+                                </div>
+                            </div>
+
+                            <div class="clickable" onclick="toggleClusterSection('cluster-tangerang')"
+                                style="padding: 12px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--color-border-tertiary); background: var(--color-background-primary);">
+                                <div
+                                    style="width: 36px; height: 36px; background: var(--color-background-secondary); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="ti ti-map-pin"
+                                        style="font-size: 18px; color: var(--color-text-secondary);"></i></div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 13px; font-weight: 500;">Cluster Tangerang Selatan</div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary);">3 site · 18km ·
+                                        35m drive total</div>
+                                </div>
+                                <i class="ti ti-chevron-right" id="chev-cluster-tangerang"
+                                    style="font-size: 16px; color: var(--color-text-tertiary);"></i>
+                            </div>
+                            <div id="section-cluster-tangerang"
+                                style="display: none; padding: 4px 16px 8px; background: var(--color-background-secondary);">
+                                <div
+                                    style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--color-background-primary); border-radius: 8px; border: 0.5px solid var(--color-border-tertiary); margin: 6px 0;">
+                                    <div
+                                        style="width: 26px; height: 26px; background: var(--color-background-secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500;">
+                                        8</div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 12px;">BP Pasar Minggu</div>
+                                        <div style="font-size: 9px; color: var(--color-text-secondary);">4 checkpoint ·
+                                            6km · 12m drive</div>
+                                    </div>
+                                </div>
+                                <div
+                                    style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--color-background-primary); border-radius: 8px; border: 0.5px solid var(--color-border-tertiary); margin: 6px 0;">
+                                    <div
+                                        style="width: 26px; height: 26px; background: var(--color-background-secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500;">
+                                        9</div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 12px;">BP Serpong</div>
+                                        <div style="font-size: 9px; color: var(--color-text-secondary);">4 checkpoint ·
+                                            8km · 15m drive</div>
+                                    </div>
+                                </div>
+                                <div
+                                    style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--color-background-warning); border-radius: 8px; border: 0.5px solid var(--color-text-warning); margin: 6px 0;">
+                                    <div
+                                        style="width: 26px; height: 26px; background: var(--color-background-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; color: var(--color-text-warning);">
+                                        10</div>
+                                    <div style="flex: 1;">
+                                        <div
+                                            style="font-size: 12px; font-weight: 500; color: var(--color-text-warning);">
+                                            BP Gading Serpong</div>
+                                        <div style="font-size: 9px; color: var(--color-text-warning); opacity: 0.85;">4
+                                            checkpoint · 4km · URGENT</div>
+                                    </div>
+                                    <i class="ti ti-alert-triangle"
+                                        style="font-size: 14px; color: var(--color-text-warning);"></i>
+                                </div>
+                            </div>
+
+                            <div class="clickable" onclick="toggleClusterSection('cluster-timur')"
+                                style="padding: 12px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--color-border-tertiary); background: var(--color-background-primary);">
+                                <div
+                                    style="width: 36px; height: 36px; background: var(--color-background-secondary); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="ti ti-map-pin"
+                                        style="font-size: 18px; color: var(--color-text-secondary);"></i></div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 13px; font-weight: 500;">Cluster Jakarta Timur</div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary);">2 site · 25km ·
+                                        45m drive total</div>
+                                    <div style="font-size: 10px; color: var(--color-text-tertiary); margin-top: 2px;">
+                                        paling jauh dari Bintaro</div>
+                                </div>
+                                <i class="ti ti-chevron-right" id="chev-cluster-timur"
+                                    style="font-size: 16px; color: var(--color-text-tertiary);"></i>
+                            </div>
+                            <div id="section-cluster-timur"
+                                style="display: none; padding: 4px 16px 8px; background: var(--color-background-secondary);">
+                                <div
+                                    style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--color-background-primary); border-radius: 8px; border: 0.5px solid var(--color-border-tertiary); margin: 6px 0;">
+                                    <div
+                                        style="width: 26px; height: 26px; background: var(--color-background-secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500;">
+                                        11</div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 12px;">BP Cawang</div>
+                                        <div style="font-size: 9px; color: var(--color-text-secondary);">4 checkpoint ·
+                                            12km · 22m drive</div>
+                                    </div>
+                                </div>
+                                <div
+                                    style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--color-background-primary); border-radius: 8px; border: 0.5px solid var(--color-border-tertiary); margin: 6px 0;">
+                                    <div
+                                        style="width: 26px; height: 26px; background: var(--color-background-secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500;">
+                                        12</div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 12px;">BP Bekasi</div>
+                                        <div style="font-size: 9px; color: var(--color-text-secondary);">4 checkpoint ·
+                                            13km · 23m drive</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="padding: 14px 16px;">
+                                <div
+                                    style="background: var(--color-background-info); padding: 10px 12px; border-radius: 8px; font-size: 10px; color: var(--color-text-info); line-height: 1.5;">
+                                    <i class="ti ti-bulb" style="font-size: 12px;"></i> <strong>Smart suggest:</strong>
+                                    Cluster Jakarta Selatan paling efisien (terdekat dari Bintaro). Cilandak urgent —
+                                    selesaikan dulu sebelum SLA breach.
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="annotation" style="top: 130px; right: 4px;"><strong>STRATEGI A:</strong> Smart
+                            grouping by progress state + proximity cluster. Scale baik untuk 12-30 site. Default Jakarta
+                            Selatan expanded (terdekat). Cluster lain collapsed untuk reduce scroll.</div>
+                    </div>
+
+                    <div class="screen-content" id="s-routes-map">
+                        <div
+                            style="padding: 14px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <i class="ti ti-arrow-left clickable" style="font-size: 20px;"
+                                onclick="switchScreen('s-routes', 3)"></i>
+                            <div style="flex: 1;">
+                                <div style="font-size: 15px; font-weight: 500;">Peta route</div>
+                                <div style="font-size: 11px; color: var(--color-text-secondary);">12 lokasi · Jakarta
+                                    Selatan</div>
+                            </div>
+                            <i class="ti ti-stack-2 clickable"
+                                style="font-size: 20px; color: var(--color-text-secondary); margin-right: 4px;"
+                                onclick="switchScreen('s-routes-grouped', 6)" title="Smart grouping"></i>
+                            <i class="ti ti-list clickable" style="font-size: 20px; color: var(--color-text-secondary);"
+                                onclick="switchScreen('s-routes', 3)" title="List view"></i>
+                        </div>
+
+                        <div
+                            style="padding: 10px 16px; background: var(--color-background-secondary); border-bottom: 0.5px solid var(--color-border-tertiary); display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; gap: 8px; font-size: 10px;">
+                                <div style="display: flex; align-items: center; gap: 3px;"><span
+                                        style="width: 8px; height: 8px; border-radius: 50%; background: var(--color-text-success);"></span><span>3
+                                        selesai</span></div>
+                                <div style="display: flex; align-items: center; gap: 3px;"><span
+                                        style="width: 8px; height: 8px; border-radius: 50%; background: var(--color-text-info);"></span><span>1
+                                        aktif</span></div>
+                                <div style="display: flex; align-items: center; gap: 3px;"><span
+                                        style="width: 8px; height: 8px; border-radius: 50%; background: var(--color-text-warning);"></span><span>2
+                                        urgent</span></div>
+                                <div style="display: flex; align-items: center; gap: 3px;"><span
+                                        style="width: 8px; height: 8px; border-radius: 50%; background: var(--color-text-tertiary);"></span><span>6
+                                        pending</span></div>
+                            </div>
+                        </div>
+
+                        <div
+                            style="flex: 1; position: relative; background: #e8eef4; min-height: 380px; overflow: hidden;">
+
+                            <svg width="100%" height="100%" viewBox="0 0 340 380" preserveAspectRatio="xMidYMid slice"
+                                style="position: absolute; top: 0; left: 0;">
+                                <rect width="340" height="380" fill="#e8eef4" />
+                                <path d="M 0 80 Q 80 60 170 90 T 340 100 L 340 0 L 0 0 Z" fill="#d6dde7"
+                                    opacity="0.6" />
+                                <path d="M 0 250 Q 100 230 180 260 T 340 270 L 340 380 L 0 380 Z" fill="#d6dde7"
+                                    opacity="0.4" />
+                                <line x1="20" y1="180" x2="320" y2="170" stroke="#c5ccd6" stroke-width="14"
+                                    stroke-linecap="round" />
+                                <line x1="30" y1="60" x2="60" y2="340" stroke="#c5ccd6" stroke-width="10"
+                                    stroke-linecap="round" />
+                                <line x1="250" y1="50" x2="280" y2="340" stroke="#c5ccd6" stroke-width="10"
+                                    stroke-linecap="round" />
+                                <line x1="100" y1="30" x2="140" y2="350" stroke="#c5ccd6" stroke-width="8"
+                                    stroke-linecap="round" />
+                                <line x1="180" y1="40" x2="200" y2="350" stroke="#c5ccd6" stroke-width="8"
+                                    stroke-linecap="round" />
+                                <line x1="40" y1="100" x2="305" y2="115" stroke="#d4dae3" stroke-width="6"
+                                    stroke-linecap="round" />
+                                <line x1="35" y1="270" x2="310" y2="280" stroke="#d4dae3" stroke-width="6"
+                                    stroke-linecap="round" />
+
+                                <path d="M 50 90 L 110 110 L 175 175 L 230 175" stroke="#185fa5" stroke-width="2"
+                                    stroke-dasharray="4,3" fill="none" opacity="0.7" />
+
+                                <g>
+                                    <circle cx="50" cy="90" r="13" fill="#15803d" />
+                                    <circle cx="50" cy="90" r="6" fill="white" />
+                                    <text x="50" y="95" font-size="9" font-weight="600" fill="#15803d"
+                                        text-anchor="middle">1</text>
+                                    <text x="50" y="115" font-size="8" fill="#1a1a1a" text-anchor="middle"
+                                        font-weight="500">BP Gading</text>
+                                </g>
+
+                                <g>
+                                    <circle cx="110" cy="110" r="13" fill="#15803d" />
+                                    <circle cx="110" cy="110" r="6" fill="white" />
+                                    <text x="110" y="115" font-size="9" font-weight="600" fill="#15803d"
+                                        text-anchor="middle">2</text>
+                                    <text x="110" y="135" font-size="8" fill="#1a1a1a" text-anchor="middle"
+                                        font-weight="500">BP BSD</text>
+                                </g>
+
+                                <g>
+                                    <circle cx="175" cy="175" r="13" fill="#15803d" />
+                                    <circle cx="175" cy="175" r="6" fill="white" />
+                                    <text x="175" y="180" font-size="9" font-weight="600" fill="#15803d"
+                                        text-anchor="middle">3</text>
+                                    <text x="175" y="200" font-size="8" fill="#1a1a1a" text-anchor="middle"
+                                        font-weight="500">BP Alam Sutera</text>
+                                </g>
+
+                                <g>
+                                    <circle cx="230" cy="175" r="17" fill="#185fa5" opacity="0.3" />
+                                    <circle cx="230" cy="175" r="13" fill="#185fa5" />
+                                    <circle cx="230" cy="175" r="6" fill="white" />
+                                    <text x="230" y="180" font-size="9" font-weight="600" fill="#185fa5"
+                                        text-anchor="middle">4</text>
+                                    <text x="230" y="200" font-size="8" fill="#185fa5" text-anchor="middle"
+                                        font-weight="600">BP Bintaro · sekarang</text>
+                                </g>
+
+                                <g class="clickable" onclick="switchScreen('s-site-detail', 4)"
+                                    style="cursor: pointer;">
+                                    <circle cx="155" cy="240" r="13" fill="#9ca3af" />
+                                    <text x="155" y="245" font-size="9" font-weight="600" fill="white"
+                                        text-anchor="middle">5</text>
+                                    <text x="155" y="265" font-size="8" fill="#1a1a1a" text-anchor="middle"
+                                        font-weight="500">BP Pondok Indah</text>
+                                </g>
+
+                                <g>
+                                    <circle cx="100" cy="285" r="13" fill="#9ca3af" />
+                                    <text x="100" y="290" font-size="9" font-weight="600" fill="white"
+                                        text-anchor="middle">6</text>
+                                    <text x="100" y="310" font-size="8" fill="#1a1a1a" text-anchor="middle"
+                                        font-weight="500">BP Kemang</text>
+                                </g>
+
+                                <g>
+                                    <circle cx="65" cy="200" r="13" fill="#b45309" />
+                                    <text x="65" y="205" font-size="9" font-weight="600" fill="white"
+                                        text-anchor="middle">7</text>
+                                    <text x="65" y="225" font-size="8" fill="#1a1a1a" text-anchor="middle"
+                                        font-weight="500">BP Cilandak</text>
+                                </g>
+
+                                <g>
+                                    <circle cx="275" cy="225" r="13" fill="#9ca3af" />
+                                    <text x="275" y="230" font-size="9" font-weight="600" fill="white"
+                                        text-anchor="middle">8</text>
+                                    <text x="275" y="250" font-size="8" fill="#1a1a1a" text-anchor="middle"
+                                        font-weight="500">BP Pasar Minggu</text>
+                                </g>
+
+                                <g>
+                                    <circle cx="290" cy="115" r="13" fill="#9ca3af" />
+                                    <text x="290" y="120" font-size="9" font-weight="600" fill="white"
+                                        text-anchor="middle">9</text>
+                                </g>
+
+                                <g>
+                                    <circle cx="200" cy="65" r="13" fill="#b45309" />
+                                    <text x="200" y="70" font-size="9" font-weight="600" fill="white"
+                                        text-anchor="middle">10</text>
+                                </g>
+
+                                <g>
+                                    <circle cx="40" cy="320" r="13" fill="#9ca3af" />
+                                    <text x="40" y="325" font-size="9" font-weight="600" fill="white"
+                                        text-anchor="middle">11</text>
+                                </g>
+
+                                <g>
+                                    <circle cx="245" cy="320" r="13" fill="#9ca3af" />
+                                    <text x="245" y="325" font-size="9" font-weight="600" fill="white"
+                                        text-anchor="middle">12</text>
+                                </g>
+
+                                <g style="position: relative;">
+                                    <rect x="240" y="20" width="90" height="46" rx="6" fill="white" stroke="#d4d4d4"
+                                        stroke-width="0.5" />
+                                    <text x="285" y="34" font-size="8" fill="#6b7280" text-anchor="middle"
+                                        font-weight="500">PROGRESS</text>
+                                    <text x="285" y="50" font-size="14" fill="#185fa5" text-anchor="middle"
+                                        font-weight="600">3 / 12</text>
+                                    <text x="285" y="60" font-size="7" fill="#6b7280" text-anchor="middle">25%
+                                        selesai</text>
+                                </g>
+
+                            </svg>
+
+                            <div style="position: absolute; bottom: 12px; left: 12px; right: 12px; background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: 12px; padding: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);"
+                                class="clickable" onclick="switchScreen('s-site-detail', 4)">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div
+                                        style="width: 36px; height: 36px; background: var(--color-background-info); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--color-text-info); font-size: 13px;">
+                                        4</div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 13px; font-weight: 500; color: var(--color-text-info);">
+                                            BP Bintaro Sektor 7 · sekarang</div>
+                                        <div style="font-size: 10px; color: var(--color-text-info); opacity: 0.85;">2/4
+                                            checkpoint · sudah 18 menit · tap untuk detail</div>
+                                    </div>
+                                    <i class="ti ti-arrow-right"
+                                        style="font-size: 18px; color: var(--color-text-info);"></i>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div
+                            style="padding: 12px 16px; border-top: 0.5px solid var(--color-border-tertiary); background: var(--color-background-secondary);">
+                            <div
+                                style="font-size: 10px; color: var(--color-text-secondary); font-weight: 500; margin-bottom: 6px;">
+                                SITE BERIKUTNYA · SARAN URUTAN</div>
+                            <div style="display: flex; gap: 6px; overflow-x: auto;">
+                                <div
+                                    style="flex-shrink: 0; background: var(--color-background-primary); padding: 6px 10px; border-radius: 6px; border: 0.5px solid var(--color-border-tertiary); font-size: 11px;">
+                                    <span style="color: var(--color-text-secondary);">5.</span> BP Pondok Indah <span
+                                        style="color: var(--color-text-tertiary); font-size: 9px;">8km</span></div>
+                                <div
+                                    style="flex-shrink: 0; background: var(--color-background-primary); padding: 6px 10px; border-radius: 6px; border: 0.5px solid var(--color-border-tertiary); font-size: 11px;">
+                                    <span style="color: var(--color-text-secondary);">6.</span> BP Kemang <span
+                                        style="color: var(--color-text-tertiary); font-size: 9px;">6km</span></div>
+                                <div
+                                    style="flex-shrink: 0; background: var(--color-background-primary); padding: 6px 10px; border-radius: 6px; border: 0.5px solid var(--color-border-tertiary); font-size: 11px;">
+                                    <span style="color: var(--color-text-secondary);">7.</span> BP Cilandak <span
+                                        style="color: var(--color-text-tertiary); font-size: 9px;">4km</span></div>
+                            </div>
+                        </div>
+
+                        <div class="annotation" style="top: 70px; right: 4px;"><strong>NEW screen:</strong> Map view
+                            dengan pin color-coded by status. Tap pin → site detail. Bottom sheet show current site.
+                            Real-world butuh Google Maps SDK + offline tile caching.</div>
+                    </div>
+
+                    <div class="screen-content" id="s-site-detail">
+                        <div
+                            style="padding: 14px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <i class="ti ti-arrow-left clickable" style="font-size: 20px;"
+                                onclick="switchScreen('s-routes', 3)"></i>
+                            <div style="flex: 1;">
+                                <div style="font-size: 15px; font-weight: 500;">BP Bintaro Sektor 7</div>
+                                <div style="font-size: 11px; color: var(--color-text-secondary);">Site 4 dari 12 ·
+                                    sedang di sini</div>
+                            </div>
+                        </div>
+
+                        <div
+                            style="padding: 12px 16px; background: var(--color-background-info); border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="ti ti-map-pin" style="font-size: 18px; color: var(--color-text-info);"></i>
+                                <div style="flex: 1; font-size: 12px; color: var(--color-text-info); font-weight: 500;">
+                                    Di dalam site · check-in 08:42</div>
+                                <i class="ti ti-circle-check"
+                                    style="font-size: 18px; color: var(--color-text-success);"></i>
+                            </div>
+                        </div>
+
+                        <div style="padding: 14px 16px; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                                <div
+                                    style="background: var(--color-background-secondary); padding: 10px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 18px; font-weight: 500;">2/4</div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary);">Checkpoint</div>
+                                </div>
+                                <div
+                                    style="background: var(--color-background-secondary); padding: 10px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 18px; font-weight: 500;">18m</div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary);">Durasi sekarang
+                                    </div>
+                                </div>
+                                <div
+                                    style="background: var(--color-background-secondary); padding: 10px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 18px; font-weight: 500;">12</div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary);">Site total</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="padding: 14px 16px; flex: 1; overflow-y: auto;">
+                            <div
+                                style="font-size: 11px; color: var(--color-text-secondary); font-weight: 500; margin-bottom: 10px;">
+                                CHECKPOINT DALAM SITE</div>
+
+                            <div
+                                style="display: flex; gap: 10px; padding: 10px 0; align-items: center; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                                <i class="ti ti-circle-check"
+                                    style="font-size: 18px; color: var(--color-text-success);"></i>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 13px;">Area kantor</div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary);">08:48 · QR ✓ GPS ✓
+                                        foto ✓</div>
+                                </div>
+                                <i class="ti ti-photo" style="font-size: 14px; color: var(--color-text-tertiary);"></i>
+                            </div>
+
+                            <div
+                                style="display: flex; gap: 10px; padding: 10px 0; align-items: center; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                                <i class="ti ti-circle-check"
+                                    style="font-size: 18px; color: var(--color-text-success);"></i>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 13px;">Area genset</div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary);">08:52 · QR ✓ GPS ✓
+                                        foto ✓</div>
+                                </div>
+                                <i class="ti ti-photo" style="font-size: 14px; color: var(--color-text-tertiary);"></i>
+                            </div>
+
+                            <div class="clickable" onclick="switchScreen('s-qr-brief', 9)"
+                                style="display: flex; gap: 10px; padding: 12px; align-items: center; background: var(--color-background-info); border: 1.5px solid var(--color-text-info); border-radius: 10px; margin: 8px 0;">
+                                <div
+                                    style="width: 28px; height: 28px; background: var(--color-background-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; color: var(--color-text-info);">
+                                    3</div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 13px; font-weight: 500; color: var(--color-text-info);">
+                                        Minimarket area</div>
+                                    <div style="font-size: 10px; color: var(--color-text-info); opacity: 0.85;">Tap
+                                        untuk scan QR</div>
+                                </div>
+                                <i class="ti ti-qrcode" style="font-size: 20px; color: var(--color-text-info);"></i>
+                            </div>
+
+                            <div style="display: flex; gap: 10px; padding: 10px 0; align-items: center;">
+                                <i class="ti ti-circle" style="font-size: 18px; color: var(--color-text-tertiary);"></i>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 13px; color: var(--color-text-tertiary);">Dispenser area
+                                    </div>
+                                    <div style="font-size: 10px; color: var(--color-text-tertiary);">Belum di-scan</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            style="padding: 12px 16px; border-top: 0.5px solid var(--color-border-tertiary); display: flex; gap: 8px;">
+                            <button class="clickable"
+                                style="flex: 1; font-size: 11px; color: var(--color-text-warning);"
+                                onclick="alert('Skip seluruh site BP Bintaro? Wajib alasan + foto')">Skip site</button>
+                            <button class="clickable"
+                                style="flex: 2; height: 44px; background: var(--color-text-info); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 500;"
+                                onclick="switchScreen('s-qr-brief', 9)">Lanjut checkpoint</button>
+                        </div>
+
+                        <div class="annotation" style="top: 200px; left: 4px;"><strong>NEW screen:</strong> Tap site di
+                            multi-site list → lihat checkpoint internal. Skip-site sebagai first-class action terpisah
+                            dari skip-checkpoint</div>
+                    </div>
+
+                    <div class="screen-content" id="s-briefing">
+                        <div
+                            style="padding: 14px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <i class="ti ti-arrow-left clickable" style="font-size: 20px;"
+                                onclick="switchScreen('s-routes', 3)"></i>
+                            <div style="flex: 1;">
+                                <div style="font-size: 15px; font-weight: 500;">Tower A pagi</div>
+                                <div style="font-size: 11px; color: var(--color-text-secondary);">Putaran ke-1 · belum
+                                    dimulai</div>
+                            </div>
+                        </div>
+
+                        <div style="padding: 14px 16px; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                                <div
+                                    style="background: var(--color-background-secondary); padding: 10px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 18px; font-weight: 500;">12</div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary);">QR checkpoint
+                                    </div>
+                                </div>
+                                <div
+                                    style="background: var(--color-background-secondary); padding: 10px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 18px; font-weight: 500;">22</div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary);">Menit estimasi
+                                    </div>
+                                </div>
+                                <div
+                                    style="background: var(--color-background-secondary); padding: 10px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 18px; font-weight: 500;">4h</div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary);">Last patroli</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            style="padding: 14px 16px; background: var(--color-background-info); display: flex; gap: 8px; align-items: start; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <i class="ti ti-bulb"
+                                style="font-size: 14px; color: var(--color-text-info); margin-top: 2px;"></i>
+                            <div style="font-size: 11px; color: var(--color-text-info); line-height: 1.5;"><strong>Saran
+                                    urutan:</strong> mulai dari lobby (#1), naik ke koridor lt. 2 (#3-6), terakhir lift
+                                area (#9-12). <strong>Tapi bebas ikuti</strong> sesuai kondisi lapangan.</div>
+                        </div>
+
+                        <div
+                            style="padding: 14px 16px; background: var(--color-background-warning); border-bottom: 0.5px solid var(--color-border-tertiary); display: flex; gap: 10px; align-items: start;">
+                            <i class="ti ti-info-circle"
+                                style="font-size: 14px; color: var(--color-text-warning); margin-top: 2px;"></i>
+                            <div style="font-size: 11px; color: var(--color-text-warning); line-height: 1.5;">
+                                <strong>Note dari supervisor:</strong> Pastikan cek lift 2 di lt. 5, tadi malam ada
+                                tenant komplain bunyi aneh.</div>
+                        </div>
+
+                        <div style="padding: 14px 16px; flex: 1; overflow-y: auto;">
+                            <div
+                                style="font-size: 11px; color: var(--color-text-secondary); font-weight: 500; margin-bottom: 10px;">
+                                CHECKPOINT — urutan saran</div>
+                            <div style="display: flex; gap: 10px; padding: 8px 0; align-items: center;">
+                                <div
+                                    style="width: 26px; height: 26px; border-radius: 50%; background: var(--color-background-info); color: var(--color-text-info); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500;">
+                                    1</div>
+                                <div style="flex: 1; font-size: 13px;">Lobby utama</div><i class="ti ti-qrcode"
+                                    style="font-size: 14px; color: var(--color-text-tertiary);"></i>
+                            </div>
+                            <div style="display: flex; gap: 10px; padding: 8px 0; align-items: center;">
+                                <div
+                                    style="width: 26px; height: 26px; border-radius: 50%; background: var(--color-background-info); color: var(--color-text-info); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500;">
+                                    2</div>
+                                <div style="flex: 1; font-size: 13px;">Resepsionis &amp; mailbox</div><i
+                                    class="ti ti-qrcode"
+                                    style="font-size: 14px; color: var(--color-text-tertiary);"></i>
+                            </div>
+                            <div style="display: flex; gap: 10px; padding: 8px 0; align-items: center;">
+                                <div
+                                    style="width: 26px; height: 26px; border-radius: 50%; background: var(--color-background-info); color: var(--color-text-info); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500;">
+                                    3</div>
+                                <div style="flex: 1; font-size: 13px;">Koridor lt. 2</div><i class="ti ti-qrcode"
+                                    style="font-size: 14px; color: var(--color-text-tertiary);"></i>
+                            </div>
+                            <div style="display: flex; gap: 10px; padding: 8px 0; align-items: center;">
+                                <div
+                                    style="width: 26px; height: 26px; border-radius: 50%; background: var(--color-background-info); color: var(--color-text-info); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500;">
+                                    4</div>
+                                <div style="flex: 1; font-size: 13px;">Tangga darurat utara</div><i class="ti ti-qrcode"
+                                    style="font-size: 14px; color: var(--color-text-tertiary);"></i>
+                            </div>
+                            <div
+                                style="text-align: center; font-size: 11px; color: var(--color-text-tertiary); padding: 6px;">
+                                + 8 checkpoint lainnya</div>
+                        </div>
+
+                        <div
+                            style="padding: 12px 16px; border-top: 0.5px solid var(--color-border-tertiary); display: flex; gap: 8px;">
+                            <button
+                                style="flex: 1; height: 44px; font-size: 12px; color: var(--color-text-secondary);">Lihat
+                                peta</button>
+                            <button class="clickable"
+                                style="flex: 2; height: 44px; background: var(--color-text-info); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 500;"
+                                onclick="switchScreen('s-aktif', 8)">Mulai patroli</button>
+                        </div>
+
+                        <div class="annotation" style="top: 200px; left: 4px;"><strong>UPDATED:</strong> banner saran
+                            urutan + eksplisit "bebas ikuti"</div>
+                    </div>
+
+                    <div class="screen-content" id="s-aktif">
+                        <div
+                            style="padding: 14px 16px; background: var(--color-background-warning); border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <div style="font-size: 12px; color: var(--color-text-warning); font-weight: 500;">
+                                    PATROLI AKTIF</div>
+                                <div style="font-size: 16px; font-weight: 500; color: var(--color-text-warning);">12:34
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 4px;">
+                                <div
+                                    style="flex: 1; height: 4px; background: var(--color-text-success); border-radius: 2px;">
+                                </div>
+                                <div
+                                    style="flex: 1; height: 4px; background: var(--color-text-success); border-radius: 2px;">
+                                </div>
+                                <div
+                                    style="flex: 1; height: 4px; background: var(--color-text-success); border-radius: 2px;">
+                                </div>
+                                <div
+                                    style="flex: 1; height: 4px; background: var(--color-text-success); border-radius: 2px;">
+                                </div>
+                                <div
+                                    style="flex: 1; height: 4px; background: var(--color-text-warning); border-radius: 2px;">
+                                </div>
+                                <div
+                                    style="flex: 1; height: 4px; background: var(--color-border-tertiary); border-radius: 2px;">
+                                </div>
+                                <div
+                                    style="flex: 1; height: 4px; background: var(--color-border-tertiary); border-radius: 2px;">
+                                </div>
+                                <div
+                                    style="flex: 1; height: 4px; background: var(--color-border-tertiary); border-radius: 2px;">
+                                </div>
+                                <div
+                                    style="flex: 1; height: 4px; background: var(--color-border-tertiary); border-radius: 2px;">
+                                </div>
+                                <div
+                                    style="flex: 1; height: 4px; background: var(--color-border-tertiary); border-radius: 2px;">
+                                </div>
+                                <div
+                                    style="flex: 1; height: 4px; background: var(--color-border-tertiary); border-radius: 2px;">
+                                </div>
+                                <div
+                                    style="flex: 1; height: 4px; background: var(--color-border-tertiary); border-radius: 2px;">
+                                </div>
+                            </div>
+                            <div style="font-size: 11px; color: var(--color-text-warning); margin-top: 6px;">4 dari 12
+                                checkpoint · sedang ke #5</div>
+                        </div>
+                        <div style="padding: 16px; flex: 1;">
+                            <div class="clickable" onclick="switchScreen('s-qr-brief', 9)"
+                                style="background: var(--color-background-info); border: 1.5px solid var(--color-text-info); border-radius: 12px; padding: 14px; margin-bottom: 14px;">
+                                <div
+                                    style="font-size: 11px; color: var(--color-text-info); font-weight: 500; margin-bottom: 4px;">
+                                    CHECKPOINT BERIKUTNYA</div>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div
+                                        style="width: 32px; height: 32px; background: var(--color-background-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; color: var(--color-text-info);">
+                                        5</div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 14px; font-weight: 500; color: var(--color-text-info);">
+                                            Lift 2 Tower A · lt. 5</div>
+                                        <div style="font-size: 11px; color: var(--color-text-info); opacity: 0.85;">Tap
+                                            untuk scan QR</div>
+                                    </div>
+                                    <i class="ti ti-qrcode" style="font-size: 22px; color: var(--color-text-info);"></i>
+                                </div>
+                            </div>
+                            <div
+                                style="font-size: 11px; color: var(--color-text-secondary); font-weight: 500; margin-bottom: 8px;">
+                                SUDAH SELESAI</div>
+                            <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0;"><i
+                                    class="ti ti-circle-check-filled"
+                                    style="font-size: 18px; color: var(--color-text-success);"></i>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 13px;">Lobby utama</div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary);">06:32 · foto OK
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0;"><i
+                                    class="ti ti-circle-check-filled"
+                                    style="font-size: 18px; color: var(--color-text-success);"></i>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 13px;">Lift area lt. 1</div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary);">06:34 · foto OK
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0;"><i
+                                    class="ti ti-circle-check-filled"
+                                    style="font-size: 18px; color: var(--color-text-success);"></i>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 13px;">Koridor lt. 2</div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary);">06:38 · foto OK
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0;"><i
+                                    class="ti ti-circle-check-filled"
+                                    style="font-size: 18px; color: var(--color-text-success);"></i>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 13px;">Tangga darurat utara</div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary);">06:42 · foto OK
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            style="padding: 12px 16px; border-top: 0.5px solid var(--color-border-tertiary); display: flex; gap: 8px;">
+                            <button class="clickable"
+                                style="flex: 1; height: 44px; font-size: 12px; color: var(--color-text-secondary);"
+                                onclick="switchScreen('s-skip', 12)">Skip checkpoint</button>
+                            <button
+                                style="flex: 1; height: 44px; font-size: 12px; color: var(--color-text-warning);">Pause</button>
+                        </div>
+                    </div>
+
+                    <div class="screen-content" id="s-qr-brief">
+                        <div
+                            style="padding: 14px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <i class="ti ti-arrow-left clickable" style="font-size: 20px;"
+                                onclick="switchScreen('s-aktif', 8)"></i>
+                            <div style="flex: 1;">
+                                <div style="font-size: 15px; font-weight: 500;">Checkpoint #5</div>
+                                <div style="font-size: 11px; color: var(--color-text-secondary);">Lift 2 Tower A · lt. 5
+                                </div>
+                            </div>
+                            <span
+                                style="font-size: 11px; background: var(--color-background-warning); color: var(--color-text-warning); padding: 4px 10px; border-radius: 6px; font-weight: 500;">Sedang
+                                patroli</span>
+                        </div>
+                        <div style="padding: 16px; flex: 1;">
+                            <div
+                                style="background: var(--color-background-secondary); border-radius: 12px; padding: 14px; margin-bottom: 14px;">
+                                <div
+                                    style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 6px; font-weight: 500;">
+                                    LOKASI QR STIKER</div>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <div
+                                        style="width: 48px; height: 48px; background: var(--color-background-primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                        <i class="ti ti-qrcode"
+                                            style="font-size: 28px; color: var(--color-text-info);"></i>
+                                    </div>
+                                    <div style="font-size: 12px; line-height: 1.5;">Stiker biru ~10cm di samping panel
+                                        lift, tinggi sekitar mata orang dewasa.</div>
+                                </div>
+                            </div>
+                            <div
+                                style="background: var(--color-background-secondary); border-radius: 12px; padding: 14px; margin-bottom: 14px;">
+                                <div
+                                    style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 8px; font-weight: 500;">
+                                    CARA SCAN</div>
+                                <div style="font-size: 12px; line-height: 1.8;">
+                                    <div style="display: flex; gap: 8px; align-items: start;"><span
+                                            style="color: var(--color-text-info); font-weight: 500;">1.</span> Tap
+                                        "Mulai scan" di bawah</div>
+                                    <div style="display: flex; gap: 8px; align-items: start;"><span
+                                            style="color: var(--color-text-info); font-weight: 500;">2.</span> Arahkan
+                                        kamera ke stiker QR</div>
+                                    <div style="display: flex; gap: 8px; align-items: start;"><span
+                                            style="color: var(--color-text-info); font-weight: 500;">3.</span> Tunggu
+                                        sampai garis hijau bergerak</div>
+                                    <div style="display: flex; gap: 8px; align-items: start;"><span
+                                            style="color: var(--color-text-info); font-weight: 500;">4.</span> Foto
+                                        kondisi area saat diminta</div>
+                                </div>
+                            </div>
+                            <div
+                                style="background: var(--color-background-warning); padding: 10px 14px; border-radius: 8px; display: flex; gap: 8px; align-items: start;">
+                                <i class="ti ti-info-circle"
+                                    style="font-size: 14px; color: var(--color-text-warning); margin-top: 2px; flex-shrink: 0;"></i>
+                                <div style="font-size: 11px; color: var(--color-text-warning); line-height: 1.5;">QR
+                                    stiker rusak atau tidak terbaca? Tap "Skip dengan alasan" untuk lapor.</div>
+                            </div>
+                        </div>
+                        <div
+                            style="padding: 14px 16px; border-top: 0.5px solid var(--color-border-tertiary); display: flex; gap: 8px;">
+                            <button class="clickable"
+                                style="flex: 1; height: 44px; font-size: 12px; color: var(--color-text-secondary);"
+                                onclick="switchScreen('s-skip', 12)">Skip</button>
+                            <button class="clickable"
+                                style="flex: 2; height: 44px; font-size: 13px; font-weight: 500; background: var(--color-text-info); color: white; border: none; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 6px;"
+                                onclick="switchScreen('s-qr-scan', 10)">
+                                <i class="ti ti-camera" style="font-size: 16px;"></i><span>Mulai scan</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="screen-content" id="s-qr-scan">
+                        <div
+                            style="padding: 14px 16px; background: rgba(0,0,0,0.6); display: flex; align-items: center; gap: 10px; position: absolute; top: 0; left: 0; right: 0; z-index: 5;">
+                            <i class="ti ti-x clickable" style="font-size: 22px; color: white;"
+                                onclick="switchScreen('s-qr-brief', 9)"></i>
+                            <div style="flex: 1;">
+                                <div style="font-size: 14px; font-weight: 500; color: white;">Scan QR</div>
+                                <div style="font-size: 11px; color: rgba(255,255,255,0.7);">Checkpoint #5 · Lift 2 lt. 5
+                                </div>
+                            </div>
+                            <i class="ti ti-bolt" style="font-size: 22px; color: white;"></i>
+                        </div>
+                        <div
+                            style="flex: 1; background: #1a1a1a; position: relative; overflow: hidden; min-height: 480px;">
+                            <div
+                                style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 56px; height: 56px; background: rgba(255,255,255,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <i class="ti ti-qrcode" style="font-size: 28px; color: rgba(255,255,255,0.2);"></i>
+                            </div>
+                            <div
+                                style="position: absolute; top: 18%; left: 12%; right: 12%; bottom: 30%; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px;">
+                                <div class="scan-overlay-corner"
+                                    style="top: -3px; left: -3px; border-right: none; border-bottom: none; border-radius: 8px 0 0 0;">
+                                </div>
+                                <div class="scan-overlay-corner"
+                                    style="top: -3px; right: -3px; border-left: none; border-bottom: none; border-radius: 0 8px 0 0;">
+                                </div>
+                                <div class="scan-overlay-corner"
+                                    style="bottom: -3px; left: -3px; border-right: none; border-top: none; border-radius: 0 0 0 8px;">
+                                </div>
+                                <div class="scan-overlay-corner"
+                                    style="bottom: -3px; right: -3px; border-left: none; border-top: none; border-radius: 0 0 8px 0;">
+                                </div>
+                                <div class="scan-line-anim" id="scan-line-3"></div>
+                            </div>
+                            <div
+                                style="position: absolute; bottom: 110px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); padding: 8px 14px; border-radius: 20px; font-size: 12px; color: white; font-weight: 500;">
+                                Arahkan ke QR · pegang stabil</div>
+                            <div id="success-banner-3"
+                                style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--color-text-success); padding: 16px 24px; border-radius: 16px; color: white; text-align: center; z-index: 4;">
+                                <i class="ti ti-circle-check"
+                                    style="font-size: 32px; display: block; margin-bottom: 4px;"></i>
+                                <div style="font-size: 14px; font-weight: 500;">QR terbaca</div>
+                                <div style="font-size: 11px; opacity: 0.85;">ID match checkpoint #5</div>
+                            </div>
+                        </div>
+                        <div
+                            style="padding: 16px; background: rgba(0,0,0,0.8); position: absolute; bottom: 0; left: 0; right: 0;">
+                            <button class="clickable" id="simulate-scan-btn-3"
+                                style="width: 100%; height: 44px; background: white; color: #1a1a1a; border: none; border-radius: 8px; font-size: 13px; font-weight: 500;"
+                                onclick="simulateQRScan()">Simulasi scan berhasil</button>
+                            <div style="text-align: center; margin-top: 8px;"><a href="#"
+                                    onclick="event.preventDefault(); switchScreen('s-skip', 12); return false;"
+                                    style="font-size: 11px; color: rgba(255,255,255,0.7);">QR tidak terbaca? Tap di
+                                    sini</a></div>
+                        </div>
+                    </div>
+
+                    <div class="screen-content" id="s-qr-photo">
+                        <div
+                            style="padding: 14px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <i class="ti ti-arrow-left clickable" style="font-size: 20px;"
+                                onclick="switchScreen('s-qr-scan', 10)"></i>
+                            <div style="flex: 1;">
+                                <div style="font-size: 15px; font-weight: 500;">Checkpoint #5</div>
+                                <div style="font-size: 11px; color: var(--color-text-secondary);">Lift 2 Tower A · lt. 5
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            style="padding: 12px 16px; background: var(--color-background-success); display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <i class="ti ti-circle-check"
+                                style="font-size: 18px; color: var(--color-text-success);"></i>
+                            <div style="flex: 1;">
+                                <div style="font-size: 12px; color: var(--color-text-success); font-weight: 500;">QR
+                                    terbaca · ID match checkpoint</div>
+                                <div style="font-size: 10px; color: var(--color-text-success); opacity: 0.85;">06:45:12
+                                    WIB</div>
+                            </div>
+                        </div>
+                        <div style="padding: 14px 16px; background: var(--color-background-secondary);">
+                            <div style="display: flex; gap: 8px; font-size: 11px;">
+                                <div
+                                    style="flex: 1; display: flex; align-items: center; gap: 4px; color: var(--color-text-success);">
+                                    <i class="ti ti-qrcode" style="font-size: 14px;"></i><span>QR ✓</span></div>
+                                <div
+                                    style="flex: 1; display: flex; align-items: center; gap: 4px; color: var(--color-text-success);">
+                                    <i class="ti ti-map-pin" style="font-size: 14px;"></i><span>GPS ✓</span></div>
+                                <div style="flex: 1; display: flex; align-items: center; gap: 4px; color: var(--color-text-warning);"
+                                    id="evidence-photo-status"><i class="ti ti-camera"
+                                        style="font-size: 14px;"></i><span>Foto?</span></div>
+                            </div>
+                        </div>
+                        <div style="padding: 16px; flex: 1; display: flex; flex-direction: column;">
+                            <div style="font-size: 13px; font-weight: 500; margin-bottom: 4px;">Foto kondisi area</div>
+                            <div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 14px;">
+                                Tunjukkan lokasi yang clear, gak harus close-up</div>
+                            <div class="clickable" id="photo-target"
+                                style="width: 100%; aspect-ratio: 4/3; background: var(--color-background-secondary); border: 1.5px dashed var(--color-border-secondary); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px;"
+                                onclick="simulatePhotoCapture()">
+                                <i class="ti ti-camera" style="font-size: 44px; color: var(--color-text-tertiary);"
+                                    id="photo-icon"></i>
+                                <div style="font-size: 12px; color: var(--color-text-secondary);" id="photo-label">Tap
+                                    untuk ambil foto</div>
+                            </div>
+                            <div
+                                style="font-size: 11px; color: var(--color-text-secondary); line-height: 1.6; padding: 10px 12px; background: var(--color-background-secondary); border-radius: 8px;">
+                                <i class="ti ti-bulb"
+                                    style="font-size: 14px; color: var(--color-text-secondary); vertical-align: -2px; margin-right: 4px;"></i>
+                                Foto otomatis include timestamp, GPS, dan ID worker untuk audit.
+                            </div>
+                        </div>
+                        <div style="padding: 14px 16px; border-top: 0.5px solid var(--color-border-tertiary);">
+                            <button class="clickable" id="checkpoint-done-btn"
+                                style="width: 100%; height: 48px; background: var(--color-text-info); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; opacity: 0.5;"
+                                disabled onclick="completeCheckpoint()">Selesai checkpoint</button>
+                            <div style="text-align: center; font-size: 10px; color: var(--color-text-tertiary); margin-top: 6px;"
+                                id="photo-required-hint">Foto wajib sebelum bisa selesai</div>
+                        </div>
+                    </div>
+
+                    <div class="screen-content" id="s-skip">
+                        <div
+                            style="padding: 14px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <i class="ti ti-arrow-left clickable" style="font-size: 20px;"
+                                onclick="switchScreen('s-aktif', 8)"></i>
+                            <div style="flex: 1;">
+                                <div style="font-size: 15px; font-weight: 500;">Skip checkpoint</div>
+                                <div style="font-size: 11px; color: var(--color-text-secondary);">Checkpoint #5 — Lift 2
+                                    lt. 5</div>
+                            </div>
+                        </div>
+                        <div style="padding: 16px; flex: 1;">
+                            <div
+                                style="background: var(--color-background-warning); padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 12px; color: var(--color-text-warning); line-height: 1.5;">
+                                <i class="ti ti-info-circle" style="font-size: 16px; vertical-align: -3px;"></i> Skip
+                                akan tercatat dan supervisor dapat notif. Wajib alasan + foto.
+                            </div>
+                            <div
+                                style="font-size: 11px; color: var(--color-text-secondary); font-weight: 500; margin-bottom: 10px;">
+                                ALASAN SKIP</div>
+                            <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;">
+                                <label
+                                    style="padding: 10px 12px; border: 0.5px solid var(--color-border-tertiary); border-radius: 8px; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;"><input
+                                        type="radio" name="skip-reason" style="margin: 0;" /> Area terkunci</label>
+                                <label
+                                    style="padding: 10px 12px; border: 0.5px solid var(--color-border-tertiary); border-radius: 8px; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;"><input
+                                        type="radio" name="skip-reason" style="margin: 0;" /> Gangguan / safety
+                                    issue</label>
+                                <label
+                                    style="padding: 10px 12px; border: 0.5px solid var(--color-border-tertiary); border-radius: 8px; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;"><input
+                                        type="radio" name="skip-reason" style="margin: 0;" /> QR rusak / tidak
+                                    terbaca</label>
+                                <label
+                                    style="padding: 10px 12px; border: 0.5px solid var(--color-border-tertiary); border-radius: 8px; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;"><input
+                                        type="radio" name="skip-reason" style="margin: 0;" /> Lainnya</label>
+                            </div>
+                            <div
+                                style="font-size: 11px; color: var(--color-text-secondary); font-weight: 500; margin-bottom: 10px;">
+                                FOTO KONDISI (WAJIB)</div>
+                            <button
+                                style="width: 100%; height: 80px; border: 0.5px dashed var(--color-border-secondary); border-radius: 8px; background: var(--color-background-secondary); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
+                                <i class="ti ti-camera" style="font-size: 24px; color: var(--color-text-tertiary);"></i>
+                                <span style="font-size: 11px; color: var(--color-text-tertiary);">Tap untuk foto</span>
+                            </button>
+                        </div>
+                        <div style="padding: 14px 16px; border-top: 0.5px solid var(--color-border-tertiary);">
+                            <button class="clickable"
+                                style="width: 100%; background: var(--color-text-warning); color: white; border: none; height: 48px; border-radius: 8px; font-size: 14px; font-weight: 500;"
+                                onclick="confirmSkip()">Konfirmasi skip</button>
+                        </div>
+                    </div>
+
+                    <div class="screen-content" id="s-insiden">
+                        <div
+                            style="padding: 14px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <i class="ti ti-arrow-left clickable" style="font-size: 20px;"
+                                onclick="switchScreen('s-home', 2)"></i>
+                            <div style="flex: 1;">
+                                <div style="font-size: 15px; font-weight: 500;">Lapor insiden</div>
+                                <div style="font-size: 11px; color: var(--color-text-secondary);">Voice-first reporting
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            style="padding: 24px 16px; flex: 1; display: flex; flex-direction: column; align-items: center;">
+                            <div style="width: 140px; height: 140px; background: var(--color-background-danger); border: 2px solid var(--color-text-danger); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; cursor: pointer;"
+                                class="recording-pulse" onclick="alert('Recording started (simulated)');"><i
+                                    class="ti ti-microphone"
+                                    style="font-size: 56px; color: var(--color-text-danger);"></i></div>
+                            <div style="font-size: 14px; font-weight: 500; margin-bottom: 4px;">Tap untuk rekam</div>
+                            <div style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 24px;">Max
+                                60 detik</div>
+                            <div style="width: 100%; padding: 0 16px;">
+                                <div
+                                    style="font-size: 11px; color: var(--color-text-secondary); font-weight: 500; margin-bottom: 8px;">
+                                    KATEGORI</div>
+                                <div
+                                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px;">
+                                    <button style="padding: 10px; font-size: 12px;"><i class="ti ti-eye"
+                                            style="font-size: 14px;"></i> Mencurigakan</button>
+                                    <button style="padding: 10px; font-size: 12px;"><i class="ti ti-tool"
+                                            style="font-size: 14px;"></i> Kerusakan</button>
+                                    <button style="padding: 10px; font-size: 12px;"><i class="ti ti-shield-exclamation"
+                                            style="font-size: 14px;"></i> Safety</button>
+                                    <button style="padding: 10px; font-size: 12px;"><i class="ti ti-dots"
+                                            style="font-size: 14px;"></i> Lainnya</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="padding: 14px 16px; border-top: 0.5px solid var(--color-border-tertiary);">
+                            <button class="clickable"
+                                style="width: 100%; background: var(--color-text-info); color: white; border: none; height: 48px; border-radius: 8px; font-size: 14px; font-weight: 500;"
+                                onclick="submitIncident()">Kirim laporan</button>
+                        </div>
+                    </div>
+
+                    <div class="screen-content" id="s-sos">
+                        <div
+                            style="background: var(--color-text-danger); flex: 1; display: flex; flex-direction: column; padding: 32px 20px; color: white; text-align: center;">
+                            <div
+                                style="font-size: 11px; font-weight: 500; letter-spacing: 1px; margin-bottom: 20px; opacity: 0.85;">
+                                SOS AKTIF</div>
+                            <div style="font-size: 64px; font-weight: 500; line-height: 1; margin-bottom: 16px;"
+                                id="sos-countdown">10</div>
+                            <div style="font-size: 14px; margin-bottom: 32px;">Detik sebelum broadcast<br />ke
+                                supervisor + tim</div>
+                            <div
+                                style="background: rgba(255,255,255,0.15); padding: 14px; border-radius: 12px; margin-bottom: 24px; font-size: 12px; line-height: 1.6;">
+                                <i class="ti ti-microphone" style="font-size: 20px;"></i><br />
+                                Audio sedang rekam ambient<br />
+                                <i class="ti ti-map-pin" style="font-size: 14px; vertical-align: -2px;"></i> Lokasi:
+                                Tower A lt. 5 lift area
+                            </div>
+                            <button class="clickable"
+                                style="background: white; color: var(--color-text-danger); border: none; padding: 16px; border-radius: 12px; font-size: 14px; font-weight: 500; margin-top: auto;"
+                                onclick="cancelSOS()">Batalkan SOS (false alarm)</button>
+                        </div>
+                    </div>
+
+                    <div class="screen-content" id="s-tamu">
+                        <div
+                            style="padding: 14px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <i class="ti ti-arrow-left clickable" style="font-size: 20px;"
+                                onclick="switchScreen('s-home', 2)"></i>
+                            <div style="flex: 1;">
+                                <div style="font-size: 15px; font-weight: 500;">Tamu masuk</div>
+                                <div style="font-size: 11px; color: var(--color-text-secondary);">Step 1 dari 3 · Scan
+                                    KTP</div>
+                            </div>
+                        </div>
+                        <div
+                            style="padding: 14px 16px; background: var(--color-background-secondary); display: flex; gap: 4px; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <div style="flex: 1; height: 4px; background: var(--color-text-info); border-radius: 2px;">
+                            </div>
+                            <div
+                                style="flex: 1; height: 4px; background: var(--color-border-tertiary); border-radius: 2px;">
+                            </div>
+                            <div
+                                style="flex: 1; height: 4px; background: var(--color-border-tertiary); border-radius: 2px;">
+                            </div>
+                        </div>
+                        <div
+                            style="padding: 24px 16px; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                            <div
+                                style="width: 280px; height: 180px; background: var(--color-background-secondary); border: 2px dashed var(--color-border-secondary); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; position: relative;">
+                                <i class="ti ti-id" style="font-size: 56px; color: var(--color-text-tertiary);"></i>
+                                <div
+                                    style="position: absolute; bottom: -10px; background: var(--color-background-info); padding: 4px 12px; border-radius: 12px; font-size: 11px; color: var(--color-text-info); font-weight: 500;">
+                                    Frame KTP di sini</div>
+                            </div>
+                            <div style="font-size: 14px; font-weight: 500; margin-bottom: 6px;">Letakkan KTP tamu</div>
+                            <div
+                                style="font-size: 12px; color: var(--color-text-secondary); text-align: center; max-width: 240px;">
+                                OCR akan auto-extract nama, NIK, dan alamat dari KTP</div>
+                        </div>
+                        <div style="padding: 14px 16px; border-top: 0.5px solid var(--color-border-tertiary);">
+                            <button class="clickable"
+                                style="width: 100%; background: var(--color-text-info); color: white; border: none; height: 48px; border-radius: 8px; font-size: 14px; font-weight: 500;"
+                                onclick="alert('OCR processing... (simulated)');"><i class="ti ti-camera"
+                                    style="font-size: 16px;"></i> Scan KTP</button>
+                        </div>
+                    </div>
+
+                    <div class="screen-content" id="s-handover">
+                        <div
+                            style="padding: 14px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <i class="ti ti-arrow-left clickable" style="font-size: 20px;"
+                                onclick="switchScreen('s-home', 2)"></i>
+                            <div style="flex: 1;">
+                                <div style="font-size: 15px; font-weight: 500;">Shift handover</div>
+                                <div style="font-size: 11px; color: var(--color-text-secondary);">Catatan untuk shift
+                                    sore</div>
+                            </div>
+                        </div>
+                        <div style="padding: 16px; flex: 1;">
+                            <div
+                                style="background: var(--color-background-secondary); padding: 12px; border-radius: 8px; margin-bottom: 14px;">
+                                <div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 6px;">
+                                    RINGKASAN SHIFT PAGI (AUTO)</div>
+                                <div style="font-size: 12px; line-height: 1.6;">· 4 patroli completed (12/12 QR
+                                    checkpoint)<br />· 1 insiden lapor (false alarm)<br />· 2 tamu masuk · 0 complaint
+                                </div>
+                            </div>
+                            <div
+                                style="font-size: 11px; color: var(--color-text-secondary); font-weight: 500; margin-bottom: 8px;">
+                                INSIDEN HARI INI</div>
+                            <textarea
+                                style="width: 100%; min-height: 60px; padding: 10px; font-size: 13px; border: 0.5px solid var(--color-border-tertiary); border-radius: 8px; resize: none; margin-bottom: 14px;">Insiden orang gelap di parkir B2 jam 8:30 — sudah verified tukang kontraktor sah, false alarm.</textarea>
+                            <div
+                                style="font-size: 11px; color: var(--color-text-secondary); font-weight: 500; margin-bottom: 8px;">
+                                PERLU DIPERHATIKAN</div>
+                            <textarea
+                                style="width: 100%; min-height: 60px; padding: 10px; font-size: 13px; border: 0.5px solid var(--color-border-tertiary); border-radius: 8px; resize: none;">Lift 2 lt. 5 bunyi aneh — sudah dilaporkan ke teknisi, follow up sore.</textarea>
+                        </div>
+                        <div style="padding: 14px 16px; border-top: 0.5px solid var(--color-border-tertiary);">
+                            <button class="clickable"
+                                style="width: 100%; background: var(--color-text-info); color: white; border: none; height: 48px; border-radius: 8px; font-size: 14px; font-weight: 500;"
+                                onclick="alert('Handover tersimpan');">Simpan handover</button>
+                        </div>
+                    </div>
+
+                    <div class="screen-content" id="s-clockout">
+                        <div
+                            style="padding: 14px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <i class="ti ti-arrow-left clickable" style="font-size: 20px;"
+                                onclick="switchScreen('s-home', 2)"></i>
+                            <div style="flex: 1;">
+                                <div style="font-size: 15px; font-weight: 500;">Clock-out</div>
+                                <div style="font-size: 11px; color: var(--color-text-secondary);">14:02 WIB · shift
+                                    selesai</div>
+                            </div>
+                        </div>
+                        <div
+                            style="padding: 16px; background: var(--color-background-info); border-bottom: 0.5px solid var(--color-border-tertiary);">
+                            <div
+                                style="font-size: 12px; color: var(--color-text-info); margin-bottom: 8px; font-weight: 500;">
+                                RINGKASAN SHIFT ANDA</div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <div
+                                    style="background: var(--color-background-primary); padding: 10px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 16px; font-weight: 500; color: var(--color-text-info);">8j
+                                        12m</div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary);">Durasi</div>
+                                </div>
+                                <div
+                                    style="background: var(--color-background-primary); padding: 10px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 16px; font-weight: 500; color: var(--color-text-success);">
+                                        4/4</div>
+                                    <div style="font-size: 10px; color: var(--color-text-secondary);">Patroli</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            style="padding: 24px 16px; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                            <div
+                                style="width: 200px; height: 200px; background: var(--color-background-secondary); border: 2px dashed var(--color-border-secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 18px;">
+                                <i class="ti ti-camera" style="font-size: 48px; color: var(--color-text-tertiary);"></i>
+                            </div>
+                            <div style="font-size: 13px; color: var(--color-text-secondary); text-align: center;">Selfie
+                                verification untuk clock-out</div>
+                        </div>
+                        <div
+                            style="padding: 14px 16px; border-top: 0.5px solid var(--color-border-tertiary); display: flex; flex-direction: column; gap: 8px;">
+                            <button class="clickable"
+                                style="background: var(--color-text-secondary); color: white; border: none; height: 44px; border-radius: 8px; font-size: 13px;"
+                                onclick="switchScreen('s-handover', 16)"><i class="ti ti-file-text"
+                                    style="font-size: 14px;"></i> Isi handover dulu</button>
+                            <button class="clickable"
+                                style="background: var(--color-text-info); color: white; border: none; height: 48px; border-radius: 8px; font-size: 14px; font-weight: 500;"
+                                onclick="alert('Clock-out berhasil!')">Clock-out</button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="flow-bar">
+                    <button class="flow-btn" id="prev-btn" onclick="flowNav(-1)" disabled><i
+                            class="ti ti-chevron-left"></i><span>Prev</span></button>
+                    <div class="flow-info"><strong id="current-num">1</strong>/18 · <span id="current-name">Login
+                            PIN</span></div>
+                    <button class="flow-btn" id="next-btn" onclick="flowNav(1)"><span>Next</span><i
+                            class="ti ti-chevron-right"></i></button>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // Global functions (NOT wrapped in IIFE) — accessible from inline onclick handlers
+
+        var screens = ['s-login', 's-clockin', 's-home', 's-routes', 's-site-detail', 's-routes-map', 's-routes-grouped', 's-briefing', 's-aktif', 's-qr-brief', 's-qr-scan', 's-qr-photo', 's-skip', 's-insiden', 's-sos', 's-tamu', 's-handover', 's-clockout'];
+        var names = ['Login PIN', 'Clock-in', 'Home', 'List routes', 'Site detail', 'Routes map', 'Smart grouping', 'Patroli briefing', 'Patroli aktif', 'Scan QR brief', 'Scanner aktif', 'Foto evidence', 'Skip checkpoint', 'Lapor insiden', 'SOS mode', 'Tamu masuk', 'Shift handover', 'Clock-out'];
+        var currentIdx = 0;
+        var sosInterval = null;
+        var pinInput = '';
+
+        function toggleClusterSection(sectionId) {
+            var section = document.getElementById('section-' + sectionId);
+            var chevron = document.getElementById('chev-' + sectionId);
+            if (!section || !chevron) return;
+            if (section.style.display === 'none') {
+                section.style.display = 'block';
+                chevron.className = 'ti ti-chevron-down';
+            } else {
+                section.style.display = 'none';
+                chevron.className = 'ti ti-chevron-right';
+            }
+        }
+
+        function switchPattern(pattern) {
+            document.querySelectorAll('.pattern-data').forEach(function (el) { el.style.display = 'none'; });
+            var target = document.getElementById('pattern-' + pattern);
+            if (target) target.style.display = 'block';
+            document.querySelectorAll('.pattern-btn').forEach(function (btn) { btn.classList.remove('pattern-active'); });
+            var activeBtn = document.querySelector('.pattern-btn[data-pattern="' + pattern + '"]');
+            if (activeBtn) activeBtn.classList.add('pattern-active');
+            var subtitle = document.getElementById('routes-subtitle');
+            if (subtitle) {
+                if (pattern === 'single') subtitle.textContent = 'Single-site · 1 gedung 4 route';
+                else if (pattern === 'cluster') subtitle.textContent = 'Cluster · kompleks perumahan/ruko';
+                else if (pattern === 'multi') subtitle.textContent = 'Multi-site · 12 lokasi keliling';
+            }
+            var mapIcon = document.getElementById('map-toggle-icon');
+            if (mapIcon) {
+                mapIcon.style.display = (pattern === 'multi') ? 'inline-block' : 'none';
+            }
+            var groupIcon = document.getElementById('group-toggle-icon');
+            if (groupIcon) {
+                groupIcon.style.display = (pattern === 'multi') ? 'inline-block' : 'none';
+            }
+        }
+
+        function switchScreen(screenId, idx) {
+            document.querySelectorAll('.screen-content').forEach(function (s) { s.classList.remove('active'); });
+            document.getElementById(screenId).classList.add('active');
+            document.querySelectorAll('.nav-item[data-screen]').forEach(function (n) { n.classList.remove('active'); });
+            var navItem = document.querySelector('[data-screen="' + screenId + '"]');
+            if (navItem) navItem.classList.add('active');
+            currentIdx = idx;
+            updateFlowBar();
+            if (screenId === 's-sos') startSOSCountdown();
+            else stopSOSCountdown();
+            if (screenId === 's-qr-photo') resetPhotoState();
+        }
+
+        function flowNav(direction) {
+            var newIdx = currentIdx + direction;
+            if (newIdx >= 0 && newIdx < screens.length) switchScreen(screens[newIdx], newIdx);
+        }
+
+        function updateFlowBar() {
+            document.getElementById('current-num').textContent = currentIdx + 1;
+            document.getElementById('current-name').textContent = names[currentIdx];
+            document.getElementById('prev-btn').disabled = currentIdx === 0;
+            document.getElementById('next-btn').disabled = currentIdx === screens.length - 1;
+        }
+
+        function simulateClockIn() {
+            var btn = document.getElementById('clockin-btn');
+            var btnText = document.getElementById('clockin-btn-text');
+            var icon = document.getElementById('selfie-icon');
+            var badge = document.getElementById('selfie-badge');
+            btnText.textContent = 'Memproses...';
+            btn.disabled = true;
+            icon.className = 'ti ti-circle-check';
+            icon.style.color = 'var(--color-text-success)';
+            badge.style.background = 'var(--color-background-success)';
+            badge.style.color = 'var(--color-text-success)';
+            badge.textContent = 'Wajah terverifikasi';
+            setTimeout(function () {
+                switchScreen('s-home', 2);
+                btn.disabled = false;
+                btnText.textContent = 'Ambil foto & clock-in';
+                icon.className = 'ti ti-camera';
+                icon.style.color = 'var(--color-text-tertiary)';
+                badge.style.background = 'var(--color-background-info)';
+                badge.style.color = 'var(--color-text-info)';
+                badge.textContent = 'Posisikan wajah';
+            }, 1200);
+        }
+
+        function simulateQRScan() {
+            var banner = document.getElementById('success-banner-3');
+            var btn = document.getElementById('simulate-scan-btn-3');
+            var scanLine = document.getElementById('scan-line-3');
+            banner.style.display = 'block';
+            banner.classList.add('flash-in');
+            if (scanLine) scanLine.style.animationPlayState = 'paused';
+            btn.disabled = true;
+            btn.textContent = 'QR terbaca!';
+            btn.style.background = 'var(--color-text-success)';
+            btn.style.color = 'white';
+            setTimeout(function () {
+                switchScreen('s-qr-photo', 11);
+                banner.style.display = 'none';
+                banner.classList.remove('flash-in');
+                if (scanLine) scanLine.style.animationPlayState = 'running';
+                btn.disabled = false;
+                btn.textContent = 'Simulasi scan berhasil';
+                btn.style.background = 'white';
+                btn.style.color = '#1a1a1a';
+            }, 1500);
+        }
+
+        function simulatePhotoCapture() {
+            var target = document.getElementById('photo-target');
+            var icon = document.getElementById('photo-icon');
+            var label = document.getElementById('photo-label');
+            var evidenceStatus = document.getElementById('evidence-photo-status');
+            var doneBtn = document.getElementById('checkpoint-done-btn');
+            var hint = document.getElementById('photo-required-hint');
+            if (!target) return;
+            target.style.background = 'var(--color-background-success)';
+            target.style.borderColor = 'var(--color-text-success)';
+            target.style.borderStyle = 'solid';
+            icon.className = 'ti ti-circle-check';
+            icon.style.color = 'var(--color-text-success)';
+            label.textContent = 'Foto tersimpan';
+            label.style.color = 'var(--color-text-success)';
+            evidenceStatus.style.color = 'var(--color-text-success)';
+            evidenceStatus.innerHTML = '<i class="ti ti-circle-check" style="font-size: 14px;"></i><span>Foto ✓</span>';
+            doneBtn.style.opacity = '1';
+            doneBtn.disabled = false;
+            hint.textContent = 'Semua evidence lengkap, siap submit';
+            hint.style.color = 'var(--color-text-success)';
+        }
+
+        function resetPhotoState() {
+            var target = document.getElementById('photo-target');
+            var icon = document.getElementById('photo-icon');
+            var label = document.getElementById('photo-label');
+            var evidenceStatus = document.getElementById('evidence-photo-status');
+            var doneBtn = document.getElementById('checkpoint-done-btn');
+            var hint = document.getElementById('photo-required-hint');
+            if (!target) return;
+            target.style.background = 'var(--color-background-secondary)';
+            target.style.borderColor = 'var(--color-border-secondary)';
+            target.style.borderStyle = 'dashed';
+            icon.className = 'ti ti-camera';
+            icon.style.color = 'var(--color-text-tertiary)';
+            label.textContent = 'Tap untuk ambil foto';
+            label.style.color = 'var(--color-text-secondary)';
+            evidenceStatus.style.color = 'var(--color-text-warning)';
+            evidenceStatus.innerHTML = '<i class="ti ti-camera" style="font-size: 14px;"></i><span>Foto?</span>';
+            doneBtn.style.opacity = '0.5';
+            doneBtn.disabled = true;
+            hint.textContent = 'Foto wajib sebelum bisa selesai';
+            hint.style.color = 'var(--color-text-tertiary)';
+        }
+
+        function completeCheckpoint() {
+            alert('Checkpoint #5 selesai!\n\nQR ✓ GPS ✓ Foto ✓\nEvidence lengkap, tersimpan.\n\nKembali ke patroli aktif.');
+            switchScreen('s-aktif', 8);
+        }
+
+        function confirmSkip() {
+            alert('Skip tercatat. Supervisor akan terima notif.');
+            switchScreen('s-aktif', 8);
+        }
+
+        function submitIncident() {
+            alert('Insiden terkirim ke supervisor (simulated)');
+            switchScreen('s-home', 2);
+        }
+
+        function startSOSCountdown() {
+            stopSOSCountdown();
+            var countdown = 10;
+            var elem = document.getElementById('sos-countdown');
+            if (elem) elem.textContent = countdown;
+            sosInterval = setInterval(function () {
+                countdown--;
+                if (elem) elem.textContent = Math.max(0, countdown);
+                if (countdown <= 0) {
+                    stopSOSCountdown();
+                    setTimeout(function () { alert('SOS sudah broadcast!'); }, 100);
+                }
+            }, 1000);
+        }
+
+        function stopSOSCountdown() {
+            if (sosInterval) { clearInterval(sosInterval); sosInterval = null; }
+        }
+
+        function cancelSOS() {
+            stopSOSCountdown();
+            alert('SOS dibatalkan.');
+            switchScreen('s-home', 2);
+        }
+
+        // PIN keypad listener
+        document.querySelectorAll('#pin-keypad button').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var num = this.getAttribute('data-num');
+                var action = this.getAttribute('data-action');
+                if (action === 'erase') pinInput = pinInput.slice(0, -1);
+                else if (num !== null && pinInput.length < 4) pinInput += num;
+                var dots = document.querySelectorAll('#pin-dots [data-dot]');
+                dots.forEach(function (dot, i) {
+                    dot.style.background = i < pinInput.length ? 'var(--color-text-info)' : 'var(--color-border-tertiary)';
+                });
+                if (pinInput.length === 4) {
+                    setTimeout(function () {
+                        switchScreen('s-clockin', 1);
+                        pinInput = '';
+                        dots.forEach(function (d) { d.style.background = 'var(--color-border-tertiary)'; });
+                    }, 300);
+                }
+            });
+        });
+
+        // Init
+        updateFlowBar();
+    </script>
+
+</body>
+
+</html>

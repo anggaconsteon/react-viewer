@@ -1,0 +1,69 @@
+{
+  "type": "APPROVAL",
+  "ledgerCode": "APPROVE-REQUEST-ROW",
+  "vidTable": "<PLACEHOLDER_VID>",
+  "table": "$<env>/<workspace>//vtl.request",
+  "search": "7◼(Cost Center VID)⭘18◼(Status)",
+  "conditions": "[[◀7▶◼<CC_VID>◁1▷◼PENDING]]",
+  "toDo": "PENDING",
+  "typeConfig": {
+    "izin": {
+      "icon": "flight",
+      "iconColor": "#7C3AED",
+      "bgTint": "#EDE9FE",
+      "label": "Leave"
+    },
+    "lembur": {
+      "icon": "schedule",
+      "iconColor": "#B45309",
+      "bgTint": "#FEF3C7",
+      "label": "Overtime"
+    },
+    "absen-manual": {
+      "icon": "edit",
+      "iconColor": "#BE185D",
+      "bgTint": "#FFE4E6",
+      "label": "Manual Check-In"
+    },
+    "cuti": {
+      "icon": "beach_access",
+      "iconColor": "#0891B2",
+      "bgTint": "#CFFAFE",
+      "label": "Annual Leave"
+    },
+    "tukar-shift": {
+      "icon": "swap_horiz",
+      "iconColor": "#4338CA",
+      "bgTint": "#E0E7FF",
+      "label": "Shift Swap"
+    },
+    "sakit": {
+      "icon": "local_hospital",
+      "iconColor": "#16A34A",
+      "bgTint": "#DCFCE7",
+      "label": "Sick"
+    }
+  },
+  "displayBindings": {
+    "iconTile": "typeConfig[<8>]",
+    "title": "<3> · typeConfig[<8>].label",
+    "description": "<16>",
+    "timeAgo": "derived from <17>",
+    "status": "<18>",
+    "rowId": "<1>"
+  },
+  "buttons": [
+    {
+      "label": "APPROVED",
+      "color": "green",
+      "icon": "thumb_up",
+      "actions": "<18>◼APPROVED⭘<19>◼◁1▷⭘<20>◼◁2▷⭘<21>◼◀1|T7|yyyy-MM-dd HH:mm:ss▶"
+    },
+    {
+      "label": "REJECTED",
+      "color": "red",
+      "icon": "thumb_down",
+      "actions": "navigate◼request-detail"
+    }
+  ]
+}

@@ -1,0 +1,162 @@
+{
+    "title": "Vertika Tekno Lokacipta",
+    "children": [
+        {
+            "type": "HGR",
+            "width": 86,
+            "row": 1,
+            "fontSize": 13,
+            "beforeSpacing": 5,
+            "afterSpacing": 0,
+            "sortBy": "alphabetically",
+            "children": [
+                {
+                    "url": "https://firebasestorage.googleapis.com/v0/b/otq-01-ase2/o/c%2Fautsorz%2Ficon%2Fautsorz-icon-90x90.png?alt=media&token=094f1974-8b12-44d0-9841-8d7ab75cf061",
+                    "text": "Autsorz",
+                    "route": "autsorz"
+                },
+                {
+                    "url": "https://firebasestorage.googleapis.com/v0/b/otq-01-ase2/o/id%2F2022%2Fvtl%2Ficon%2Fvtl-icon-90x90.png?alt=media&token=755ccd3e-5d41-4d14-80b2-7c3efc4e4def",
+                    "text": "VTL",
+                    "route": "vertikaTeknoLokacipta"
+                },
+                {
+                    "url": "https://firebasestorage.googleapis.com/v0/b/otq-01-ase2/o/c%2Finfo%2Finfo-icon-90x90.png?alt=media&token=5f67937c-a214-4399-b768-338456d6a732",
+                    "text": "Info",
+                    "route": "info"
+                }
+            ]
+        },
+        {
+            "type": "TXT",
+            "afterSpacing": 0,
+            "size": 4,
+            "data": " "
+        },
+        {
+            "type": "TXT",
+            "size": 14,
+            "data": "Review Request"
+        },
+        {
+            "type": "TXT",
+            "afterSpacing": 0,
+            "size": 4,
+            "data": " "
+        },
+        {
+            "type": "WORKER_CARD_DETAIL",
+            "role": "APPROVER",
+            "vidtable": "20342033315492",
+            "table": "$test/request-approval//vtl.trial-approval",
+            "search": "1◼<no_request>",
+            "conditions": "[[◀1▶◼<no_request>]]",
+            "text": "WORKER◆<23>◆<24> . <7> . <25>"
+        },
+        {
+            "type": "APPROVAL_DETAIL",
+            "role": "APPROVER",
+            "variant": "detail",
+            "ledgerCode": "APPROVE-REQUEST-DETAIL",
+            "vidtable": "20342033315492",
+            "table": "$test/request-approval//vtl.trial-approval",
+            "search": "1◼<request_vid>",
+            "conditions": "[[◀1▶◼<request_vid>]]",
+            "text": "<10>◆Submitted <8>◆Date◆Start◆End◆Location◆Duration◆REASON",
+            "content": "<14>◆<14>◆<16>◆<7>◆<17> days",
+            "reason": "<11>",
+            "status": "<19>",
+            "image": "<12>"
+        },
+        {
+            "type": "COMMENT_DETAIL",
+            "ledgerCode": "REQUEST-CONVERSATION",
+            "vidtable": "20342033315492",
+            "table": "$test/request-approval//vtl.trial-approval/<no_request>/comment",
+            "text": "CONVERSATION"
+        },
+        {
+            "type": "txf",
+            "variant": "commentBox",
+            "role": "APPROVER",
+            "vidtable": "20342033315492",
+            "table": "$test/request-approval//vtl.trial-approval",
+            "text": "Add a comment...◆Send◆Attach file◆Komentar kosong",
+            "icon": "attach_file",
+            "label": "",
+            "hint": "Add a comment...",
+            "maxLength": 500,
+            "size": 18,
+            "position": 7,
+            "buttonIcon": "send",
+            "buttonLabel": "Send",
+            "disabledWhenEmpty": true,
+            "attachmentEnabled": true,
+            "attachmentFolder": "id/2026/vtl/request-comment//<no_request>",
+            "attachmentFilename": "<no_request>-<timestamp>",
+            "attachmentMax": 3,
+            "addToTable": "$test/request-approval/vtl.trial-approval/<no_request>//comment⭘retention◼4320⭘<1>◼Muhamad Ridwan⭘<2>◼13912318312⭘<3>◼◁7▷⭘<4>◼◀1|T7|dd MMM yyyy : HH:mm▶⭘<5>◼◁3▷⭘<6>◼◁4▷"
+        },
+        {
+            "type": "RBT",
+            "role": "APPROVER",
+            "alignment": "end",
+            "children": [
+                {
+                    "text": "Reject",
+                    "color": "red",
+                    "icon": "thumb_down",
+                    "vidtable": "20342033315492",
+                    "updateTableRow": "$test/request-approval//vtl.trial-approval⭘tablevid◼20342033315492⭘search◼1★<request_vid>⭘<19>◼REJECTED⭘<20>◼◁1▷⭘<21>◼◁2▷⭘<27>◼◀1|T7|yyyy-MM-dd HH:mm:ss▶",
+                    "chain": {
+                        "type": "DO_DIALOG",
+                        "title": "Request Rejected",
+                        "children": [
+                            {
+                                "type": "TXT",
+                                "data": "Request has been rejected."
+                            },
+                            {
+                                "type": "RBT",
+                                "alignment": "center",
+                                "children": [
+                                    {
+                                        "text": "OK",
+                                        "route": "pending-approval-page"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "text": "Approve",
+                    "color": "green",
+                    "icon": "thumb_up",
+                    "vidtable": "20342033315492",
+                    "updateTableRow": "$test/request-approval//vtl.trial-approval⭘tablevid◼20342033315492⭘search◼1★<request_vid>⭘<19>◼APPROVED⭘<20>◼◁1▷⭘<21>◼◁2▷⭘<27>◼◀1|T7|yyyy-MM-dd HH:mm:ss▶",
+                    "chain": {
+                        "type": "DO_DIALOG",
+                        "title": "Request Approved",
+                        "children": [
+                            {
+                                "type": "TXT",
+                                "data": "Request has been approved."
+                            },
+                            {
+                                "type": "RBT",
+                                "alignment": "center",
+                                "children": [
+                                    {
+                                        "text": "OK",
+                                        "route": "pending-approval-page"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

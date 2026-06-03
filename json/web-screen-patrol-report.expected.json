@@ -1,0 +1,70 @@
+{
+  "label": "Patrol Report",
+  "icon": "UserStar",
+  "path": "/patrol",
+  "key": "patrolReport",
+  "parent": "patrol",
+  "pageData": {
+    "title": "Patrol Report",
+    "topbar": {
+      "alignment": "start",
+      "children": [
+        {
+          "type": "DROPDOWN",
+          "key": "costCenter",
+          "cell": "Patroli!F5",
+          "placeholder": "Choose cost center",
+          "options": "Semua◆[CC_LIST]",
+          "emptyText": "Cost center not found",
+          "variant": "outline"
+        },
+        {
+          "type": "DATE",
+          "key": "startDate",
+          "cell": "Patroli!C5",
+          "placeholder": "Choose start date",
+          "variant": "outline"
+        },
+        {
+          "type": "DATE",
+          "key": "endDate",
+          "cell": "Patroli!C6",
+          "placeholder": "Choose end date",
+          "variant": "outline"
+        },
+        {
+          "type": "BUTTON",
+          "variant": "outline",
+          "size": "icon",
+          "icon": "FilterIcon",
+          "text": "Apply",
+          "data": "costCenter◆startDate◆endDate",
+          "onClick": {
+            "type": "SUBMIT",
+            "url": "https://autsorz.consteon.ai/api/spreadsheet",
+            "method": "POST",
+            "target": "mainContent",
+            "onSuccess": {
+              "toast": "Filter applied successfully.",
+              "then": "REFRESH_CONTENT"
+            },
+            "onError": {
+              "toast": "Failed to load data."
+            }
+          }
+        }
+      ]
+    },
+    "spreadsheet": {
+      "id": "mainContent",
+      "src": "https://docs.google.com/spreadsheets/d/1bpuiI-71sIKx6AOiSyb5BvCO7UNwAgqi0n_Nxrla-oY/edit?gid=2099023861#gid=2099023861",
+      "permission": "C◆U◆D",
+      "rowHeader": 8,
+      "rowStartData": 9
+    },
+    "bottomBar": {
+      "alignment": "end",
+      "children": []
+    }
+  }
+}

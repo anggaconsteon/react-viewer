@@ -1,0 +1,53 @@
+{
+  "type": "displayList",
+  "ledgerCode": "REQUEST-CONVERSATION",
+  "table": "$<env>/<workspace>//vtl.request-comment",
+  "search": "2◼(Request VID)",
+  "conditions": "[[◀2▶◼<request_vid>]]",
+  "orderBy": "6 ASC",
+  "roleConfig": {
+    "SYSTEM": {
+      "icon": "auto_awesome",
+      "iconColor": "#7C3AED",
+      "bgTint": "#EDE9FE",
+      "tag": "System",
+      "tagColor": "#94A3B8",
+      "renderMode": "chip"
+    },
+    "WORKER": {
+      "icon": "engineering",
+      "iconColor": "#2563EB",
+      "bgTint": "#DBEAFE",
+      "tag": "Worker",
+      "tagColor": "#2563EB",
+      "renderMode": "message"
+    },
+    "SUPERVISOR": {
+      "icon": "shield",
+      "iconColor": "#059669",
+      "bgTint": "#D1FAE5",
+      "tag": "Supervisor",
+      "tagColor": "#059669",
+      "renderMode": "message"
+    }
+  },
+  "entryBindings": {
+    "leftIcon": "roleConfig[<3>]",
+    "authorName": "<5>",
+    "tag": "roleConfig[<3>].tag / .tagColor",
+    "timestamp": "<6> formatted MMM dd, hh:mm a",
+    "messageBody": "<7> if renderMode=message",
+    "eventChip": "<8> if renderMode=chip"
+  },
+  "content": "<5>◆<6>◆<7>◆<8>",
+  "commentInput": {
+    "placeholder": "Add a comment...",
+    "attachIcon": "attach_file",
+    "sendButton": {
+      "label": "Send",
+      "icon": "send",
+      "disabledWhenEmpty": true,
+      "addToTable": "$<env>/<workspace>//vtl.request-comment⭘<1>◼◀2▶⭘<2>◼◁1▷⭘<3>◼◁2▷⭘<4>◼◁3▷⭘<5>◼◁4▷⭘<6>◼◀1|T7|yyyy-MM-dd HH:mm:ss▶⭘<7>◼◀3▶⭘<8>◼"
+    }
+  }
+}

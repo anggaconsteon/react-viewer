@@ -1,0 +1,65 @@
+NOTE JIKA ◀ INI ADALAH DATA SEBELAH KIRI, DAN JIKA ◁ ADALAH SEBELAH KANAN. DI PISAHKAN OLEH BULAT FILL
+NOTASI :
+< > = FIELD TARGET
+
+DI PISAHKAN OLEH ⬤
+◀ = DATA SEBELAH KIRI ⬤
+◁ = DATA SEBELAH KANAN ⬤
+◆ = PEMISAH ANTAR DATA DI KIRI SETELAH ⬤ 
+★ = PEMISAH ANTAR DATA DI KANAN SETELAH ⬤ 
+
+8|T7|Ddd MMM yyyy HH:mm = TARGET 8 | TIMEZONE 7 | FORMAT Ddd MMM yyyy HH:mm
+%timeReceived% = data yang di replace dengan data diluar addToTable, biasanya data yang di replace dari spreadsheet.
+
+
+addToTable":
+vtl.report-daily // NAMA TABLE
+⭘retention◼4320 // BERAPA LAMA RECORD NYA AKAN TAHAN, 4320 = 72 JAM / 3 HARI
+⭘description◼field-report // KETERANGAN SAJA
+⭘flag◼patrol // FLAG, KEBUTUHAN QUERY NANTI AGAR MEMPERMUDAH PENCARIAN BERDASARKAN FLAG
+⭘<1>◼report-daily // PAYLOAD NYA SAMPAI KE BAWAH (13 FIELD)
+⭘<2>◼◀2|T7|Ddd MMM yyyy HH:mm▶ // 2 ADALAH FIELD KE 2(DARI INDEX 1), T7 ADALAH TIMEZONE DAN FORMATNYA, Ddd MMM yyyy HH:mm ADALAH FORMATNYA.
+⭘<3>◼87544551624342 // VID PEGAWAI 
+⭘<4>◼Agenia Demo-7 // NAMA PEGAWAI
+⭘<5>◼◁5▷
+⭘<6>◼◁11▷
+⭘<7>◼◁10▷
+⭘<8>◼Product Group
+⭘<9>◼Product Group
+⭘<10>◼◁3▷
+⭘<11>◼◁12▷
+⭘<12>◼◁8|T7|Ddd MMM yyyy HH:mm▷
+⭘<13>◼◁9|T7|Ddd MMM yyyy HH:mm▷
+
+◆ = JIKA INSERT MULTIPLE TABLE MAKA DI PISAHKAN OLEH DIAMOND
+
+addToTable":
+vtl.report-daily // NAMA TABLE
+⭘retention◼4320 // BERAPA LAMA RECORD NYA AKAN TAHAN, 4320 = 72 JAM / 3 HARI
+⭘description◼field-report // KETERANGAN SAJA
+⭘flag◼patrol // FLAG, KEBUTUHAN QUERY NANTI AGAR MEMPERMUDAH PENCARIAN BERDASARKAN FLAG
+⭘<1>◼report-daily // PAYLOAD NYA SAMPAI KE BAWAH (13 FIELD)
+⭘<2>◼◀2|T7|Ddd MMM yyyy HH:mm▶ // 2 ADALAH FIELD KE 2(DARI INDEX 1), T7 ADALAH TIMEZONE DAN FORMATNYA, Ddd MMM yyyy HH:mm ADALAH FORMATNYA.
+⭘<3>◼87544551624342 // VID PEGAWAI 
+⭘<4>◼Agenia Demo-7 // NAMA PEGAWAI
+⭘<5>◼◁5▷
+⭘<6>◼◁11▷
+⭘<7>◼◁10▷
+⭘<8>◼Product Group
+⭘<9>◼Product Group
+⭘<10>◼◁3▷
+⭘<11>◼◁12▷
+⭘<12>◼◁8|T7|Ddd MMM yyyy HH:mm▷
+⭘<13>◼◁9|T7|Ddd MMM yyyy HH:mm▷
+⭘tablevid◼20342033315492 // TABLE VID, di firestore bisa cek di collection MobileTable lalu cari VID nya yang mana, saat ini default nya yang autsorz
+⭘index◼3★N◼4★S /. INDEX, jadi yang diubah index 3 dengan type N = Numeric, lalu jika ada 2 update data tinggal di pisah dengan ◼ 4 artinya index ke 4 dan S itu artinya String
+
+NOTE :  
+="$test/agenia-demo-7//vtl.attendance-check-in" , jika foldering nanti di akhir menggunakan // agar nantinya membuat folder baru dengan nama vtl.attendance-check-in, jika tidak menggunakan // maka data akan masuk ke folder vtl dengan nama file $test%agenia-demo-7%attendance-check-in
+
+// UPDATE
+NOTE: TAMBAH 1 FIELD UNTUK KEY NYA. MISAL VID:TIMESTAMP ATAU NOMER CODE
+$test/agenia-demo-7//vtl.attendance-check-in⭘tablevid◼20342033315492⭘search◼3★Data wehere nya⭘<1>◼attendance-check-in⭘<2>◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶
+
+// DELETE
+$test/agenia-demo-7//vtl.attendance-check-in⭘tablevid◼20342033315492⭘search◼3★Data where nya

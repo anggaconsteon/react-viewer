@@ -1,0 +1,39 @@
+{
+    "type": "RBT",
+    "alignment": "spaceevenly",
+    "conditions": "[[◀3▶◼SELESAI]]",
+    "children": [
+        {
+            "text": "Tutup Laporan",
+            "action": "savesend",
+            "route": "vertikaTeknoLokaciptaLogIncident",
+            "delay": 5,
+            "gpsPosition": 2,
+            "flag": "report-incident",
+            "buttonColor": "green",
+            "textColor": "white",
+            "addToTable": "",
+            "updateTableRow": "$test/report-incident//vtl.report-incident⭘tablevid◼20342033315492⭘search◼1★<request_vid>⭘<2>CLOSE",
+            "chain": {
+                "type": "DO_DIALOG",
+                "title": "Tutup Laporan",
+                "children": [
+                    {
+                        "type": "TXT",
+                        "data": "Laporan ditutup dan tidak dapat diubah lagi."
+                    },
+                    {
+                        "type": "RBT",
+                        "alignment": "center",
+                        "children": [
+                            {
+                                "text": "Ok",
+                                "route": "vertikaTeknoLokaciptaLogIncident"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

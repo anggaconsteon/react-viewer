@@ -1,0 +1,173 @@
+{
+    "type": "TXT",
+    "beforeSpacing": 10,
+    "size": 18,
+    "bold": "FALSE",
+    "route": "vertikaTeknoLokacipta",
+    "data": "ABSEN MASUK -- TEST 222 07-May 9:04"
+},
+{
+    "type": "HORIZONTAL_ICON",
+    "width": 86,
+    "children": [
+        {
+            "type": "location",
+            "url": "https://firebasestorage.googleapis.com/v0/b/otq-01-ase2/o/c%2Fautsorz%2Ficon2%2Ficon-190120-qr-scan-90x90.png?alt=media&token=da753564-7c75-4073-a750-bf2e9c1826c1",
+            "text": "QR◆Batal◆Absensi berhasil◆Clock in berhasil◆Clock out berhasil◆Clock out overtime sudah dicatat. Silakan lanjut clock in◆Clock out sudah dicatat, pending persetujuan. Silakan lanjut clock in.◆✔️ Check IN dg QR berhasil◆OK◆QR salah◆QR yang anda scan salah, coba scan lagi.◆Scan Lagi◆Anda perlu Selfie◆QR yang anda scan salah. Lakukan foto wajah anda (selfie)◆Foto Selfie◆Perlu informasi lebih lanjut◆Anda clock out overtime atau lupa clock out?◆Lupa check-out◆Lembur◆Anda tidak di lokasi◆Anda tidak berada di lokasi yang ditentukan, silahkan Selfie◆Foto Selfie◆Lokasi tidak valid◆Nonaktifkan Fake GPS◆Diluar Area Absensi◆Silahkan menuju lokasi yang ditentukan",
+            "imgHeight": 600,
+            "imgWidth": 600,
+            "folder": "id/2022/vtl/attendance-selfie/agenia-demo-7",
+            "filename": "87544551624342-2026-05-07-20-46-16",
+            "locList": [
+                [
+                    -6.31607,
+                    106.64483
+                ],
+                [
+                    -6.3162557,
+                    106.644882
+                ],
+                [
+                    -6.89609,
+                    107.58163
+                ],
+                [
+                    -8.8291404,
+                    115.1586866
+                ],
+                [
+                    -6.252338,
+                    106.617278
+                ],
+                [
+                    -6.9202713,
+                    107.5923769
+                ],
+                [
+                    -6.1896892,
+                    106.761209
+                ]
+            ],
+            "width": 100,
+            "timeClockOut1": 1598429395771,
+            "timeClockOut2": 1598454595771,
+            "actionLast": "check-in",
+            "flag": "attendance-check-in",
+            "route": "vertikaTeknoLokacipta",
+            "opMode": "qr-single",
+            "tolerance": 80,
+            "displayMode": "full-screen",
+            "fakeGpsAllowed": "TRUE",
+            "outPositionAllowed": "FALSE",
+            "addToTable": "$test/agenia-demo-7//vtl.attendance-check-in⭘retention◼4320⭘description◼check-in TEST⭘flag◼attendance-check-in⭘<1>◼attendance-check-in⭘<2>◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶⭘<3>◼87544551624342⭘<4>◼Agenia Demo-7⭘<5>◼◀5▶⭘<6>◼◀6▶⭘<7>◼◀10▶⭘<8>◼◀11▶⭘<9>◼◀12▶⭘<10>◼◀13▶⭘<11>◼◀14▶⭘<12>◼◀15▶⭘<13>◼◀16▶⭘<14>◼◀3▶",
+            "updateTableRow": "$test/agenia-demo-7//vtl.attendance-check-in⭘tablevid◼20342033315492⭘search◼3★87544551624342⭘<5>◼test update lagi ke 2x 5⭘<6>◼test update untuk field 6⭘<7>◼update ke tangerang posisi 7",
+            "deleteFromTable": "$test/agenia-demo-7//vtl.attendance-check-in⭘tablevid◼20342033315492⭘search◼3★87544551624342"
+        },
+        {
+            "type": "location",
+            "url": "https://firebasestorage.googleapis.com/v0/b/otq-01-ase2/o/c%2Fautsorz%2Ficon2%2Ficon-190121-selfie-90x90.png?alt=media&token=2b585e8d-dcda-486e-96e2-057fd05d1db9",
+            "text": "Selfie◆Batal◆Absensi berhasil◆Clock in berhasil◆Clock out berhasil◆Clock out overtime sudah dicatat. Silakan lanjut clock in◆Clock out sudah dicatat, pending persetujuan. Silakan lanjut clock in.◆✔️ Check IN dg SELFIE berhasil◆OK◆QR salah◆QR yang anda scan salah, coba scan lagi.◆Scan Lagi◆Anda perlu Selfie◆QR yang anda scan salah. Lakukan foto wajah anda (selfie)◆Foto Selfie◆Perlu informasi lebih lanjut◆Anda clock out overtime atau lupa clock out?◆Lupa check-out◆Lembur◆Anda tidak di lokasi◆Anda tidak berada di lokasi yang ditentukan, silahkan Selfie◆Foto Selfie◆Lokasi tidak valid◆Nonaktifkan Fake GPS◆Diluar Area Absensi◆Silahkan menuju lokasi yang ditentukan",
+            "imgHeight": 600,
+            "imgWidth": 600,
+            "folder": "id/2022/vtl/attendance-selfie/agenia-demo-7",
+            "filename": "87544551624342-2026-05-07-20-46-16",
+            "locList": [
+                [
+                    -6.31607,
+                    106.64483
+                ],
+                [
+                    -6.3162557,
+                    106.644882
+                ],
+                [
+                    -6.89609,
+                    107.58163
+                ],
+                [
+                    -8.8291404,
+                    115.1586866
+                ],
+                [
+                    -6.252338,
+                    106.617278
+                ],
+                [
+                    -6.9202713,
+                    107.5923769
+                ],
+                [
+                    -6.1896892,
+                    106.761209
+                ]
+            ],
+            "width": 100,
+            "timeClockOut1": 1598429395771,
+            "timeClockOut2": 1598454595771,
+            "actionLast": "check-in",
+            "flag": "attendance-check-in",
+            "route": "vertikaTeknoLokacipta",
+            "opMode": "selfie",
+            "tolerance": 80,
+            "displayMode": "full-screen",
+            "fakeGpsAllowed": "TRUE",
+            "outPositionAllowed": "FALSE",
+            "addToTable": "$test/agenia-demo-7//vtl.attendance-check-in⭘retention◼4320⭘description◼check-in TEST⭘flag◼attendance-check-in⭘<1>◼attendance-check-in⭘<2>◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶⭘<3>◼87544551624342⭘<4>◼Agenia Demo-7⭘<5>◼◀5▶⭘<6>◼◀6▶⭘<7>◼◀10▶⭘<8>◼◀11▶⭘<9>◼◀12▶⭘<10>◼◀13▶⭘<11>◼◀14▶⭘<12>◼◀15▶⭘<13>◼◀16▶⭘<14>◼◀3▶",
+            "updateTableRow": "$test/agenia-demo-7//vtl.attendance-check-in⭘tablevid◼20342033315492⭘search◼3★87544551624342⭘<5>◼test update lagi ke 2x 5⭘<6>◼test update untuk field 6⭘<7>◼update ke tangerang posisi 7",
+            "deleteFromTable": "$test/agenia-demo-7//vtl.attendance-check-in⭘tablevid◼20342033315492⭘search◼3★87544551624342"
+        },
+        {
+            "type": "location",
+            "url": "https://firebasestorage.googleapis.com/v0/b/otq-01-ase2/o/c%2Fautsorz%2Ficon2%2Ficon-190110-gps-90x90.png?alt=media&token=4f8a13c2-324f-4506-9b8e-42d66d44a3f9",
+            "text": "GPS◆Batal◆Absensi berhasil◆Clock in berhasil◆Clock out berhasil◆Clock out overtime sudah dicatat. Silakan lanjut clock in◆Clock out sudah dicatat, pending persetujuan. Silakan lanjut clock in.◆✔️ Check IN dg GPS berhasil◆OK◆QR salah◆QR yang anda scan salah, coba scan lagi.◆Scan Lagi◆Anda perlu Selfie◆QR yang anda scan salah. Lakukan foto wajah anda (selfie)◆Foto Selfie◆Perlu informasi lebih lanjut◆Anda clock out overtime atau lupa clock out?◆Lupa check-out◆Lembur◆Anda tidak di lokasi◆Anda tidak berada di lokasi yang ditentukan, silahkan Selfie◆Foto Selfie◆Lokasi tidak valid◆Nonaktifkan Fake GPS◆Diluar Area Absensi◆Silahkan menuju lokasi yang ditentukan",
+            "imgHeight": 600,
+            "imgWidth": 600,
+            "folder": "id/2022/vtl/attendance-selfie/agenia-demo-7",
+            "filename": "87544551624342-2026-05-07-20-46-16",
+            "locList": [
+                [
+                    -6.31607,
+                    106.64483
+                ],
+                [
+                    -6.3162557,
+                    106.644882
+                ],
+                [
+                    -6.89609,
+                    107.58163
+                ],
+                [
+                    -8.8291404,
+                    115.1586866
+                ],
+                [
+                    -6.252338,
+                    106.617278
+                ],
+                [
+                    -6.9202713,
+                    107.5923769
+                ],
+                [
+                    -6.1896892,
+                    106.761209
+                ]
+            ],
+            "width": 100,
+            "timeClockOut1": 1598429395771,
+            "timeClockOut2": 1598454595771,
+            "actionLast": "check-in",
+            "flag": "attendance-check-in",
+            "route": "vertikaTeknoLokacipta",
+            "opMode": "gps-single",
+            "tolerance": 80,
+            "displayMode": "full-screen",
+            "fakeGpsAllowed": "TRUE",
+            "outPositionAllowed": "FALSE",
+            "addToTable": "$test/agenia-demo-7//vtl.attendance-check-in⭘retention◼4320⭘description◼check-in TEST⭘flag◼attendance-check-in⭘<1>◼attendance-check-in⭘<2>◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶⭘<3>◼87544551624342⭘<4>◼Agenia Demo-7⭘<5>◼◀5▶⭘<6>◼◀6▶⭘<7>◼◀10▶⭘<8>◼◀11▶⭘<9>◼◀12▶⭘<10>◼◀13▶⭘<11>◼◀14▶⭘<12>◼◀15▶⭘<13>◼◀16▶⭘<14>◼◀3▶",
+            "updateTableRow": "$test/agenia-demo-7//vtl.attendance-check-in⭘tablevid◼20342033315492⭘search◼3★87544551624342⭘<5>◼test update lagi ke 2x 5⭘<6>◼test update untuk field 6⭘<7>◼update ke tangerang posisi 7",
+            "deleteFromTable": "$test/agenia-demo-7//vtl.attendance-check-in⭘tablevid◼20342033315492⭘search◼3★87544551624342"
+        }
+    ]
+}

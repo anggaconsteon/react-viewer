@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Standard Pattern: Page + addToTable + Event</title>
+<style>
+  @media print {
+    body { font-size: 10pt; }
+    h1 { font-size: 18pt; }
+    h2 { font-size: 14pt; break-before: auto; }
+    h3 { font-size: 12pt; }
+    pre { font-size: 8pt; white-space: pre-wrap; word-break: break-all; }
+    table { font-size: 9pt; }
+    .no-print { display: none; }
+    .page-break { break-before: page; }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #1a1a1a;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 30px;
+    background: #fff;
+  }
+  h1 {
+    font-size: 26px;
+    border-bottom: 3px solid #2563eb;
+    padding-bottom: 12px;
+    margin-bottom: 8px;
+    color: #1e3a5f;
+  }
+  .subtitle {
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 30px;
+  }
+  h2 {
+    font-size: 20px;
+    color: #1e3a5f;
+    margin-top: 36px;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  h3 {
+    font-size: 16px;
+    color: #334155;
+    margin-top: 20px;
+    margin-bottom: 8px;
+  }
+  p, li { margin-bottom: 6px; }
+  ul, ol { padding-left: 24px; margin-bottom: 12px; }
+  code {
+    background: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Cascadia Code', 'Consolas', monospace;
+    font-size: 13px;
+    color: #dc2626;
+  }
+  pre {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 12px 0;
+    font-family: 'Cascadia Code', 'Consolas', monospace;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  pre code { background: none; color: inherit; padding: 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 13px;
+  }
+  th {
+    background: #1e3a5f;
+    color: #fff;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+  }
+  td {
+    padding: 6px 12px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  tr:nth-child(even) td { background: #f8fafc; }
+  .alert {
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .alert-blue {
+    background: #dbeafe;
+    border-left-color: #2563eb;
+  }
+  .alert-red {
+    background: #fee2e2;
+    border-left-color: #dc2626;
+  }
+  .alert-green {
+    background: #dcfce7;
+    border-left-color: #16a34a;
+  }
+  .flow-diagram {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    font-family: 'Cascadia Code', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    margin: 12px 0;
+  }
+  .checklist { list-style: none; padding-left: 0; }
+  .checklist li {
+    padding: 4px 0 4px 28px;
+    position: relative;
+  }
+  .checklist li::before {
+    content: '☐';
+    position: absolute;
+    left: 4px;
+    font-size: 16px;
+  }
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .tag-required { background: #fee2e2; color: #dc2626; }
+  .tag-custom { background: #dbeafe; color: #2563eb; }
+  .tag-auto { background: #dcfce7; color: #16a34a; }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 24px 0; }
+  .print-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+  }
+  .print-btn:hover { background: #1d4ed8; }
+  .toc { background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0; }
+  .toc a { color: #2563eb; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">🖨️ Print / Save PDF</button>
+
+<h1>Standard Pattern: Page + addToTable + Event</h1>
+<p class="subtitle">Panduan membuat page baru dengan Firebase data + Event audit trail — Consteon / VTL Platform<br>
+Patokan utama: <code>vertikaTeknoLokaciptaRequestLeave</code> (op1Screen row 655)</p>
+
+<div class="toc no-print">
+  <strong>Daftar Isi</strong>
+  <ol>
+    <li><a href="#konsep">Konsep Dasar</a></li>
+    <li><a href="#addtotable">addToTable — Struktur Standard</a></li>
+    <li><a href="#position">Widget Position — Aturan</a></li>
+    <li><a href="#eventc">Event C — Struktur</a></li>
+    <li><a href="#dformula">D Formula (op1Script)</a></li>
+    <li><a href="#button">Button Config</a></li>
+    <li><a href="#contoh">Contoh Lengkap</a></li>
+    <li><a href="#checklist">Checklist: Membuat Page Baru</a></li>
+    <li><a href="#bugs">Bug Umum &amp; Solusi</a></li>
+    <li><a href="#approval">Dengan vs Tanpa Approval</a></li>
+    <li><a href="#tokens">DSL Token Reference</a></li>
+  </ol>
+</div>
+
+<hr>
+
+<!-- Section 1 -->
+<h2 id="konsep">1. Konsep Dasar</h2>
+<p>Ketika user menekan tombol submit di form:</p>
+<div class="flow-diagram">
+[ User klik Submit ]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+action: "savesend"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+&nbsp;&nbsp;┌─────┴─────┐<br>
+&nbsp;&nbsp;▼&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+<strong>Event C</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>addToTable</strong><br>
+→ tab Event&nbsp;&nbsp;&nbsp;→ Firebase<br>
+(audit trail)&nbsp;(data operasional)<br>
+dari POSITION&nbsp;dari DSL string
+</div>
+
+<div class="alert">
+  <strong>Event C</strong> dan <strong>addToTable</strong> adalah 2 hal TERPISAH:<br>
+  • Event C = dari <strong>position</strong> widget form (★ sections)<br>
+  • addToTable = dari <strong>DSL string</strong> di property <code>addToTable</code> pada button
+</div>
+
+<hr>
+
+<!-- Section 2 -->
+<h2 id="addtotable">2. addToTable — Struktur Standard</h2>
+
+<h3>2.1 Header</h3>
+<pre><code>{table_path}⭘retention◼{hari}⭘tablevid◼{vid}⭘index◼{indexed_fields}⭘description◼{deskripsi}⭘flag◼{flag_name}</code></pre>
+
+<table>
+  <tr><th>Field</th><th>Keterangan</th><th>Contoh</th></tr>
+  <tr><td><code>table_path</code></td><td>Path Firebase: <code>$test/{module}//{provider}.{table}</code></td><td><code>$test/request-approval//vtl.trial-approval</code></td></tr>
+  <tr><td><code>retention</code></td><td>Berapa hari data disimpan</td><td><code>4320</code></td></tr>
+  <tr><td><code>tablevid</code></td><td>VID tabel (dari sistem)</td><td><code>20342033315492</code></td></tr>
+  <tr><td><code>index</code></td><td>Field yg bisa di-search: <code>{idx}★{type}</code></td><td><code>1★S◼2★S◼5★N◼7★N◼9★N</code></td></tr>
+  <tr><td><code>description</code></td><td>Deskripsi singkat</td><td><code>Leave request for vtl</code></td></tr>
+  <tr><td><code>flag</code></td><td>Identifier untuk tipe data</td><td><code>leave-request</code></td></tr>
+</table>
+
+<h3>2.2 Default Block (<code>&lt;1&gt;</code> s/d <code>&lt;12&gt;</code>) — <span class="tag tag-required">WAJIB SAMA</span></h3>
+
+<div class="alert alert-red">
+  Bagian ini <strong>HARUS IDENTIK</strong> di semua page. Jangan ubah urutan atau index-nya.
+</div>
+
+<table>
+  <tr><th>Index</th><th>Isi</th><th>Cell Reference</th><th>Keterangan</th></tr>
+  <tr><td><code>&lt;1&gt;</code></td><td><code>◁17▷</code></td><td>— (runtime)</td><td><strong>No. Permohonan</strong> — NUMBER widget pos 17</td></tr>
+  <tr><td><code>&lt;2&gt;</code></td><td>Status awal</td><td>— (static)</td><td><code>PENDING</code>, <code>MENUNGGU</code>, dll</td></tr>
+  <tr><td><code>&lt;3&gt;</code></td><td><code>[]</code></td><td>— (static)</td><td><strong>History</strong> — placeholder</td></tr>
+  <tr><td><code>&lt;4&gt;</code></td><td><code>[]</code> atau <code>[[...]]</code></td><td>— (static)</td><td><strong>Approval</strong> — <code>[]</code> jika tanpa approval</td></tr>
+  <tr><td><code>&lt;5&gt;</code></td><td>myVID</td><td><code>Settings!$B$1</code></td><td>VID user yang submit</td></tr>
+  <tr><td><code>&lt;6&gt;</code></td><td>myName</td><td><code>Settings!$B$2</code></td><td>Nama user yang submit</td></tr>
+  <tr><td><code>&lt;7&gt;</code></td><td>siteVID</td><td><code>'op1'!$K$8</code></td><td>VID site/lokasi kerja</td></tr>
+  <tr><td><code>&lt;8&gt;</code></td><td>siteName</td><td><code>'op1'!$L$8</code></td><td>Nama site</td></tr>
+  <tr><td><code>&lt;9&gt;</code></td><td>siteVID2</td><td><code>'op1'!$K$7</code></td><td>VID group/organisasi</td></tr>
+  <tr><td><code>&lt;10&gt;</code></td><td>siteName2</td><td><code>'op1'!$L$7</code></td><td>Nama group</td></tr>
+  <tr><td><code>&lt;11&gt;</code></td><td>submitTime</td><td><code>◀2|T"&amp;System!$B$3&amp;"|...▶</code></td><td>Timestamp formatted</td></tr>
+  <tr><td><code>&lt;12&gt;</code></td><td>submitEpoch</td><td><code>◀2▶</code></td><td>Timestamp raw (epoch ms)</td></tr>
+</table>
+
+<div class="alert alert-blue">
+  <strong>Kenapa <code>&lt;3&gt;</code> dan <code>&lt;4&gt;</code> wajib meskipun kosong?</strong><br>
+  • <code>&lt;5&gt;</code> (VID) selalu di index 5 di SEMUA page<br>
+  • op1Script bisa pakai 1 scaffold D formula<br>
+  • Kalau nanti butuh approval, tinggal isi <code>&lt;4&gt;</code> — zero migration
+</div>
+
+<h3>2.3 Tail Block (<code>&lt;13&gt;</code>+) — <span class="tag tag-custom">CUSTOM per page</span></h3>
+<p>Mulai dari <code>&lt;13&gt;</code>, isi dengan data form sesuai kebutuhan page.</p>
+
+<table>
+  <tr><th>Token</th><th>Arti</th><th>Contoh</th></tr>
+  <tr><td><code>◁N▷</code></td><td>Value dari widget di position N</td><td><code>◁5▷</code> = datePicker pos 5</td></tr>
+  <tr><td><code>◀N▶</code></td><td>System stream value</td><td><code>◀2▶</code> = epoch timestamp</td></tr>
+  <tr><td><code>◀N|T7|format▶</code></td><td>System stream + format waktu</td><td><code>◀2|T7|Ddd MMM yyyy HH:mm▶</code></td></tr>
+  <tr><td><code>◁N|T7|format▷</code></td><td>Widget value + format waktu</td><td><code>◁6|T7|Ddd MMM yyyy▷</code></td></tr>
+  <tr><td>Teks biasa</td><td>Static/literal value</td><td><code>Sekuriti</code></td></tr>
+</table>
+
+<h3>2.4 Index Field</h3>
+<p>Standar minimum (wajib untuk semua page):</p>
+<pre><code>index◼1★S◼2★S◼5★N◼7★N◼9★N</code></pre>
+<table>
+  <tr><th>Index</th><th>Field</th><th>Type</th></tr>
+  <tr><td><code>1★S</code></td><td>No. Permohonan</td><td>String</td></tr>
+  <tr><td><code>2★S</code></td><td>Status</td><td>String</td></tr>
+  <tr><td><code>5★N</code></td><td>myVID</td><td>Number</td></tr>
+  <tr><td><code>7★N</code></td><td>siteVID</td><td>Number</td></tr>
+  <tr><td><code>9★N</code></td><td>siteVID2</td><td>Number</td></tr>
+</table>
+
+<h3>2.5 Template Formula</h3>
+<div class="alert alert-green">
+  <strong>Copy-paste, ganti bagian <code>{...}</code> saja:</strong>
+</div>
+<pre><code>="$test/{module}//{provider}.{table}⭘retention◼4320⭘tablevid◼20342033315492⭘index◼1★S◼2★S◼5★N◼7★N◼9★N⭘description◼{deskripsi}⭘flag◼{flag}⭘&lt;1&gt;◼◁17▷⭘&lt;2&gt;◼{STATUS_AWAL}⭘&lt;3&gt;◼[]⭘&lt;4&gt;◼{APPROVAL}⭘&lt;5&gt;◼"&amp;Settings!$B$1&amp;"⭘&lt;6&gt;◼"&amp;Settings!$B$2&amp;"⭘&lt;7&gt;◼"&amp;'op1'!$K$8&amp;"⭘&lt;8&gt;◼"&amp;'op1'!$L$8&amp;"⭘&lt;9&gt;◼"&amp;'op1'!$K$7&amp;"⭘&lt;10&gt;◼"&amp;'op1'!$L$7&amp;"⭘&lt;11&gt;◼◀2|T"&amp;System!$B$3&amp;"|Ddd MMM yyyy HH:mm▶⭘&lt;12&gt;◼◀2▶⭘&lt;13&gt;◼{TAIL}⭘&lt;30&gt;◼{SUMMARY}"</code></pre>
+
+<hr>
+
+<!-- Section 3 -->
+<h2 id="position">3. Widget Position — Aturan</h2>
+
+<h3>3.1 Position FIXED <span class="tag tag-required">jangan pakai</span></h3>
+<table>
+  <tr><th>Position</th><th>Fungsi</th><th>Widget</th></tr>
+  <tr><td><strong>17</strong></td><td>No. Permohonan (auto-number)</td><td>NUMBER</td></tr>
+  <tr><td><strong>251</strong></td><td>Submit button</td><td>RBT</td></tr>
+</table>
+
+<h3>3.2 Assign position berurutan mulai dari 3</h3>
+<pre><code>Position 3  → field pertama
+Position 4  → field kedua
+Position 5  → field ketiga
+...dst (hindari 1, 2, 17, 251)</code></pre>
+
+<h3>3.3 Position → ★ Section → op1Script Column</h3>
+<div class="alert">
+  <strong>Rumus:</strong> ★ section = position - 1 &nbsp;|&nbsp; op1Script column = E + (★ - 1)
+</div>
+<table>
+  <tr><th>Position</th><th>★ Section</th><th>op1Script Col</th><th>Cell</th></tr>
+  <tr><td>3</td><td>★2</td><td>F</td><td>F13</td></tr>
+  <tr><td>4</td><td>★3</td><td>G</td><td>G13</td></tr>
+  <tr><td>5</td><td>★4</td><td>H</td><td>H13</td></tr>
+  <tr><td>6</td><td>★5</td><td>I</td><td>I13</td></tr>
+  <tr><td>7</td><td>★6</td><td>J</td><td>J13</td></tr>
+  <tr><td>8</td><td>★7</td><td>K</td><td>K13</td></tr>
+  <tr><td>9</td><td>★8</td><td>L</td><td>L13</td></tr>
+  <tr><td>10</td><td>★9</td><td>M</td><td>M13</td></tr>
+  <tr><td>11</td><td>★10</td><td>N</td><td>N13</td></tr>
+  <tr><td>12</td><td>★11</td><td>O</td><td>O13</td></tr>
+  <tr><td>13</td><td>★12</td><td>P</td><td>P13</td></tr>
+  <tr><td>14</td><td>★13</td><td>Q</td><td>Q13</td></tr>
+  <tr><td>15</td><td>★14</td><td>R</td><td>R13</td></tr>
+  <tr><td>16</td><td>★15</td><td>S</td><td>S13</td></tr>
+  <tr><td>17</td><td>★16</td><td>T</td><td>T13</td></tr>
+  <tr><td>18</td><td>★17</td><td>U</td><td>U13</td></tr>
+</table>
+<p><strong>★1 (E13)</strong> = selalu identity block <span class="tag tag-auto">AUTO</span></p>
+
+<hr>
+
+<!-- Section 4 -->
+<h2 id="eventc">4. Event C — Struktur</h2>
+<pre><code>0{flag}◆{timestamp}◆◆◆{lat}◆{lng}◆◆{country}◆{zip}◆{state}◆{regency}◆{district}◆{village}◆{street}◆{number}◆{location-type}⬤★{identity}★{pos3}★{pos4}★...★{posN}</code></pre>
+
+<table>
+  <tr><th>Bagian</th><th>Sumber</th><th>Keterangan</th></tr>
+  <tr><td>Sebelum <code>⬤</code></td><td>GPS (gpsPosition: 2)</td><td>Geo block — otomatis</td></tr>
+  <tr><td><code>★1</code></td><td>Sistem</td><td>Identity block — otomatis</td></tr>
+  <tr><td><code>★2</code> dst</td><td>Form positions</td><td>★ = position - 1</td></tr>
+</table>
+
+<div class="alert alert-green">
+  <strong>Event C otomatis dibuat</strong> selama button punya <code>action: "savesend"</code> dan widget punya <code>position</code>. Tidak perlu build manual.
+</div>
+
+<hr>
+
+<!-- Section 5 -->
+<h2 id="dformula">5. D Formula (op1Script)</h2>
+
+<h3>5.1 Struktur: Scaffold + Tail</h3>
+<pre><code>=REGEXREPLACE(
+  {SCAFFOLD} &amp; "◻" &amp; {ORG_CHAIN} &amp; "◻" &amp; {ROUTE} &amp; "◻" &amp; {TAIL}
+, "(""|')", "`")</code></pre>
+
+<table>
+  <tr><th>Bagian</th><th>Formula</th><th>Status</th></tr>
+  <tr>
+    <td><strong>Scaffold</strong></td>
+    <td><code>C$16&amp;"◼"&amp;D$16&amp;"◼"&amp;B$16&amp;"◼"&amp;$F$13&amp;"◼"&amp;N$14&amp;", "&amp;M$14&amp;", "&amp;L$14&amp;", "&amp;K$14&amp;", "&amp;J$14&amp;", "&amp;I$14</code></td>
+    <td><span class="tag tag-required">SAMA semua route</span></td>
+  </tr>
+  <tr>
+    <td><strong>Org chain</strong></td>
+    <td><code>'op1'!$H$1&amp;"☆"&amp;'op1'!$H$2&amp;"◻"&amp;'op1'!$I$5&amp;"◻"&amp;'op1'!$J$5&amp;"◻"&amp;'op1'!$K$5</code></td>
+    <td><span class="tag tag-required">SAMA semua route</span></td>
+  </tr>
+  <tr>
+    <td><strong>Route block</strong></td>
+    <td><code>Event!$B$2&amp;"☆"&amp;$B$12</code></td>
+    <td><span class="tag tag-required">SAMA semua route</span></td>
+  </tr>
+  <tr>
+    <td><strong>Tail</strong></td>
+    <td><code>${CELL}$13&amp;"☆"&amp;${CELL}$13&amp;...</code></td>
+    <td><span class="tag tag-custom">BEDA per route</span></td>
+  </tr>
+</table>
+
+<h3>5.2 Cara Menentukan Tail</h3>
+<ol>
+  <li>List semua position yang punya data di form</li>
+  <li>Convert position → op1Script column (tabel Section 3.3)</li>
+  <li>Susun cell references dengan separator <code>☆</code></li>
+  <li><strong>SKIP F13</strong> — sudah masuk di scaffold</li>
+  <li><strong>SKIP position kosong</strong></li>
+</ol>
+
+<h3>5.3 Row Config di op1Script</h3>
+<table>
+  <tr><th>Column</th><th>Isi</th><th>Contoh</th></tr>
+  <tr><td>A</td><td>Label</td><td><code>ReportIncident</code></td></tr>
+  <tr><td>B</td><td>Route key (◇ separator)</td><td><code>report◇incident</code></td></tr>
+  <tr><td>C</td><td>= B</td><td><code>report◇incident</code></td></tr>
+  <tr><td>D</td><td>D Formula</td><td><em>(formula lengkap)</em></td></tr>
+  <tr><td>F</td><td>Slug hyphenated</td><td><code>report-incident</code></td></tr>
+</table>
+
+<hr>
+
+<!-- Section 6 -->
+<h2 id="button">6. Button Config — Properties Wajib</h2>
+<pre><code>{
+  "position": 251,
+  "text": "Kirim",
+  "action": "savesend",        ← WAJIB savesend, bukan addToTable
+  "com": "auz",
+  "gpsPosition": 2,
+  "flag": "{flag_name}",
+  "delay": 5,
+  "width": "full",
+  "height": 64,
+  "run": "{pos}:disable◆17:generate_number◆251:disable",
+  "addToTable": "{DSL_string}",
+  "chain": {
+    "type": "DO_DIALOG",
+    "title": "{judul}",
+    "children": [
+      { "type": "TXT", "data": "Terkirim" },
+      { "type": "RBT", "alignment": "center",
+        "children": [{ "text": "Ok", "route": "" }] }
+    ]
+  }
+}</code></pre>
+
+<div class="alert alert-red">
+  <strong>flag di button</strong> = flag untuk Event C<br>
+  <strong>flag di addToTable DSL</strong> = flag untuk Firebase record<br>
+  Keduanya BISA berbeda (contoh: button <code>request-leave</code>, addToTable <code>leave-request</code>)
+</div>
+
+<hr>
+
+<!-- Section 7 -->
+<h2 id="contoh" class="page-break">7. Contoh Lengkap</h2>
+
+<h3>7.1 RequestLeave <span class="tag tag-required">PATOKAN</span></h3>
+
+<p><strong>Form positions:</strong></p>
+<table>
+  <tr><th>Pos</th><th>Widget</th><th>Field</th></tr>
+  <tr><td>3</td><td>GET_IMAGES</td><td>Dokumen</td></tr>
+  <tr><td>4</td><td>DRD</td><td>Jenis Cuti</td></tr>
+  <tr><td>6</td><td>TXF date</td><td>Tanggal Mulai</td></tr>
+  <tr><td>7</td><td>TXF date</td><td>Tanggal Selesai</td></tr>
+  <tr><td>10</td><td>TXF text</td><td>Keterangan</td></tr>
+  <tr><td>11</td><td>TXF numeric</td><td>Jumlah Hari</td></tr>
+  <tr><td>15</td><td>TXF static</td><td>Status</td></tr>
+  <tr><td>16</td><td>tableSearch</td><td>Pengganti VID</td></tr>
+  <tr><td>17</td><td>NUMBER</td><td>No. Permohonan</td></tr>
+  <tr><td>18</td><td>TXF readonly</td><td>Nama Pengganti</td></tr>
+</table>
+
+<p><strong>addToTable formula:</strong></p>
+<pre><code>="$test/request-approval//vtl.trial-approval⭘retention◼4320⭘description◼Leave request for vtl⭘flag◼leave-request⭘tablevid◼20342033315492⭘index◼1★S◼2★S◼5★N◼7★N◼9★N◼13★S⭘&lt;1&gt;◼◁17▷⭘&lt;2&gt;◼◁15▷⭘&lt;3&gt;◼[]⭘&lt;4&gt;◼[[1, PENDING, , , , ], [2, PENDING, , , , ], [3, PENDING, , , , ]]⭘&lt;5&gt;◼"&amp;Settings!$B$1&amp;"⭘&lt;6&gt;◼"&amp;Settings!$B$2&amp;"⭘&lt;7&gt;◼"&amp;'op1'!$K$8&amp;"⭘&lt;8&gt;◼"&amp;'op1'!$L$8&amp;"⭘&lt;9&gt;◼"&amp;'op1'!$K$7&amp;"⭘&lt;10&gt;◼"&amp;'op1'!$L$7&amp;"⭘&lt;11&gt;◼◀2|T"&amp;System!$B$3&amp;"|Ddd MMM yyyy HH:mm▶⭘&lt;12&gt;◼◀2▶⭘&lt;13&gt;◼◁4▷⭘&lt;14&gt;◼◁10▷⭘&lt;15&gt;◼◁3▷⭘&lt;16&gt;◼◁6▷⭘&lt;17&gt;◼◁6|T7|Ddd MMM yyyy HH:mm▷⭘&lt;18&gt;◼◁7▷⭘&lt;19&gt;◼◁7|T7|Ddd MMM yyyy HH:mm▷⭘&lt;20&gt;◼◁11▷⭘&lt;21&gt;◼⭘&lt;22&gt;◼◁16▷⭘&lt;23&gt;◼◁18▷⭘&lt;24&gt;◼Sekuriti⭘&lt;25&gt;◼{icon_url}⭘&lt;30&gt;◼Tanggal ◁6|T7|Ddd MMM yyyy▷ sampai ◁7|T7|Ddd MMM yyyy▷, jumlah ◁11▷ hari, dengan pengganti ◁18▷"</code></pre>
+
+<p><strong>Event C ★ mapping:</strong></p>
+<table>
+  <tr><th>★</th><th>Cell</th><th>Pos</th><th>Field</th></tr>
+  <tr><td>★1</td><td>E13</td><td>—</td><td>identity (auto)</td></tr>
+  <tr><td>★2</td><td>F13</td><td>3</td><td>Dokumen</td></tr>
+  <tr><td>★3</td><td>G13</td><td>4</td><td>Jenis Cuti</td></tr>
+  <tr><td>★5</td><td>I13</td><td>6</td><td>Tanggal Mulai</td></tr>
+  <tr><td>★6</td><td>J13</td><td>7</td><td>Tanggal Selesai</td></tr>
+  <tr><td>★9</td><td>M13</td><td>10</td><td>Keterangan</td></tr>
+  <tr><td>★10</td><td>N13</td><td>11</td><td>Jumlah Hari</td></tr>
+  <tr><td>★14</td><td>R13</td><td>15</td><td>Status</td></tr>
+  <tr><td>★15</td><td>S13</td><td>16</td><td>Pengganti VID</td></tr>
+  <tr><td>★16</td><td>T13</td><td>17</td><td>No. Permohonan</td></tr>
+  <tr><td>★17</td><td>U13</td><td>18</td><td>Nama Pengganti</td></tr>
+</table>
+
+<p><strong>D formula tail:</strong></p>
+<pre><code>$T$13&amp;"☆"&amp;$G$13&amp;"☆"&amp;$R$13&amp;"☆"&amp;$I$13&amp;"☆"&amp;$J$13&amp;"☆"&amp;$N$13&amp;"☆"&amp;$M$13&amp;"☆"&amp;$S$13&amp;"☆"&amp;$U$13</code></pre>
+<p>= reqNum ☆ jenisCuti ☆ status ☆ startDate ☆ endDate ☆ days ☆ keterangan ☆ replVID ☆ replName</p>
+
+<hr>
+
+<h3>7.2 LogIncident (Contoh Kedua)</h3>
+
+<p><strong>Form positions:</strong></p>
+<table>
+  <tr><th>Pos</th><th>Widget</th><th>Field</th></tr>
+  <tr><td>3</td><td>TXF text</td><td>Catatan</td></tr>
+  <tr><td>4</td><td>GET_IMAGES</td><td>Dokumen</td></tr>
+  <tr><td>5</td><td>TXF qrScan</td><td>Lokasi</td></tr>
+  <tr><td>6</td><td>SELECTABLE_BTN</td><td>Tingkat Urgensi</td></tr>
+  <tr><td>7</td><td>SELECTABLE_BTN</td><td>Jenis Keluhan</td></tr>
+  <tr><td>8</td><td>TXF generic</td><td>Judul</td></tr>
+  <tr><td>11</td><td>(locationName)</td><td>Nama Lokasi</td></tr>
+  <tr><td>17</td><td>NUMBER</td><td>No. Permohonan</td></tr>
+</table>
+
+<p><strong>addToTable formula:</strong></p>
+<pre><code>="$test/report-incident//vtl.report-incident⭘retention◼4320⭘tablevid◼20342033315492⭘index◼1★S◼2★S◼5★N◼7★N◼9★N⭘description◼field-report⭘flag◼report-incident⭘&lt;1&gt;◼◁17▷⭘&lt;2&gt;◼MENUNGGU⭘&lt;3&gt;◼[]⭘&lt;4&gt;◼[]⭘&lt;5&gt;◼"&amp;Settings!$B$1&amp;"⭘&lt;6&gt;◼"&amp;Settings!$B$2&amp;"⭘&lt;7&gt;◼"&amp;'op1'!$K$8&amp;"⭘&lt;8&gt;◼"&amp;'op1'!$L$8&amp;"⭘&lt;9&gt;◼"&amp;'op1'!$K$7&amp;"⭘&lt;10&gt;◼"&amp;'op1'!$L$7&amp;"⭘&lt;11&gt;◼◀2|T"&amp;System!$B$3&amp;"|Ddd MMM yyyy HH:mm▶⭘&lt;12&gt;◼◀2▶⭘&lt;13&gt;◼◁5▷⭘&lt;14&gt;◼◁11▷⭘&lt;15&gt;◼◁8▷⭘&lt;16&gt;◼◁7▷⭘&lt;17&gt;◼◁4▷⭘&lt;18&gt;◼◁3▷⭘&lt;19&gt;◼◁6▷⭘&lt;20&gt;◼⭘&lt;30&gt;◼Lokasi ◁11▷, ◁8▷, urgensi ◁6▷"</code></pre>
+
+<p><strong>Event C ★ mapping:</strong></p>
+<table>
+  <tr><th>★</th><th>Cell</th><th>Pos</th><th>Field</th></tr>
+  <tr><td>★1</td><td>E13</td><td>—</td><td>identity (auto)</td></tr>
+  <tr><td>★2</td><td>F13</td><td>3</td><td>Catatan</td></tr>
+  <tr><td>★3</td><td>G13</td><td>4</td><td>Dokumen</td></tr>
+  <tr><td>★4</td><td>H13</td><td>5</td><td>Lokasi</td></tr>
+  <tr><td>★5</td><td>I13</td><td>6</td><td>Tingkat Urgensi</td></tr>
+  <tr><td>★6</td><td>J13</td><td>7</td><td>Jenis Keluhan</td></tr>
+  <tr><td>★7</td><td>K13</td><td>8</td><td>Judul</td></tr>
+  <tr><td>★10</td><td>N13</td><td>11</td><td>Nama Lokasi</td></tr>
+  <tr><td>★16</td><td>T13</td><td>17</td><td>No. Permohonan</td></tr>
+</table>
+
+<p><strong>D formula tail:</strong></p>
+<pre><code>$T$13&amp;"☆"&amp;$K$13&amp;"☆"&amp;$J$13&amp;"☆"&amp;$I$13&amp;"☆"&amp;$H$13&amp;"☆"&amp;$N$13&amp;"☆"&amp;$G$13</code></pre>
+<p>= reqNum ☆ judul ☆ keluhan ☆ urgensi ☆ lokasi ☆ namaLokasi ☆ dokumen<br>
+<em>(F13/Catatan sudah di scaffold)</em></p>
+
+<hr>
+
+<!-- Section 8 -->
+<h2 id="checklist" class="page-break">8. Checklist: Membuat Page Baru</h2>
+
+<h3>A. Persiapan</h3>
+<ul class="checklist">
+  <li>Tentukan module name dan table path Firebase</li>
+  <li>Tentukan flag name</li>
+  <li>Tentukan apakah butuh approval (berapa level?)</li>
+  <li>List semua field form dan assign position (3-16, 18+)</li>
+  <li>Position 17 = auto-number (NUMBER) — WAJIB</li>
+  <li>Position 251 = submit button — WAJIB</li>
+</ul>
+
+<h3>B. addToTable</h3>
+<ul class="checklist">
+  <li>Copy template dari Section 2.5</li>
+  <li>Ganti placeholder</li>
+  <li>Default block &lt;1&gt; s/d &lt;12&gt; — JANGAN UBAH cell references</li>
+  <li>&lt;3&gt;◼[] dan &lt;4&gt;◼[] (atau approval array) — WAJIB ADA</li>
+  <li>Tail dari &lt;13&gt; dst — map ◁N▷ ke position widget</li>
+  <li>&lt;30&gt; — summary template untuk display</li>
+  <li>index — minimal 1★S◼2★S◼5★N◼7★N◼9★N</li>
+</ul>
+
+<h3>C. Button Config</h3>
+<ul class="checklist">
+  <li><code>action: "savesend"</code> (BUKAN "addToTable")</li>
+  <li><code>flag: "{flag_name}"</code></li>
+  <li><code>gpsPosition: 2</code></li>
+  <li><code>com: "auz"</code></li>
+  <li><code>run</code> include 17:generate_number◆251:disable</li>
+  <li><code>addToTable</code> = DSL string dari step B</li>
+  <li><code>chain</code> = DO_DIALOG konfirmasi</li>
+</ul>
+
+<h3>D. Event &amp; Reporting</h3>
+<ul class="checklist">
+  <li>Pastikan flag terdaftar di sistem</li>
+  <li>Map position → ★ → op1Script column</li>
+  <li>Buat D formula: scaffold + org + route + tail</li>
+  <li>Tambah row di op1Script</li>
+  <li>Test: submit form, cek Firebase + Event tab</li>
+</ul>
+
+<h3>E. Verifikasi</h3>
+<ul class="checklist">
+  <li>Firebase &lt;1&gt; s/d &lt;12&gt; benar</li>
+  <li>&lt;5&gt; = VID user (bukan hardcoded)</li>
+  <li>Event tab punya row baru</li>
+  <li>D formula tanpa #VALUE! atau #REF!</li>
+</ul>
+
+<hr>
+
+<!-- Section 9 -->
+<h2 id="bugs">9. Bug Umum &amp; Solusi</h2>
+<table>
+  <tr><th>Bug</th><th>Penyebab</th><th>Solusi</th></tr>
+  <tr><td><code>◁N▷</code> menghasilkan kosong</td><td>Position N tidak ada di form</td><td>Cek position assignment</td></tr>
+  <tr><td>Firebase masuk, Event tidak</td><td><code>action</code> bukan <code>savesend</code> atau flag belum terdaftar</td><td>Pastikan <code>savesend</code>, cek flag whitelist</td></tr>
+  <tr><td><code>&lt;5&gt;</code> hardcoded</td><td>Pakai literal bukan cell ref</td><td>Ganti ke <code>"&amp;Settings!$B$1&amp;"</code></td></tr>
+  <tr><td>D formula <code>#VALUE!</code></td><td>Reference cell kosong di kalkulasi</td><td>Hindari row 11, pakai row 13</td></tr>
+  <tr><td>Index mismatch</td><td>Index number gak cocok setelah edit</td><td>Update <code>index◼...</code></td></tr>
+  <tr><td>Position tumpang tindih</td><td>2 widget pakai position sama</td><td>Audit semua position</td></tr>
+  <tr><td><code>&lt;3&gt;</code>/<code>&lt;4&gt;</code> hilang</td><td>Lupa placeholder</td><td>Tambah <code>&lt;3&gt;◼[]⭘&lt;4&gt;◼[]</code></td></tr>
+</table>
+
+<hr>
+
+<!-- Section 10 -->
+<h2 id="approval">10. Dengan vs Tanpa Approval</h2>
+<table>
+  <tr><th>Aspek</th><th>Tanpa Approval</th><th>Dengan Approval</th></tr>
+  <tr><td><code>&lt;2&gt;</code> status</td><td><code>MENUNGGU</code></td><td><code>PENDING</code></td></tr>
+  <tr><td><code>&lt;3&gt;</code> history</td><td><code>[]</code></td><td><code>[]</code></td></tr>
+  <tr><td><code>&lt;4&gt;</code> approval</td><td><code>[]</code></td><td><code>[[1, PENDING, , , , ], ...]</code></td></tr>
+  <tr><td>Approval buttons</td><td>Tidak ada</td><td>Di page Approver/Detail</td></tr>
+  <tr><td>Event saat approve</td><td>—</td><td>Lihat <code>approve-leave-event-spec.md</code></td></tr>
+</table>
+
+<hr>
+
+<!-- Section 11 -->
+<h2 id="tokens">11. DSL Token Reference</h2>
+<table>
+  <tr><th>Token</th><th>Arti</th><th>Dipakai di</th></tr>
+  <tr><td><code>◁N▷</code></td><td>Widget position N value</td><td>addToTable</td></tr>
+  <tr><td><code>◁N|T7|fmt▷</code></td><td>Widget + time format</td><td>addToTable</td></tr>
+  <tr><td><code>◀N▶</code></td><td>System stream N</td><td>addToTable</td></tr>
+  <tr><td><code>◀N|T7|fmt▶</code></td><td>System stream + time format</td><td>addToTable</td></tr>
+  <tr><td><code>⭘</code></td><td>Field separator</td><td>addToTable DSL</td></tr>
+  <tr><td><code>◼</code></td><td>Key-value separator</td><td>addToTable DSL</td></tr>
+  <tr><td><code>★</code></td><td>Section separator</td><td>Event C</td></tr>
+  <tr><td><code>☆</code></td><td>Sub-field separator</td><td>D formula tail, identity</td></tr>
+  <tr><td><code>◻</code></td><td>Major block separator</td><td>D formula</td></tr>
+  <tr><td><code>⬤</code></td><td>Geo / data boundary</td><td>Event C</td></tr>
+</table>
+
+<hr>
+<p style="color:#94a3b8; text-align:center; font-size:12px; margin-top:40px;">
+  Consteon / VTL Platform — Standard Page + Event Pattern v1.0 — May 2026
+</p>
+
+</body>
+</html>

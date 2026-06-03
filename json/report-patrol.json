@@ -1,0 +1,55 @@
+{
+    "title": "Vertika Tekno Lokacipta",
+    "children": [
+        {
+            "type": "HGR",
+            "width": 86,
+            "row": 1,
+            "fontSize": 13,
+            "beforeSpacing": 5,
+            "afterSpacing": 0,
+            "sortBy": "alphabetically",
+            "children": [
+                {
+                    "url": "https://firebasestorage.googleapis.com/v0/b/otq-01-ase2/o/c%2Fautsorz%2Ficon%2Fautsorz-icon-90x90.png?alt=media&token=094f1974-8b12-44d0-9841-8d7ab75cf061",
+                    "text": "Autsorz",
+                    "route": "autsorz"
+                },
+                {
+                    "url": "https://firebasestorage.googleapis.com/v0/b/otq-01-ase2/o/id%2F2022%2Fvtl%2Ficon%2Fvtl-icon-90x90.png?alt=media&token=755ccd3e-5d41-4d14-80b2-7c3efc4e4def",
+                    "text": "VTL",
+                    "route": "vertikaTeknoLokacipta"
+                },
+                {
+                    "url": "https://firebasestorage.googleapis.com/v0/b/otq-01-ase2/o/c%2Finfo%2Finfo-icon-90x90.png?alt=media&token=5f67937c-a214-4399-b768-338456d6a732",
+                    "text": "Info",
+                    "route": "info"
+                }
+            ]
+        },
+        {
+            "type": "TXT",
+            "afterSpacing": 12,
+            "size": 4,
+            "data": " "
+        },
+        {
+            "type": "displayList",
+            "variant": "tableCardInteractive",
+            "margin": "0,0,0,0",
+            "alignment": "end",
+            "style": "BOLD",
+            "text": "Laporan pekerjaan◆Cari di laporan◆Tulis yang anda ingin lihat",
+            "size": 18,
+            "height": 600,
+            "table": "vtl.report-patrol",
+            "content": "Tanggal: <2>\nNama: <4>\nLokasi: <6>\nSite: <8>\nKondisi: <11>\nKeterangan: <7>",
+            "filter": "Product Group",
+            "icon": "search",
+            "image": "<10>",
+            "detail": "Tanggal: <2>\nNama: <4>\nLokasi: <6>\nSite: <8>\nKondisi: <11>\nKeterangan: <7>",
+            "sort": "desc",
+            "indexStart": 1
+        }
+    ]
+}

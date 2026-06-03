@@ -1,0 +1,40 @@
+{
+    "type": "RBT",
+    "alignment": "spaceevenly",
+    "search": "sticky",
+    "children": [
+        {
+            "text": "Tutup Laporan",
+            "search": "2◼SELESAI",
+            "action": "savesend",
+            "route": "",
+            "delay": 5,
+            "gpsPosition": 2,
+            "flag": "report-incident",
+            "buttonColor": "red",
+            "textColor": "white",
+            "updateTableRow": "$test/report-incident//vtl.report-incident⭘tablevid◼20342033315492⭘search◼1★<no_request>⭘<2>◼DITUTUP",
+            "addToTable": "$test/report-incident//vtl.report-incident-history⭘retention◼0⭘description◼report-incident-history⭘flag◼report-incident-history⭘tablevid◼20342033315492⭘index◼1★S◼2★S◼3★N◼5★N◼9★S⭘<1>◼<no_request>⭘<2>◼DITUTUP⭘<3>◼87544551624342⭘<4>◼Agenia Demo-7⭘<5>◼⭘<6>◼⭘<7>◼◀2|T7|Ddd MMM yyyy HH:mm▶⭘<8>◼◀2▶⭘<9>◼DITUTUP⭘<10>◼Sekuriti⭘<27>◼⭘<28>◼⭘<29>◼⭘<30>◼Laporan ditutup oleh ◁10▷",
+            "chain": {
+                "type": "DO_DIALOG",
+                "title": "Tutup Laporan",
+                "children": [
+                    {
+                        "type": "TXT",
+                        "data": "Laporan ditutup dan tidak dapat diubah lagi.."
+                    },
+                    {
+                        "type": "RBT",
+                        "alignment": "center",
+                        "children": [
+                            {
+                                "text": "Ok",
+                                "route": ""
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

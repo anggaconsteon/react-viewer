@@ -1,0 +1,9 @@
+{
+    "type": "SELECTABLE_BTN",
+    "variant": "vertical",
+    "title": "TINGKAT URGENSI",
+    "height": 64,
+    "position": 6,
+    "bgSelected": "gray",
+    "text": "Mendesak◇Bahaya, banjir, akses publik kena◇red◆Perlu segera◇Mengganggu operasional◇orange◆Bisa nanti◇Tidak mengganggu◇green"
+}

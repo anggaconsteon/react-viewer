@@ -1,0 +1,116 @@
+{
+  "title": "Request Detail",
+  "children": [
+    {
+      "type": "WORKER_CARD_DETAIL",
+      "role": "APPROVER",
+      "vidtable": "20342033315492",
+      "table": "$test/request-approval//vtl.trial-approval",
+      "search": "1◼<no_request>",
+      "conditions": "[[◀1▶◼<no_request>]]",
+      "text": "WORKER◆<6>◆<24> . <8>"
+    },
+    {
+      "type": "APPROVAL_DETAIL",
+      "role": "APPROVER",
+      "variant": "detail",
+      "ledgerCode": "APPROVE-REQUEST-DETAIL",
+      "vidtable": "20342033315492",
+      "table": "$test/request-approval//vtl.trial-approval",
+      "search": "1◼<request_vid>",
+      "conditions": "[[◀1▶◼<request_vid>]]",
+      "text": "<1>◆<13>◆Submitted <11>◆Start Date◆End Date◆Duration◆Replacement Name◆REASON◆Document",
+      "content": "<17>◆<19>◆<20> days◆<23> ",
+      "reason": "<14>",
+      "status": "<2>",
+      "image": "<15>"
+    },
+    {
+      "type": "COMMENT_DETAIL",
+      "ledgerCode": "REQUEST-CONVERSATION",
+      "vidtable": "20342033315492",
+      "table": "$test/request-approval/vtl.trial-approval/content/{docId}//comment",
+      "text": "CONVERSATION"
+    },
+    {
+      "type": "txf",
+      "variant": "commentBox",
+      "role": "APPROVER",
+      "vidtable": "20342033315492",
+      "table": "$test/request-approval/vtl.trial-approval/content/{docId}//comment",
+      "text": "Add a comment...◆Send◆Attach file◆Komentar kosong",
+      "icon": "attach_file",
+      "label": "",
+      "hint": "Add a comment...",
+      "maxLength": 500,
+      "size": 12,
+      "position": 7,
+      "buttonIcon": "send",
+      "buttonLabel": "Send",
+      "disabledWhenEmpty": "TRUE",
+      "attachmentEnabled": "TRUE",
+      "attachmentFolder": "id/2026/vtl/request-comment//<no_request>",
+      "attachmentFilename": "<no_request>-<timestamp>",
+      "attachmentMax": 3,
+      "addToTable": "$test/request-approval/vtl.trial-approval/content/{docId}//comment⭘retention◼4320⭘tablevid◼⭘<1>◼Agenia Demo-7⭘<2>◼87544551624342⭘<3>◼◁7▷⭘<4>◼◀2|T7|Ddd MMM yyyy HH:mm▶⭘<5>◼⭘<6>◼",
+      "source": "camera◆gallery◆file"
+    },
+    {
+      "type": "RBT",
+      "role": "APPROVER",
+      "alignment": "end",
+      "children": [
+        {
+          "text": "Rejected",
+          "color": "green",
+          "actions": "<2>◼REJECTED⭘<3>◼87544551624342⭘<4>◼Agenia Demo-7⭘<5>◼◀2|T7|Ddd MMM yyyy HH:mm▶⭘<6>◼◀2▶",
+          "chain": {
+            "type": "DO_DIALOG",
+            "title": "Request Rejected",
+            "children": [
+              {
+                "type": "TXT",
+                "data": "Request has been rejected."
+              },
+              {
+                "type": "RBT",
+                "alignment": "center",
+                "children": [
+                  {
+                    "text": "OK",
+                    "route": "vertikaTeknoLokaciptaRequestApproval"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "text": "Approved",
+          "color": "green",
+          "actions": "<2>◼APPROVED⭘<3>◼87544551624342⭘<4>◼Agenia Demo-7⭘<5>◼◀2|T7|Ddd MMM yyyy HH:mm▶⭘<6>◼◀2▶",
+          "chain": {
+            "type": "DO_DIALOG",
+            "title": "Request Approved",
+            "children": [
+              {
+                "type": "TXT",
+                "data": "Request has been approved."
+              },
+              {
+                "type": "RBT",
+                "alignment": "center",
+                "children": [
+                  {
+                    "text": "OK",
+                    "route": "vertikaTeknoLokaciptaRequestApproval"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

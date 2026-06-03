@@ -1,0 +1,241 @@
+==========================================================
+addToEvent — GUIDE (v0.2)
+==========================================================
+
+PATTERN: keyed (char-code) sibling dari addToTable.
+TUJUAN:  insert dokumen baru ke event ledger (append-only)
+         setiap aksi user (submit patroli, lapor incident,
+         clock-in/out, request, dsb) → 1 row event baru.
+
+NOTASI INHERITED dari addToTable:
+  <N>  = numeric field target (TIDAK dipakai di addToEvent)
+  ⬤   = boundary kiri/kanan
+  ◀ ▶ = data sebelah KIRI (system stream — timestamp, dsb)
+  ◁ ▷ = data sebelah KANAN (user input — form field N)
+  ◆   = pemisah multi-doc (jika insert >1 doc)
+  ★   = pemisah multi-entry di kanan
+  ◼   = pemisah antara field-name dan value
+  ⭘   = penanda awal field
+  N|T7|format
+       = N (index), T7 (timezone Asia/Jakarta UTC+7),
+         format (date format spec)
+
+==========================================================
+PERBEDAAN UTAMA vs addToTable
+==========================================================
+
+addToTable  : positional. Field name = <N> urut posisi 1..N.
+              Wajib lengkap dari <1> sampai <N>. Sparse tidak
+              didukung — field kosong tetap counted.
+
+addToEvent  : KEYED. Field name = char-code semantik (ty, t,
+              cv, dst). Order BEBAS. Sparse-by-default —
+              kalau field tidak di-define, berarti kosong/
+              NULL (TIDAK perlu placeholder).
+
+              CONSEQUENCE:
+              - Tidak perlu hitung posisi
+              - Tambah/kurang field tanpa shift index
+              - Parser baca by key, bukan posisi
+
+==========================================================
+FIELD DICTIONARY (CHAR-CODE)
+==========================================================
+
+--- METADATA (event-level) ---
+r        retention (menit)             [REQUIRED]
+fc       ledger code                   [optional]
+tablevid collection VID di Firestore   [optional, convention: taruh setelah r]
+p        page reference (B)            [optional]
+et       event time (A)                [optional]
+ld       ledger ref (D)                [optional]
+ev       event ref (C)                 [optional]
+
+--- EVENT CONTENT (per-doc) ---
+ty       type of event                 [REQUIRED]
+t        time (timestamp / epoch)      [REQUIRED]
+ts       time string (formatted)       [REQUIRED]
+ln       location name                 [optional]
+lq       QR ID                         [optional]
+i        image (url)                   [optional]
+d        description                   [optional]
+cv       creator VID (user VID)        [optional]
+cn       creator name                  [optional]
+av       cost center VID (= ccVID)     [optional]
+an       cost center name (= ccName)   [optional]
+sv       site VID                      [optional]
+sn       site name                     [optional]
+cl       checklist                     [optional]
+rf       ref ID — bridge ke main      [optional]
+         table & rantai approval.
+         Value FLEXIBLE — author
+         define:
+         - <no_request> = sistem
+           auto-inject (new submit
+           atau ambil dari parent)
+         - ◁N▷ = ambil dari form
+           field N (kalau user
+           input / scan ref id)
+         - literal = bake known id
+         Omit = no linkage.
+
+--- ROUTE / TENANT (jika perlu disisipkan ke payload) ---
+tv       tenant VID
+tn       tenant name
+st       status
+nm       number
+ll       location list (Array)
+
+--- WORKFORCE (per-pegawai, jika dipakai) ---
+VID      id pegawai
+n        name
+ci       clock in
+co       clock out
+is       in string
+os       out string
+st       status
+ta       task (rename dari `t` — `t` reserved buat timestamp)
+
+==========================================================
+SKELETON
+==========================================================
+
+addToEvent":
+<table-name>
+⭘r◼<retention-minutes>
+⭘tablevid◼<collection-vid>     // convention setelah r
+⭘fc◼<ledger-code>              // optional metadata
+⭘ty◼<event-type>
+⭘t◼◀N|T7|epoch▶
+⭘ts◼◀N|T7|Ddd MMM yyyy HH:mm:ss▶
+⭘<char>◼<value>                // optional sparse fields
+⭘<char>◼◁N▷                    // form field N (kanan)
+⭘<char>◼◀N|T7|format▶          // system stream (kiri)
+...
+
+==========================================================
+CONTOH 1 — Report Incident
+==========================================================
+
+addToEvent":
+vtl.event-doc
+⭘r◼4320
+⭘tablevid◼20342033315492
+⭘lc◼report-incident
+⭘ty◼report-incident
+⭘t◼◀2|T7|epoch▶
+⭘ts◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶
+⭘cv◼87544551624342
+⭘cn◼Bob Kosasih
+⭘av◼83674161979544
+⭘av◼83674161979544
+⭘an◼Product Group
+⭘sv◼47670566154242
+⭘sn◼BSD
+⭘d◼◁3▷
+⭘i◼◁5▷
+⭘ln◼◁8▷
+⭘lq◼◁9▷
+
+// Field nm, cl, rf, ld, ev, p, et OMIT → kosong di backend.
+
+==========================================================
+CONTOH 2 — Submit Patrol (sparse, minimal)
+==========================================================
+
+addToEvent":
+vtl.event-doc
+⭘r◼4320
+⭘ty◼patrol-submitted
+⭘t◼◀2|T7|epoch▶
+⭘ts◼◀2|T7|Ddd MMM yyyy HH:mm▶
+⭘cv◼87544551624342
+⭘cn◼Bob Kosasih
+⭘sv◼47670566154242
+⭘cl◼◁4▷
+
+// Required only: r, ty, t, ts. Sisanya optional.
+
+==========================================================
+CONTOH 3 — Multi-doc Insert (pakai ◆)
+==========================================================
+
+addToEvent":
+vtl.event-doc
+⭘r◼4320
+⭘ty◼clock-in
+⭘t◼◀2|T7|epoch▶
+⭘ts◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶
+⭘cv◼87544551624342
+⭘sv◼47670566154242
+◆
+vtl.event-doc
+⭘r◼4320
+⭘ty◼attendance-check-in
+⭘t◼◀2|T7|epoch▶
+⭘ts◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶
+⭘cv◼87544551624342
+⭘sv◼47670566154242
+⭘ln◼BSD Tech Center #26
+⭘lq◼0l114807f17536338c20fd13c3896308df116b295d
+⭘i◼◁6▷
+
+==========================================================
+CONTOH 4 — Event dengan rf (chain ref)
+==========================================================
+
+// Kasus: event approve-leave merefer ke request-leave asal.
+// rf VALUE = placeholder <no_request> — sistem inject saat
+// submit. Untuk approval chain, rf yg dipakai = rf request
+// asli (bukan generate baru).
+
+addToEvent":
+vtl.event-doc
+⭘r◼4320
+⭘ty◼approve-leave
+⭘t◼◀2|T7|epoch▶
+⭘ts◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶
+⭘cv◼34079207578683
+⭘cn◼Perry Huang
+⭘rf◼<no_request>
+⭘st◼APPROVED
+
+==========================================================
+ATURAN RINGKAS
+==========================================================
+
+1. Required: r, ty, t, ts. Wajib ada di tiap doc.
+2. Order BEBAS (parser keyed) — tapi konvensi: r → tablevid →
+   metadata → ty/t/ts → content fields.
+3. Omit field = NULL. JANGAN tulis `⭘fc◼` kalau memang
+   kosong — cukup tidak menulis baris itu sama sekali.
+4. APPEND-ONLY: tidak ada update/delete variant. Kalau perlu
+   mutasi state, pakai updateTableRow (DSL terpisah) untuk
+   tabel state, dan tetap append event baru pakai addToEvent
+   dengan `rf` ke event asal.
+5. Multi-doc insert pakai `◆` antar blok.
+6. Char-code unique secara global: `sv` di route = `sv` di
+   event content = site VID. `st` di workforce konteks =
+   status. `t` reserved buat timestamp — task pakai `ta`.
+
+==========================================================
+CHEAT SHEET — TOKEN
+==========================================================
+
+◀N|T7|epoch▶              system stream, epoch ms
+◀N|T7|Ddd MMM yyyy HH:mm▶ system stream, formatted
+◁N▷                       form field N (raw user input)
+◁N|T7|format▷             form field N formatted
+literal-value             baked static value
+%timeReceived%            replaced from spreadsheet context
+<no_request>              system-injected ref id (rf field).
+                          Sama mekanisme dgn addToTable.
+                          New submit → sistem generate baru.
+                          Detail page / approval → sistem
+                          inject dari parent context.
+                          Author bebas pakai placeholder
+                          ini ATAU ◁N▷ ATAU literal.
+
+==========================================================
+END
+==========================================================

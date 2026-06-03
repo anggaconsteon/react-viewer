@@ -1,0 +1,489 @@
+{
+  "type": "MENU",
+  "name": "Vertika Tekno Lokacipta",
+  "description": "Field Operations Platform",
+  "logoUrl": "https://firebasestorage.googleapis.com/v0/b/otq-01-ase2/o/id%2F2022%2Fvtl%2Ficon%2Fvtl-icon-90x90.png?alt=media&token=755ccd3e-5d41-4d14-80b2-7c3efc4e4def",
+  "email": "suryawdj@gmail.com",
+  "costCenters": "Induk◆Kantor Pusat◆Product Group",
+  "footer": "Provider Consteon",
+  "children": [
+    {
+      "label": "Dashboard",
+      "icon": "LayoutDashboard",
+      "path": "/dashboard",
+      "key": "dashboard",
+      "urlSheet": "https://docs.google.com/spreadsheets/d/1FTaIACxtt0KEfj5ycXH50s_MhpmK9eDgibju5K7Hb4A/edit?pli=1&gid=815108501#gid=815108501",
+      "children": []
+    },
+    {
+      "label": "Workforce",
+      "icon": "LayoutDashboard",
+      "path": "",
+      "key": "workforce",
+      "urlSheet": "",
+      "children": [
+        {
+          "label": "Daftar Pegawai",
+          "icon": "UsersRound",
+          "path": "/employee",
+          "key": "daftarPegawai",
+          "urlSheet": "https://docs.google.com/spreadsheets/d/1FTaIACxtt0KEfj5ycXH50s_MhpmK9eDgibju5K7Hb4A/edit?pli=1&gid=74580014#gid=74580014",
+          "parent": "Workforce",
+          "pageData": {
+            "topbar": {
+              "alignment": "center",
+              "children": [
+                {"type": "DROPDOWN", "key": "type", "variant": "outline", "placeholder": "All types", "emptyText": "Type tidak ditemukan", "options": "Patrol◆Cleaning◆Maintenance◆Delivery"},
+                {"type": "DROPDOWN", "key": "site", "variant": "outline", "placeholder": "All sites", "emptyText": "Site tidak ditemukan", "options": "Plaza Senayan◆Grand Indonesia◆Pondok Indah Mall◆Kota Kasablanka"},
+                {"type": "DROPDOWN", "key": "date", "variant": "outline", "placeholder": "Today", "emptyText": "Date tidak ditemukan", "options": "Today◆Yesterday◆Last 7 days◆Last 30 days"},
+                {"type": "SPACER"},
+                {"type": "BUTTON", "variant": "outline", "size": "icon", "icon": "FilterIcon", "text": "Filter", "onClick": {"type": "FETCH_CONTENT", "url": "https://api.example.com/reports/filter", "method": "POST", "target": "mainContent", "onError": {"toast": "Gagal memuat data"}}},
+                {"type": "BUTTON", "variant": "outline", "size": "default", "icon": "DownloadIcon", "text": "Export", "onClick": {"type": "SUBMIT", "url": "https://api.example.com/reports/export", "method": "POST", "onSuccess": {"toast": "Export berhasil, file akan diunduh"}, "onError": {"toast": "Gagal export data"}}}
+              ]
+            },
+            "spreadsheet": {"id": "mainContent", "src": "", "editable": true},
+            "bottomBar": {
+              "alignment": "end",
+              "children": [
+                {"type": "BUTTON", "variant": "ghost", "size": "default", "text": "Reset", "onClick": {"type": "RESET", "scope": "topbar"}},
+                {"type": "BUTTON", "variant": "default", "size": "default", "icon": "CheckIcon", "text": "Submit", "data": "type◆site", "onClick": {"type": "SUBMIT", "url": "https://api.example.com/reports/submit", "method": "POST", "onSuccess": {"toast": "Laporan berhasil dikirim", "then": "REFRESH_CONTENT"}, "onError": {"toast": "Gagal mengirim laporan"}}}
+              ]
+            }
+          }
+        },
+        {
+          "label": "Pendaftaran Pegawai",
+          "icon": "UsersRound",
+          "path": "/employee/change",
+          "key": "pendaftaranPegawai",
+          "urlSheet": "https://docs.google.com/spreadsheets/d/1FTaIACxtt0KEfj5ycXH50s_MhpmK9eDgibju5K7Hb4A/edit?pli=1&gid=862885426#gid=862885426",
+          "parent": "Workforce",
+          "pageData": {
+            "topbar": {
+              "alignment": "center",
+              "children": [
+                {"type": "DROPDOWN", "key": "type", "variant": "outline", "placeholder": "All types", "emptyText": "Type tidak ditemukan", "options": "Patrol◆Cleaning◆Maintenance◆Delivery"},
+                {"type": "DROPDOWN", "key": "site", "variant": "outline", "placeholder": "All sites", "emptyText": "Site tidak ditemukan", "options": "Plaza Senayan◆Grand Indonesia◆Pondok Indah Mall◆Kota Kasablanka"},
+                {"type": "DROPDOWN", "key": "date", "variant": "outline", "placeholder": "Today", "emptyText": "Date tidak ditemukan", "options": "Today◆Yesterday◆Last 7 days◆Last 30 days"},
+                {"type": "SPACER"},
+                {"type": "BUTTON", "variant": "outline", "size": "icon", "icon": "FilterIcon", "text": "Filter", "onClick": {"type": "FETCH_CONTENT", "url": "https://api.example.com/reports/filter", "method": "POST", "target": "mainContent", "onError": {"toast": "Gagal memuat data"}}},
+                {"type": "BUTTON", "variant": "outline", "size": "default", "icon": "DownloadIcon", "text": "Export", "onClick": {"type": "SUBMIT", "url": "https://api.example.com/reports/export", "method": "POST", "onSuccess": {"toast": "Export berhasil, file akan diunduh"}, "onError": {"toast": "Gagal export data"}}}
+              ]
+            },
+            "spreadsheet": {"id": "mainContent", "src": "", "editable": true},
+            "bottomBar": {
+              "alignment": "end",
+              "children": [
+                {"type": "BUTTON", "variant": "ghost", "size": "default", "text": "Reset", "onClick": {"type": "RESET", "scope": "topbar"}},
+                {"type": "BUTTON", "variant": "default", "size": "default", "icon": "CheckIcon", "text": "Submit", "data": "type◆site", "onClick": {"type": "SUBMIT", "url": "https://api.example.com/reports/submit", "method": "POST", "onSuccess": {"toast": "Laporan berhasil dikirim", "then": "REFRESH_CONTENT"}, "onError": {"toast": "Gagal mengirim laporan"}}}
+              ]
+            }
+          }
+        },
+        {
+          "label": "Perubahan Data",
+          "icon": "UsersRound",
+          "path": "/employee/data",
+          "key": "perubahanData",
+          "urlSheet": "https://docs.google.com/spreadsheets/d/1FTaIACxtt0KEfj5ycXH50s_MhpmK9eDgibju5K7Hb4A/edit?pli=1&gid=1209827602#gid=1209827602",
+          "parent": "Workforce",
+          "pageData": {
+            "topbar": {
+              "alignment": "center",
+              "children": [
+                {"type": "DROPDOWN", "key": "type", "variant": "outline", "placeholder": "All types", "emptyText": "Type tidak ditemukan", "options": "Patrol◆Cleaning◆Maintenance◆Delivery"},
+                {"type": "BUTTON", "variant": "outline", "size": "icon", "icon": "FilterIcon", "text": "Filter", "onClick": {"type": "FETCH_CONTENT", "url": "https://api.example.com/reports/filter", "method": "POST", "target": "mainContent", "onError": {"toast": "Gagal memuat data"}}},
+                {"type": "BUTTON", "variant": "outline", "size": "default", "icon": "DownloadIcon", "text": "Export", "onClick": {"type": "SUBMIT", "url": "https://api.example.com/reports/export", "method": "POST", "onSuccess": {"toast": "Export berhasil, file akan diunduh"}, "onError": {"toast": "Gagal export data"}}}
+              ]
+            },
+            "spreadsheet": {"id": "mainContent", "src": "", "editable": true},
+            "bottomBar": {
+              "alignment": "end",
+              "children": [
+                {"type": "BUTTON", "variant": "ghost", "size": "default", "text": "Reset", "onClick": {"type": "RESET", "scope": "topbar"}},
+                {"type": "BUTTON", "variant": "default", "size": "default", "icon": "CheckIcon", "text": "Submit", "data": "type◆site", "onClick": {"type": "SUBMIT", "url": "https://api.example.com/reports/submit", "method": "POST", "onSuccess": {"toast": "Laporan berhasil dikirim", "then": "REFRESH_CONTENT"}, "onError": {"toast": "Gagal mengirim laporan"}}}
+              ]
+            }
+          }
+        },
+        {
+          "label": "Mutasi",
+          "icon": "UsersRound",
+          "path": "/employee/mutasi",
+          "key": "mutasi",
+          "urlSheet": "https://docs.google.com/spreadsheets/d/1FTaIACxtt0KEfj5ycXH50s_MhpmK9eDgibju5K7Hb4A/edit?pli=1&gid=167968070#gid=167968070",
+          "parent": "Workforce",
+          "pageData": {
+            "topbar": {
+              "alignment": "center",
+              "children": [
+                {"type": "DROPDOWN", "key": "type", "variant": "outline", "placeholder": "All types", "emptyText": "Type tidak ditemukan", "options": "Patrol◆Cleaning◆Maintenance◆Delivery"},
+                {"type": "BUTTON", "variant": "outline", "size": "icon", "icon": "FilterIcon", "text": "Filter", "onClick": {"type": "FETCH_CONTENT", "url": "https://api.example.com/reports/filter", "method": "POST", "target": "mainContent", "onError": {"toast": "Gagal memuat data"}}},
+                {"type": "BUTTON", "variant": "outline", "size": "default", "icon": "DownloadIcon", "text": "Export", "onClick": {"type": "SUBMIT", "url": "https://api.example.com/reports/export", "method": "POST", "onSuccess": {"toast": "Export berhasil, file akan diunduh"}, "onError": {"toast": "Gagal export data"}}}
+              ]
+            },
+            "spreadsheet": {"id": "mainContent", "src": "", "editable": true},
+            "bottomBar": {
+              "alignment": "end",
+              "children": [
+                {"type": "BUTTON", "variant": "ghost", "size": "default", "text": "Reset", "onClick": {"type": "RESET", "scope": "topbar"}},
+                {"type": "BUTTON", "variant": "default", "size": "default", "icon": "CheckIcon", "text": "Submit", "data": "type◆site", "onClick": {"type": "SUBMIT", "url": "https://api.example.com/reports/submit", "method": "POST", "onSuccess": {"toast": "Laporan berhasil dikirim", "then": "REFRESH_CONTENT"}, "onError": {"toast": "Gagal mengirim laporan"}}}
+              ]
+            }
+          }
+        },
+        {
+          "label": "PHK",
+          "icon": "UsersRound",
+          "path": "/employee/phk",
+          "key": "phk",
+          "urlSheet": "https://docs.google.com/spreadsheets/d/1FTaIACxtt0KEfj5ycXH50s_MhpmK9eDgibju5K7Hb4A/edit?pli=1&gid=185069194#gid=185069194",
+          "parent": "Mutasi",
+          "pageData": {
+            "topbar": {
+              "alignment": "center",
+              "children": [
+                {"type": "DROPDOWN", "key": "type", "variant": "outline", "placeholder": "All types", "emptyText": "Type tidak ditemukan", "options": "Patrol◆Cleaning◆Maintenance◆Delivery"},
+                {"type": "BUTTON", "variant": "outline", "size": "icon", "icon": "FilterIcon", "text": "Filter", "onClick": {"type": "FETCH_CONTENT", "url": "https://api.example.com/reports/filter", "method": "POST", "target": "mainContent", "onError": {"toast": "Gagal memuat data"}}},
+                {"type": "BUTTON", "variant": "outline", "size": "default", "icon": "DownloadIcon", "text": "Export", "onClick": {"type": "SUBMIT", "url": "https://api.example.com/reports/export", "method": "POST", "onSuccess": {"toast": "Export berhasil, file akan diunduh"}, "onError": {"toast": "Gagal export data"}}}
+              ]
+            },
+            "spreadsheet": {"id": "mainContent", "src": "", "editable": true},
+            "bottomBar": {
+              "alignment": "end",
+              "children": [
+                {"type": "BUTTON", "variant": "ghost", "size": "default", "text": "Reset", "onClick": {"type": "RESET", "scope": "topbar"}},
+                {"type": "BUTTON", "variant": "default", "size": "default", "icon": "CheckIcon", "text": "Submit", "data": "type◆site", "onClick": {"type": "SUBMIT", "url": "https://api.example.com/reports/submit", "method": "POST", "onSuccess": {"toast": "Laporan berhasil dikirim", "then": "REFRESH_CONTENT"}, "onError": {"toast": "Gagal mengirim laporan"}}}
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label": "Attendance",
+      "icon": "UsersRound",
+      "path": "",
+      "key": "attendance",
+      "urlSheet": "",
+      "children": [
+        {
+          "label": "Log Presensi",
+          "icon": "UsersRound",
+          "path": "/attendance/log",
+          "key": "logPresensi",
+          "urlSheet": "https://docs.google.com/spreadsheets/d/1r2cZvs0Kwp4O_-9g-XAVicO2D19j3wBERDZ6d5ZLYn8/edit?gid=47742641#gid=47742641",
+          "parent": "Attendance",
+          "pageData": {
+            "topbar": {
+              "alignment": "center",
+              "children": [
+                {"type": "DROPDOWN", "key": "type", "variant": "outline", "placeholder": "All types", "emptyText": "Type tidak ditemukan", "options": "Patrol◆Cleaning◆Maintenance◆Delivery"},
+                {"type": "BUTTON", "variant": "outline", "size": "icon", "icon": "FilterIcon", "text": "Filter", "onClick": {"type": "FETCH_CONTENT", "url": "https://api.example.com/reports/filter", "method": "POST", "target": "mainContent", "onError": {"toast": "Gagal memuat data"}}},
+                {"type": "BUTTON", "variant": "outline", "size": "default", "icon": "DownloadIcon", "text": "Export", "onClick": {"type": "SUBMIT", "url": "https://api.example.com/reports/export", "method": "POST", "onSuccess": {"toast": "Export berhasil, file akan diunduh"}, "onError": {"toast": "Gagal export data"}}}
+              ]
+            },
+            "spreadsheet": {"id": "mainContent", "src": "", "editable": true},
+            "bottomBar": {
+              "alignment": "end",
+              "children": [
+                {"type": "BUTTON", "variant": "ghost", "size": "default", "text": "Reset", "onClick": {"type": "RESET", "scope": "topbar"}},
+                {"type": "BUTTON", "variant": "default", "size": "default", "icon": "CheckIcon", "text": "Submit", "data": "type◆site", "onClick": {"type": "SUBMIT", "url": "https://api.example.com/reports/submit", "method": "POST", "onSuccess": {"toast": "Laporan berhasil dikirim", "then": "REFRESH_CONTENT"}, "onError": {"toast": "Gagal mengirim laporan"}}}
+              ]
+            }
+          }
+        },
+        {
+          "label": "Detail Presensi",
+          "icon": "UsersRound",
+          "path": "/attendance/detail",
+          "key": "detailPresensi",
+          "urlSheet": "https://docs.google.com/spreadsheets/d/1r2cZvs0Kwp4O_-9g-XAVicO2D19j3wBERDZ6d5ZLYn8/edit?gid=2122951928#gid=2122951928",
+          "parent": "Attendance",
+          "pageData": {
+            "topbar": {
+              "alignment": "center",
+              "children": [
+                {"type": "DROPDOWN", "key": "type", "variant": "outline", "placeholder": "All types", "emptyText": "Type tidak ditemukan", "options": "Patrol◆Cleaning◆Maintenance◆Delivery"},
+                {"type": "BUTTON", "variant": "outline", "size": "icon", "icon": "FilterIcon", "text": "Filter", "onClick": {"type": "FETCH_CONTENT", "url": "https://api.example.com/reports/filter", "method": "POST", "target": "mainContent", "onError": {"toast": "Gagal memuat data"}}},
+                {"type": "BUTTON", "variant": "outline", "size": "default", "icon": "DownloadIcon", "text": "Export", "onClick": {"type": "SUBMIT", "url": "https://api.example.com/reports/export", "method": "POST", "onSuccess": {"toast": "Export berhasil, file akan diunduh"}, "onError": {"toast": "Gagal export data"}}}
+              ]
+            },
+            "spreadsheet": {"id": "mainContent", "src": "", "editable": true},
+            "bottomBar": {
+              "alignment": "end",
+              "children": [
+                {"type": "BUTTON", "variant": "ghost", "size": "default", "text": "Reset", "onClick": {"type": "RESET", "scope": "topbar"}},
+                {"type": "BUTTON", "variant": "default", "size": "default", "icon": "CheckIcon", "text": "Submit", "data": "type◆site", "onClick": {"type": "SUBMIT", "url": "https://api.example.com/reports/submit", "method": "POST", "onSuccess": {"toast": "Laporan berhasil dikirim", "then": "REFRESH_CONTENT"}, "onError": {"toast": "Gagal mengirim laporan"}}}
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label": "Operations",
+      "icon": "LayoutDashboard",
+      "path": "",
+      "key": "operations",
+      "urlSheet": "",
+      "children": [
+        {
+          "label": "Task & Assignment",
+          "icon": "LayoutDashboard",
+          "path": "",
+          "key": "taskAssignment",
+          "urlSheet": "",
+          "parent": "Operations",
+          "pageData": {
+            "topbar": {
+              "alignment": "center",
+              "children": [
+                {"type": "DROPDOWN", "key": "site", "variant": "outline", "placeholder": "All sites", "emptyText": "Site tidak ditemukan", "options": ""},
+                {"type": "DROPDOWN", "key": "date", "variant": "outline", "placeholder": "Today", "emptyText": "Date tidak ditemukan", "options": "Today◆Yesterday◆Last 7 days◆Last 30 days"},
+                {"type": "SPACER"},
+                {"type": "BUTTON", "variant": "outline", "size": "icon", "icon": "FilterIcon", "text": "Filter", "onClick": {"type": "FETCH_CONTENT", "url": "", "method": "POST", "target": "mainContent", "onError": {"toast": "Gagal memuat data"}}}
+              ]
+            },
+            "spreadsheet": {"id": "mainContent", "src": "", "editable": true},
+            "bottomBar": {
+              "alignment": "end",
+              "children": [
+                {"type": "BUTTON", "variant": "ghost", "size": "default", "text": "Reset", "onClick": {"type": "RESET", "scope": "topbar"}}
+              ]
+            }
+          }
+        },
+        {
+          "label": "Monitoring (Live)",
+          "icon": "LayoutDashboard",
+          "path": "",
+          "key": "monitoringLive",
+          "urlSheet": "",
+          "parent": "Operations",
+          "pageData": {
+            "topbar": {
+              "alignment": "center",
+              "children": [
+                {"type": "DROPDOWN", "key": "site", "variant": "outline", "placeholder": "All sites", "emptyText": "Site tidak ditemukan", "options": ""},
+                {"type": "DROPDOWN", "key": "date", "variant": "outline", "placeholder": "Today", "emptyText": "Date tidak ditemukan", "options": "Today◆Yesterday◆Last 7 days◆Last 30 days"},
+                {"type": "SPACER"},
+                {"type": "BUTTON", "variant": "outline", "size": "icon", "icon": "FilterIcon", "text": "Filter", "onClick": {"type": "FETCH_CONTENT", "url": "", "method": "POST", "target": "mainContent", "onError": {"toast": "Gagal memuat data"}}}
+              ]
+            },
+            "spreadsheet": {"id": "mainContent", "src": "", "editable": true},
+            "bottomBar": {
+              "alignment": "end",
+              "children": [
+                {"type": "BUTTON", "variant": "ghost", "size": "default", "text": "Reset", "onClick": {"type": "RESET", "scope": "topbar"}}
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label": "Reports",
+      "icon": "LayoutDashboard",
+      "path": "",
+      "key": "reports",
+      "urlSheet": "",
+      "children": [
+        {
+          "label": "Laporan Pekerjaan",
+          "icon": "BookOpenText",
+          "path": "/work-report",
+          "key": "laporanPekerjaan",
+          "urlSheet": "https://docs.google.com/spreadsheets/d/1BXA0naHnb0Nwj_RylntELcGaryN1ZeXjUQE5sFSjT-A",
+          "parent": "Reports",
+          "pageData": {
+            "topbar": {
+              "alignment": "center",
+              "children": [
+                {"type": "DROPDOWN", "key": "site", "variant": "outline", "placeholder": "All sites", "emptyText": "Site tidak ditemukan", "options": ""},
+                {"type": "DROPDOWN", "key": "date", "variant": "outline", "placeholder": "Today", "emptyText": "Date tidak ditemukan", "options": "Today◆Yesterday◆Last 7 days◆Last 30 days"},
+                {"type": "SPACER"},
+                {"type": "BUTTON", "variant": "outline", "size": "icon", "icon": "FilterIcon", "text": "Filter", "onClick": {"type": "FETCH_CONTENT", "url": "", "method": "POST", "target": "mainContent", "onError": {"toast": "Gagal memuat data"}}},
+                {"type": "BUTTON", "variant": "outline", "size": "default", "icon": "DownloadIcon", "text": "Export", "onClick": {"type": "SUBMIT", "url": "", "method": "POST", "onSuccess": {"toast": "Export berhasil, file akan diunduh"}, "onError": {"toast": "Gagal export data"}}}
+              ]
+            },
+            "spreadsheet": {"id": "mainContent", "src": "", "editable": false},
+            "bottomBar": {
+              "alignment": "end",
+              "children": [
+                {"type": "BUTTON", "variant": "ghost", "size": "default", "text": "Reset", "onClick": {"type": "RESET", "scope": "topbar"}}
+              ]
+            }
+          }
+        },
+        {
+          "label": "Laporan Insiden",
+          "icon": "BookOpenText",
+          "path": "",
+          "key": "laporanInsiden",
+          "urlSheet": "",
+          "parent": "Reports",
+          "pageData": {
+            "topbar": {
+              "alignment": "center",
+              "children": [
+                {"type": "DROPDOWN", "key": "site", "variant": "outline", "placeholder": "All sites", "emptyText": "Site tidak ditemukan", "options": ""},
+                {"type": "DROPDOWN", "key": "date", "variant": "outline", "placeholder": "Today", "emptyText": "Date tidak ditemukan", "options": "Today◆Yesterday◆Last 7 days◆Last 30 days"},
+                {"type": "SPACER"},
+                {"type": "BUTTON", "variant": "outline", "size": "icon", "icon": "FilterIcon", "text": "Filter", "onClick": {"type": "FETCH_CONTENT", "url": "", "method": "POST", "target": "mainContent", "onError": {"toast": "Gagal memuat data"}}},
+                {"type": "BUTTON", "variant": "outline", "size": "default", "icon": "DownloadIcon", "text": "Export", "onClick": {"type": "SUBMIT", "url": "", "method": "POST", "onSuccess": {"toast": "Export berhasil, file akan diunduh"}, "onError": {"toast": "Gagal export data"}}}
+              ]
+            },
+            "spreadsheet": {"id": "mainContent", "src": "", "editable": false},
+            "bottomBar": {
+              "alignment": "end",
+              "children": [
+                {"type": "BUTTON", "variant": "ghost", "size": "default", "text": "Reset", "onClick": {"type": "RESET", "scope": "topbar"}}
+              ]
+            }
+          }
+        },
+        {
+          "label": "Rekap Absensi",
+          "icon": "UsersRound",
+          "path": "/presence",
+          "key": "rekapAbsensi",
+          "urlSheet": "",
+          "parent": "Reports",
+          "pageData": {
+            "topbar": {
+              "alignment": "center",
+              "children": [
+                {"type": "DROPDOWN", "key": "site", "variant": "outline", "placeholder": "All sites", "emptyText": "Site tidak ditemukan", "options": ""},
+                {"type": "DROPDOWN", "key": "date", "variant": "outline", "placeholder": "Today", "emptyText": "Date tidak ditemukan", "options": "Today◆Yesterday◆Last 7 days◆Last 30 days"},
+                {"type": "SPACER"},
+                {"type": "BUTTON", "variant": "outline", "size": "icon", "icon": "FilterIcon", "text": "Filter", "onClick": {"type": "FETCH_CONTENT", "url": "", "method": "POST", "target": "mainContent", "onError": {"toast": "Gagal memuat data"}}},
+                {"type": "BUTTON", "variant": "outline", "size": "default", "icon": "DownloadIcon", "text": "Export", "onClick": {"type": "SUBMIT", "url": "", "method": "POST", "onSuccess": {"toast": "Export berhasil, file akan diunduh"}, "onError": {"toast": "Gagal export data"}}}
+              ]
+            },
+            "spreadsheet": {"id": "mainContent", "src": "", "editable": false},
+            "bottomBar": {
+              "alignment": "end",
+              "children": [
+                {"type": "BUTTON", "variant": "ghost", "size": "default", "text": "Reset", "onClick": {"type": "RESET", "scope": "topbar"}}
+              ]
+            }
+          }
+        },
+        {
+          "label": "Rekap Payroll",
+          "icon": "UsersRound",
+          "path": "/payroll",
+          "key": "rekapPayroll",
+          "urlSheet": "https://docs.google.com/spreadsheets/d/1ixNarZBqwadf3f6NpGXb5GzmhtAIMonh3uYcwWeydkY",
+          "parent": "Reports",
+          "pageData": {
+            "topbar": {
+              "alignment": "center",
+              "children": [
+                {"type": "DROPDOWN", "key": "site", "variant": "outline", "placeholder": "All sites", "emptyText": "Site tidak ditemukan", "options": ""},
+                {"type": "DROPDOWN", "key": "date", "variant": "outline", "placeholder": "Today", "emptyText": "Date tidak ditemukan", "options": "Today◆Yesterday◆Last 7 days◆Last 30 days"},
+                {"type": "SPACER"},
+                {"type": "BUTTON", "variant": "outline", "size": "icon", "icon": "FilterIcon", "text": "Filter", "onClick": {"type": "FETCH_CONTENT", "url": "", "method": "POST", "target": "mainContent", "onError": {"toast": "Gagal memuat data"}}},
+                {"type": "BUTTON", "variant": "outline", "size": "default", "icon": "DownloadIcon", "text": "Export", "onClick": {"type": "SUBMIT", "url": "", "method": "POST", "onSuccess": {"toast": "Export berhasil, file akan diunduh"}, "onError": {"toast": "Gagal export data"}}}
+              ]
+            },
+            "spreadsheet": {"id": "mainContent", "src": "", "editable": false},
+            "bottomBar": {
+              "alignment": "end",
+              "children": [
+                {"type": "BUTTON", "variant": "ghost", "size": "default", "text": "Reset", "onClick": {"type": "RESET", "scope": "topbar"}}
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label": "Request & Approval",
+      "icon": "LayoutDashboard",
+      "path": "",
+      "key": "requestApproval",
+      "urlSheet": "",
+      "children": [
+        {
+          "label": "All Requests",
+          "icon": "BookOpenText",
+          "path": "",
+          "key": "allRequests",
+          "urlSheet": "",
+          "parent": "Request & Approval",
+          "pageData": {
+            "topbar": {
+              "alignment": "center",
+              "children": [
+                {"type": "DROPDOWN", "key": "site", "variant": "outline", "placeholder": "All sites", "emptyText": "Site tidak ditemukan", "options": ""},
+                {"type": "DROPDOWN", "key": "date", "variant": "outline", "placeholder": "Today", "emptyText": "Date tidak ditemukan", "options": "Today◆Yesterday◆Last 7 days◆Last 30 days"},
+                {"type": "SPACER"},
+                {"type": "BUTTON", "variant": "outline", "size": "icon", "icon": "FilterIcon", "text": "Filter", "onClick": {"type": "FETCH_CONTENT", "url": "", "method": "POST", "target": "mainContent", "onError": {"toast": "Gagal memuat data"}}}
+              ]
+            },
+            "spreadsheet": {"id": "mainContent", "src": "", "editable": false},
+            "bottomBar": {
+              "alignment": "end",
+              "children": [
+                {"type": "BUTTON", "variant": "ghost", "size": "default", "text": "Reset", "onClick": {"type": "RESET", "scope": "topbar"}},
+                {"type": "BUTTON", "variant": "default", "size": "default", "icon": "CheckIcon", "text": "Approve", "data": "site", "onClick": {"type": "SUBMIT", "url": "", "method": "POST", "onSuccess": {"toast": "Berhasil disetujui", "then": "REFRESH_CONTENT"}, "onError": {"toast": "Gagal menyetujui"}}}
+              ]
+            }
+          }
+        },
+        {
+          "label": "Approval Queue",
+          "icon": "BookOpenText",
+          "path": "",
+          "key": "approvalQueue",
+          "urlSheet": "",
+          "parent": "Request & Approval",
+          "pageData": {
+            "topbar": {
+              "alignment": "center",
+              "children": [
+                {"type": "DROPDOWN", "key": "site", "variant": "outline", "placeholder": "All sites", "emptyText": "Site tidak ditemukan", "options": ""},
+                {"type": "DROPDOWN", "key": "date", "variant": "outline", "placeholder": "Today", "emptyText": "Date tidak ditemukan", "options": "Today◆Yesterday◆Last 7 days◆Last 30 days"},
+                {"type": "SPACER"},
+                {"type": "BUTTON", "variant": "outline", "size": "icon", "icon": "FilterIcon", "text": "Filter", "onClick": {"type": "FETCH_CONTENT", "url": "", "method": "POST", "target": "mainContent", "onError": {"toast": "Gagal memuat data"}}}
+              ]
+            },
+            "spreadsheet": {"id": "mainContent", "src": "", "editable": false},
+            "bottomBar": {
+              "alignment": "end",
+              "children": [
+                {"type": "BUTTON", "variant": "ghost", "size": "default", "text": "Reset", "onClick": {"type": "RESET", "scope": "topbar"}},
+                {"type": "BUTTON", "variant": "default", "size": "default", "icon": "CheckIcon", "text": "Approve", "data": "site", "onClick": {"type": "SUBMIT", "url": "", "method": "POST", "onSuccess": {"toast": "Berhasil disetujui", "then": "REFRESH_CONTENT"}, "onError": {"toast": "Gagal menyetujui"}}}
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "urlMap": {
+    "induk": {
+      "dashboard": "https://docs.google.com/spreadsheets/d/1FTaIACxtt0KEfj5ycXH50s_MhpmK9eDgibju5K7Hb4A/edit?gid=1380182665#gid=1380182665",
+      "logPresensi": "https://docs.google.com/spreadsheets/d/1r2cZvs0Kwp4O_-9g-XAVicO2D19j3wBERDZ6d5ZLYn8",
+      "laporanPekerjaan": "https://docs.google.com/spreadsheets/d/1BXA0naHnb0Nwj_RylntELcGaryN1ZeXjUQE5sFSjT-A",
+      "daftarPegawai": "https://docs.google.com/spreadsheets/d/18ohF8BQCzw-fm8G1dZUxtqkDVqpe_Yk6awu9jKcI4T4",
+      "admin": "https://docs.google.com/spreadsheets/d/1FTaIACxtt0KEfj5ycXH50s_MhpmK9eDgibju5K7Hb4A/edit?gid=1380182665#gid=1380182665",
+      "presensiHariIni": "https://docs.google.com/spreadsheets/d/1r2cZvs0Kwp4O_-9g-XAVicO2D19j3wBERDZ6d5ZLYn8",
+      "itAdmin": "https://docs.google.com/spreadsheets/d/18ohF8BQCzw-fm8G1dZUxtqkDVqpe_Yk6awu9jKcI4T4"
+    },
+    "kantorPusat": {
+      "admin": "https://docs.google.com/spreadsheets/d/1XTomLvkt3FbPOI6cJWS6mFHzxQDHxv1qQvs7ulKnI4M",
+      "absensi": "https://docs.google.com/spreadsheets/d/1nEjhqVB4f50LFUDGSRlVyIpxUoqMWvj9dG6BygZvO08",
+      "rekapAbsensi": "https://docs.google.com/spreadsheets/d/1thMR9OdhX2fnf6F7PbVjg9W3sGK1rnQ8c7ojH26hD9Y",
+      "rekapPayroll": "https://docs.google.com/spreadsheets/d/1ixNarZBqwadf3f6NpGXb5GzmhtAIMonh3uYcwWeydkY"
+    },
+    "productGroup": {
+      "admin": "https://docs.google.com/spreadsheets/d/1yhRupdq0RabucCMpW0gR7wRTLIuMgZBd3O8CArfhO2Q",
+      "absensi": "https://docs.google.com/spreadsheets/d/1XNtStUSPnRl5wfHFPWGY_LNAhBOxnE_Bm7suRqlfxhk",
+      "rekapAbsensi": "https://docs.google.com/spreadsheets/d/1GY5jS7OQRI2dbLWN8hHJLH9WYz0ZrKIY3sYB3fn023Q",
+      "rekapPayroll": "https://docs.google.com/spreadsheets/d/1C-BqFJbsn6CgCBBY6Ca4yYwHhxOyXdA74-KecNG8G1k"
+    }
+  }
+}

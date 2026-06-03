@@ -1,0 +1,149 @@
+{
+    "title": "Vertika Tekno Lokacipta",
+    "hideBottomBar": true,
+    "children": [
+        {
+            "type": "TXT",
+            "afterSpacing": 0,
+            "size": 4,
+            "data": " "
+        },
+        {
+            "type": "TXT",
+            "size": 18,
+            "data": "Detail Temuan"
+        },
+        {
+            "type": "TXT",
+            "afterSpacing": 0,
+            "size": 4,
+            "data": " "
+        },
+        {
+            "type": "ITEM_CARD_DETAIL",
+            "variant": "detail",
+            "flag": "approve-request-detail",
+            "table": "$test/report-incident//vtl.report-incident",
+            "search": "1◼<request_vid>",
+            "conditions": "[[◀1▶◼<request_vid>]]",
+            "text": "<1>◆<15>◆<19> . <16>◆Dilaporkan oleh◆Waktu Lapor◆Lokasi◆Ditugaskan ke◆Keterangan◆Dokumen Pendukung",
+            "content": "<6>◆<11>◆<14>◆<24> ",
+            "reason": "<18>",
+            "status": "<2>",
+            "image": "<17>"
+        },
+        {
+            "type": "TIMELINE",
+            "variant": "timeline",
+            "flag": "timeline",
+            "table": "$test/report-incident//vtl.report-incident-history",
+            "text": "Riwayat Aktifitas◆<10>◆<30>◆<7>",
+            "search": "1◼<request_vid>"
+        },
+        {
+            "type": "RBT",
+            "alignment": "spaceevenly",
+            "search": "sticky",
+            "children": [
+                {
+                    "text": "Kirim Laporan Lapangan",
+                    "search": "2◼PROSES",
+                    "action": "savesend",
+                    "route": "",
+                    "delay": 5,
+                    "gpsPosition": 2,
+                    "flag": "report-incident",
+                    "buttonColor": "blue",
+                    "textColor": "white",
+                    "updateTableRow": "$test/report-incident//vtl.report-incident⭘tablevid◼20342033315492⭘search◼1★<no_request>⭘<2>◼DITINJAU◆$test/report-incident//vtl.report-incident-history⭘tablevid◼20342033315492⭘search◼1★<no_request>⭘<9>◼DITINJAU",
+                    "addToTable": "$test/report-incident//vtl.report-incident-history⭘retention◼0⭘description◼report-incident-history⭘flag◼report-incident-history⭘tablevid◼20342033315492⭘index◼1★S◼2★S◼3★N◼5★N◼9★S⭘<1>◼<no_request>⭘<2>◼DITINJAU⭘<3>◼87544551624342⭘<4>◼⭘<5>◼87544551624342⭘<6>◼Agenia Demo-7⭘<7>◼◀2|T7|Ddd MMM yyyy HH:mm▶⭘<8>◼◀2▶⭘<9>◼DITINJAU⭘<10>◼Agenia Demo-7⭘<27>◼⭘<28>◼⭘<29>◼⭘<30>◼Laporan Lapangan dikirim - hasil : <22>",
+                    "chain": {
+                        "type": "DO_BOTTOM_SHEET",
+                        "height": "0.7",
+                        "title": "Laporan Lapangan",
+                        "children": [
+                            {
+                                "type": "TXF",
+                                "variant": "text",
+                                "icon": 57527,
+                                "label": "Keterangan Tindakan",
+                                "currentValue": "",
+                                "hint": "Jelaskan kondisi yang ditemukan dan tindakan yang sudah dilakukan",
+                                "maxLength": 0,
+                                "size": 14,
+                                "position": "22",
+                                "line": 3,
+                                "border": true
+                            },
+                            {
+                                "type": "SELECTABLE_BTN",
+                                "variant": "vertical",
+                                "icon": "assessment",
+                                "title": "Hasil Tindakan",
+                                "height": 64,
+                                "position": 23,
+                                "bgSelected": "gray",
+                                "text": "Sudah diperbaiki◆Perlu tindak lanjut◆Menunggu suku cadang◆Eskalasi ke pihak lain"
+                            },
+                            {
+                                "type": "RBT",
+                                "alignment": "center",
+                                "children": [
+                                    {
+                                        "text": "Laporan Dikembalikan",
+                                        "action": "savesend",
+                                        "addToTable": "[ADDTOTABLE1]",
+                                        "updateTableRow": "$test/report-incident//vtl.report-incident⭘tablevid◼20342033315492⭘search◼1★<no_request>⭘<22>◼◁22▷⭘<23>◼◁23▷",
+                                        "route": "",
+                                        "buttonColor": "red",
+                                        "textColor": "white"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "type": "RBT",
+            "alignment": "spaceevenly",
+            "search": "sticky",
+            "children": [
+                {
+                    "text": "Mulai Kerjakan",
+                    "search": "2◼DITINJAU",
+                    "action": "savesend",
+                    "route": "",
+                    "delay": 5,
+                    "gpsPosition": 2,
+                    "flag": "report-incident",
+                    "buttonColor": "blue",
+                    "textColor": "white",
+                    "updateTableRow": "$test/report-incident//vtl.report-incident⭘tablevid◼20342033315492⭘search◼1★<no_request>⭘<2>◼PROSES◆$test/report-incident//vtl.report-incident-history⭘tablevid◼20342033315492⭘search◼1★<no_request>⭘<9>◼PROSES",
+                    "addToTable": "$test/report-incident//vtl.report-incident-history⭘retention◼0⭘description◼report-incident-history⭘flag◼report-incident-history⭘tablevid◼20342033315492⭘index◼1★S◼2★S◼3★N◼5★N◼9★S⭘<1>◼<no_request>⭘<2>◼PROSES⭘<3>◼87544551624342⭘<4>◼Agenia Demo-7⭘<5>◼⭘<6>◼⭘<7>◼◀2|T7|Ddd MMM yyyy HH:mm▶⭘<8>◼◀2▶⭘<9>◼PROSES⭘<10>◼Agenia Demo-7⭘<27>◼⭘<28>◼⭘<29>◼⭘<30>◼Mulai dikerjakan",
+                    "chain": {
+                        "type": "DO_DIALOG",
+                        "title": "Mulai dikerjakan",
+                        "children": [
+                            {
+                                "type": "TXT",
+                                "data": "Laporan mulai dikerjakan."
+                            },
+                            {
+                                "type": "RBT",
+                                "alignment": "center",
+                                "children": [
+                                    {
+                                        "text": "Ok",
+                                        "route": ""
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

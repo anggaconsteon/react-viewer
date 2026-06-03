@@ -1,0 +1,22 @@
+// filter sesuai conditions pada dokument nya
+{
+    "type": "APPROVAL",
+    "ledgerCode": "APPROVE-LEAVE", // DARI PROXY
+    "vidTable": "2321421421421",
+    "table": "test/request-approval//vtl.leave-request",
+    "search": "4◼(Nomer CC)⭘13◼(Status)",
+    "conditions": "[[◀4▶◼83674161979544◁1▷◼APPROVED,◁2▷◼PENDING], [◀4▶◼VID CC 123◁1▷◼PENDING]]",
+    "toDo": "[PENDING, APPROVED, REJECTED]",
+    "buttons": [
+        {
+            "label": "APPROVED",
+            "color": "green",
+            "actions": "◁2▷◼APPROVED⭘◁3▷◼12312312(VID proxy)◁4▷◼Angga(Dari proxy)" // tambah timestamp timezone dan int(epoch)
+        },
+        {
+            "label": "REJECTED",
+            "color": "red",
+            "actions": "◁2▷◼REJECTED⭘◁3▷◼12312312(VID proxy)◁4▷◼Angga(Dari proxy)"
+        }
+    ]
+}

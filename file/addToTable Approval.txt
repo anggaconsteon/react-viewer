@@ -1,0 +1,87 @@
+addToTable: test/request-approval//vtl.leave-request
+⭘retention◼4320
+⭘description◼Leave request for vtl
+⭘flag◼leave-request
+⭘vidTable◼21321312312
+⭘index◼1★S◼2★N◼4★N◼6★N◼10★S◼19★S
+⭘<1>◼◁1▷ AUTO NUMBER(GENERATED)
+⭘<2>◼VID PROXY
+⭘<3>◼Nama PROXY
+⭘<4>◼VID Cost Center PROXY
+⭘<5>◼Nama Cost Center PROXY
+⭘<6>◼VID Site Proxy
+⭘<7>◼Nama Site Proxy
+⭘<8>◼◀2|T7|Ddd MMM yyyy HH:mm▶
+⭘<9>◼◀2▶ // time epoch 
+⭘<10>◼◁10▷ // Jenis Request
+⭘<11>◼◁3▷ Reason for leave request(dari user) 
+⭘<12>◼◁4▷ Attachment/image (untuk bukti)
+⭘<13>◼◁5▷ Start Date 
+⭘<14>◼◁5|T7|Ddd MMM yyyy HH:mm▷
+⭘<15>◼◁6▷ End Date 
+⭘<16>◼◁6|T7|Ddd MMM yyyy HH:mm▷
+⭘<17>◼◁7▷ Jumlah Hari
+⭘<18>◼◁8▷ Nama Pengganti
+⭘<19>◼◁9▷PENDING
+⭘<20>◼[]
+⭘<21>◼[[1, PENDING, , , ], [2, PENDING, , , ]] // index 1 : level, index 2 : status approval, index 3 : VID, index 4 : nama, index 5 : time epoch approval
+
+
+addToTable: test/request-approval//vtl.leave-request
+⭘retention◼4320
+⭘description◼Leave request for vtl
+⭘flag◼leave-request
+⭘vidTable◼21321312312
+⭘index◼1★S◼2★N◼4★N◼6★N◼10★S◼19★S
+⭘<1>◼◁1▷ AUTO NUMBER(GENERATED)
+⭘<2>◼◁9▷PENDING
+⭘<3>◼[] // INI COMMENT
+⭘<4>◼[[1, PENDING, , , ], [2, PENDING, , , ]] // index 1 : level, index 2 : status approval, index 3 : VID, index 4 : nama, index 5 : time epoch approval
+⭘<5>◼VID PROXY
+⭘<6>◼Nama PROXY
+⭘<7>◼VID Cost Center PROXY
+⭘<8>◼Nama Cost Center PROXY
+⭘<9>◼VID Site Proxy
+⭘<10>◼Nama Site Proxy
+⭘<11>◼◀2|T7|Ddd MMM yyyy HH:mm▶
+⭘<12>◼◀2▶ // time epoch 
+⭘<13>◼◁10▷ // Jenis Request
+⭘<14>◼◁3▷ Reason for leave request(dari user) 
+⭘<15>◼◁4▷ Attachment/image (untuk bukti)
+⭘<16>◼◁5▷ Start Date 
+⭘<17>◼◁5|T7|Ddd MMM yyyy HH:mm▷
+⭘<18>◼◁6▷ End Date 
+⭘<19>◼◁6|T7|Ddd MMM yyyy HH:mm▷
+⭘<20>◼◁7▷ Jumlah Hari
+⭘<21>◼◁8▷ Nama Pengganti
+
+
+
+="$test/dev/request-approval//vtl.leave-request
+⭘retention◼4320
+⭘description◼Leave request for vtl
+⭘flag◼leave-request
+⭘tablevid◼20342033315492
+⭘index◼1★S◼5★N◼7★N◼9★N◼13★S◼2★S
+⭘<1>◼◁17▷
+⭘<2>◼◁9▷
+⭘<3>◼[]
+⭘<4>◼[[1, PENDING, , , ], [2, PENDING, , , ]]
+⭘<5>◼"&Settings!$B$1&"
+⭘<6>◼"&Settings!$B$2&"
+⭘<7>◼"&'op1'!$K$8&"
+⭘<8>◼"&'op1'!$L$8&"
+⭘<9>◼"&'op1'!$K$7&"
+⭘<10>◼"&'op1'!$L$7&"
+⭘<11>◼◀2|T"&System!$B$3&"|Ddd MMM yyyy HH:mm▶
+⭘<12>◼◀2▶
+⭘<13>◼◁10▷
+⭘<14>◼◁3▷  
+⭘<15>◼◁4▷ 
+⭘<16>◼◁5▷  
+⭘<17>◼◁5|T7|Ddd MMM yyyy HH:mm▷
+⭘<18>◼◁6▷  
+⭘<19>◼◁6|T7|Ddd MMM yyyy HH:mm▷
+⭘<20>◼◁7▷
+⭘<21>◼◁8▷
+⭘<30>◼Tanggal ◁5|T7|Ddd MMM yyyy▷ sampai ◁6|T7|Ddd MMM yyyy▷, jumlah ◁7▷ hari, dengan pengganti ◁8▷"
