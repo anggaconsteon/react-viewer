@@ -45,9 +45,9 @@ Alur navigasi: kartu cost center → panel "Patroli & Cleaning" → `patroliClea
 ```json
 {
   "type": "LIST_MULTIPLE_PANEL_CARD",
-  "ledgerCode": "workforce",
+  "ledgerCode": "site",
   "vidtable": "{tablevid}",
-  "table": "$test/{tenantVid}/ref/{site}//workforce",
+  "table": "$test/{tenantVid}//site",
   "search": "",
   "toDo": "",
   "text": "◆<an>◆<sn>◆Cari cost center◆Ketik nama cost center◆Data tidak ditemukan",
@@ -60,7 +60,7 @@ Alur navigasi: kartu cost center → panel "Patroli & Cleaning" → `patroliClea
   ]
 }
 ```
-1 widget = search → ringkasan status → grup status (accordion danger→warn→ok) → kartu (header + strip `{ws}` + 2 panel nav). Sumber: doc workforce (`an`/`sn`/`nm`/`ll`).
+1 widget = search → ringkasan status → grup status (accordion danger→warn→ok) → kartu (header + strip `{ws}` + 2 panel nav). Sumber: collection `site`, satu doc = satu cost center (`<an>`=cost center name, `<sn>`=site name, `<nm>`, `<av>`/`<sv>`, `<st>`, dan array `ll`=array of objects {ln,li,la,lo,ra}). Pegawai (panel Kehadiran) = collection `workforce` TERPISAH, join via `<av>`.
 
 ### 2.2 list site detail — `LIST_STATISTIC_CARD`
 ```json
@@ -68,8 +68,9 @@ Alur navigasi: kartu cost center → panel "Patroli & Cleaning" → `patroliClea
   "type": "LIST_STATISTIC_CARD",
   "ledgerCode": "event-patrol",
   "vidtable": "{tablevid}",
-  "table": "$test/{tenantVid}/ref/{site}//workforce",
-  "search": "",
+  "table": "$test/{tenantVid}//site",
+  "search": "av◼{ccVid}",
+  "conditions": "[[◀av▶◼{ccVid}]]",
   "text": "Cari titik◆Ketik nama titik◆Data tidak ditemukan",
   "period": "24 jam◼86400000★7 hari◼604800000★30 hari◼2592000000",
   "periodDefault": "86400000",
@@ -80,7 +81,7 @@ Alur navigasi: kartu cost center → panel "Patroli & Cleaning" → `patroliClea
   "route": "patroliCleaningPointTimeline"
 }
 ```
-1 widget = tab periode + 3 box statistik + search + kartu titik (1 kartu = 1 route). Titik authoritative = array `ll` doc workforce (titik 0-kunjungan harus dari `ll`). Visit = event ledger, join `ln` event == nama di `ll` (exact match).
+1 widget = tab periode + 3 box statistik + search + kartu titik (1 kartu = 1 route). Data source = SATU doc `site` (filter `<av>`==`{ccVid}` inject), expand array `ll[]` jadi titik (titik 0-kunjungan harus dari `ll`). Visit = event ledger, join event `lq` == `ll[].li` (fallback `ln`==`ll[].ln` exact match).
 
 ### 2.3 timeline — `TIMELINE` variant `periodic`
 ```json
@@ -140,47 +141,44 @@ Variant `periodic` = variant general (bukan khusus patrol; variant biasa = `time
 
 ## 6. TESTING — seed data dummy lewat form report-patrol
 
-Belum ada data live. Akal-akalan: pakai **form report-patrol** (ada `addToEvent`) buat seed. 1 submit = **2 insert** (pisah `◆`):
-
-1. **Doc 1 → `event`** (kunjungan, gambar bawah whiteboard).
-2. **Doc 2 → `workforce`** (master cost center + `ll`, gambar atas whiteboard).
+⚠️ **UPDATE (2026-06-03, real Firebase):** doc `site` cost center (`84214220504259//site`, vid `83674161979544`) **SUDAH ADA** — `an`/`sn`/`nm`/`st` terisi + array `ll` (array of objects {ln,li,la,lo,ra}). Jadi **doc-2 (workforce master) OBSOLETE** — gak usah seed lagi. Cuma perlu seed **EVENT (doc-1)** biar kunjungan keliatan. 1 submit = **1 insert** event.
 
 ### addToEvent (copy ke RBT `addToEvent` form report-patrol)
 ```
-$test/84214220504259//event⭘r◼4320⭘tablevid◼20342033315492⭘fc◼report-patrol⭘ty◼report-patrol⭘p◼vertikaTeknoLokaciptaReportPatrol⭘t◼◀2|T7|epoch▶⭘ts◼◀2|T7|Ddd MMM yyyy HH:mm▶⭘cv◼87544551624342⭘cn◼Agenia Demo-7⭘av◼83674161979544⭘an◼Product Group⭘sv◼83674161979544⭘sn◼Product Group⭘ln◼◁11▷⭘lq◼◁5▷⭘d◼◁10▷⭘i◼◁3▷◆$test/84214220504259/ref/83674161979544//workforce⭘r◼4320⭘ty◼workforce⭘t◼◀2|T7|epoch▶⭘ts◼◀2|T7|Ddd MMM yyyy HH:mm▶⭘av◼83674161979544⭘an◼Product Group⭘sv◼83674161979544⭘sn◼Product Group⭘nm◼5⭘ll◼BSD Tech Center #18★BSD Tech Center #26★Bandung Tech Center★Bali Tech Center★Michelia Satellite★Cibadak★Client
+$test/84214220504259//event⭘r◼4320⭘tablevid◼20342033315492⭘fc◼report-patrol⭘ty◼report-patrol⭘p◼vertikaTeknoLokaciptaReportPatrol⭘t◼◀2|T7|epoch▶⭘ts◼◀2|T7|Ddd MMM yyyy HH:mm▶⭘cv◼87544551624342⭘cn◼Agenia Demo-7⭘av◼83674161979544⭘an◼A Product Group⭘sv◼83674161979544⭘sn◼S Product Group⭘ln◼◁11▷⭘lq◼◁5▷⭘d◼◁10▷⭘i◼◁3▷
 ```
 
-### Nilai dummy tenant/cc/site
+### Nilai dummy tenant/cc/site (real)
 | Item | Value |
 |---|---|
 | tenant vid | `84214220504259` |
 | tenant nama | Vertika Tekno Lokacipta |
 | cost center vid (`av`) | `83674161979544` |
-| cost center nama (`an`) | Product Group |
+| cost center nama (`an`) | A Product Group |
 | site vid (`sv`) | `83674161979544` |
-| site nama (`sn`) | Product Group |
-| location list (`ll`) | BSD Tech Center #18, BSD Tech Center #26, Bandung Tech Center, Bali Tech Center, Michelia Satellite, Cibadak, Client |
+| site nama (`sn`) | S Product Group |
+| titik (`ll[]`) | array of objects di doc `site`; join event via `lq`==`ll[].li` |
 
 ### Mapping posisi form (dari addToTable + displayList `content`)
-- pos `◁5▷` = QR mentah hasil scan → `lq`.
+- pos `◁5▷` = QR mentah hasil scan → `lq` (HARUS == salah satu `ll[].li` real biar nyambung ke titik).
 - pos `◁11▷` = nama lokasi resolved → `ln` (set `"locationNamePosition":"11"` di txf qrScan, ganti placeholder `[LOCATIONNAMEPOSITION]`).
 - pos `◁10▷` = Keterangan → `d`. pos `◁3▷` = images → `i`. pos `◁12▷` = RDO kondisi lapangan.
 
 ### Field event yang DIBENERIN vs form lama
-`t` (epoch, REQUIRED+window/gap), `ln`, `lq`, `av` = **ditambah** (sebelumnya hilang). `an` diperbaiki jadi nama (dulu keisi VID). `sn`/`sv` diperbaiki jadi literal site nama/vid (dulu salah `◁5▷`/`◁11▷`).
+`t` (epoch, REQUIRED+window/gap), `ln`, `lq`, `av` = **ditambah** (sebelumnya hilang). `an` diperbaiki jadi nama cost center ("A Product Group", dulu keisi VID). `sn`/`sv` diperbaiki jadi literal site nama/vid (dulu salah `◁5▷`/`◁11▷`).
 
-### Sumber data per layar (kenapa butuh 2 insert)
-| Layar | Baca | Cukup addToEvent doc-1 (event)? |
+### Sumber data per layar
+| Layar | Baca | Perlu seed? |
 |---|---|---|
-| timeline | event doang | ✅ ya |
-| list site detail | `ll` (workforce) + event | ❌ butuh doc-2 (workforce) |
-| list cost center | workforce (`an`/`sn`/`nm`/`ll`) | ❌ butuh doc-2 (workforce) |
+| timeline | event doang | seed event |
+| list site detail | doc `site` (`ll[]`) + event | doc `site` udah ada → seed event aja |
+| list cost center | doc `site` (`an`/`sn`/`nm`/`ll`) + `workforce` (kehadiran) | doc `site` udah ada → seed event (+ workforce kalau mau test panel Kehadiran) |
 
 ### Caveat testing
-- **Doc 2 = master data (1 doc per site, idealnya SEKALI).** Kalau tiap submit insert workforce lagi → kartu cost center dobel. Saran: seed SEKALI, lalu buang blok doc-2, sisain doc-1 buat nambah kunjungan.
-- **Verifikasi path doc 2:** `ref/83674161979544//workforce` (analog `//event`). Kalau workforce di-key by cc vid sbg doc id → mungkin `ref/83674161979544/workforce/83674161979544`. Cek struktur Firestore.
-- **Verifikasi `ll` array:** encode pakai `★`; pastiin parser baca jadi array.
+- **Doc `site` udah ada** → JANGAN insert ulang (nanti dobel). Cukup seed EVENT.
+- **`lq` event WAJIB match `ll[].li`** dari doc site real biar kunjungan masuk ke titik yang bener. Ambil `li` real dari doc, jangan ngarang.
 - **`ty` konsisten:** form nulis `ty◼report-patrol`; read-side 3 layar HARUS filter `ty◼report-patrol` (bukan `patrol`).
+- **Panel Kehadiran** (list cost center) baca collection `workforce` TERPISAH — kalau mau test panel itu, seed doc workforce (pegawai) sendiri; gak perlu buat patroli/cleaning.
 
 ---
 
@@ -188,7 +186,7 @@ $test/84214220504259//event⭘r◼4320⭘tablevid◼20342033315492⭘fc◼report
 
 1. Render 2 type baru (`LIST_MULTIPLE_PANEL_CARD`, `LIST_STATISTIC_CARD`) + variant `periodic` di `TIMELINE`.
 2. `{type}` (kategori titik PATROLI/CLEANING) — sumber dari `ll` atau derive dari `ty` event? (belum diputus)
-3. Konfirmasi char-code nama cost center: `<an>` vs `<sn>` di kartu cost center.
+3. ✅ RESOLVED (real data): `<an>`=cost center name ("A Product Group"), `<sn>`=site name ("S Product Group").
 4. Token inject konteks (analog `<request_vid>`) — nama final buat filter titik+site di timeline & cost-center→detail.
 5. Threshold stale/gap (`43200000` ms) — taruh di mana biar configurable.
 6. `{llCount}` = `ll.length` — token/syntax frontend-nya apa.
@@ -229,7 +227,7 @@ Ini jejak proses (2026-06-02). AI baru: baca biar gak ngusulin approach yang uda
 | Nama variant | `patrolVisit` | `periodic` | User mau nama general (variant ini umum, kebetulan dipake report visit). |
 | Period config | label+timestamp (instinct) → label◼code keyword (validated) → **label◼offsetMs ms** | `label◼offsetMs` (ms offset) | User minta epoch biar gampang dev. Reversal dari keyword; trade: tab kalender di-drop jadi rolling. |
 | Navigasi | invent `passParams`/`peekTailRoute`/`stripByStatus`/`filterTarget` | TIDAK ada — token inject otomatis (`<request_vid>`/`{docId}`) + `route` | Field-field itu gak ada di pattern live. User: "kasih field mirip pattern biasa". |
-| Seed test data | form addToEvent cuma punya field Event (kurang `t`/`ln`/`lq`/`av`, `an` keisi VID) | 2-doc addToEvent (event + workforce) pisah `◆`, field dibenerin | Layar baca 2 sumber (event + workforce `ll`); butuh seed dua-duanya. |
+| Seed test data | form addToEvent cuma punya field Event (kurang `t`/`ln`/`lq`/`av`, `an` keisi VID) → 2-doc (event + workforce) | **1-doc EVENT aja** (field dibenerin) | Revisi 2026-06-03: doc `site` real SUDAH ADA (`an`/`sn`/`nm`/`ll` of objects). Doc-2 workforce master OBSOLETE. `lq` event harus match `ll[].li` real. |
 
 **Pelajaran utama buat AI:** (1) Kalau render genuinely gak ada → usulin type/variant BARU yang bersih, jangan overload type lain. (2) Tapi pilih nama SEKALI, jangan rename berulang. (3) Pakai field name dari pattern live (`json/list-item-card.json`, `json/report-incident-log.json`, dll), jangan ngarang prop. (4) User pegang keputusan final — kalau dia override rekomendasi, ikutin + catat alasannya.
 
@@ -241,8 +239,10 @@ Ini jejak proses (2026-06-02). AI baru: baca biar gak ngusulin approach yang uda
 
 **Meta:** `r` retention(menit, REQ) · `fc` ledger code · `tablevid` collection VID · `p` page ref(B) · `et` event time(A) · `ld` ledger ref(D) · `ev` event ref(C).
 **Content:** `ty` type(REQ) · `t` epoch ms(REQ) · `ts` time string(REQ) · `ln` location name · `lq` QR id · `i` image url · `d` description · `cv` creator VID(user) · `cn` creator name · `av` cost center VID · `an` cost center name · `sv` site VID · `sn` site name · `cl` checklist · `rf` ref id (bridge ke main table/approval chain; `<no_request>`=auto, `◁N▷`=form, literal, atau omit).
-**Route/tenant:** `tv` tenant VID · `tn` tenant name · `st` status · `nm` number · `ll` location list (Array, pisah `★`).
-**Workforce (per-pegawai):** `VID` id pegawai · `n` name · `ci` clock in · `co` clock out · `is` in string · `os` out string · `st` status · `ta` task (rename dari `t` — `t` reserved buat timestamp).
+**Route/tenant:** `tv` tenant VID · `tn` tenant name · `st` status · `nm` number. (Catatan: di doc `site` real, `ll` = array of objects — lihat baris "Doc `site`" di bawah, BUKAN string `★`.)
+**Workforce (per-pegawai, collection `workforce` TERPISAH):** `VID` id pegawai · `n` name · `ci` clock in · `co` clock out · `is` in string · `os` out string · `st` status · `ta` task (rename dari `t` — `t` reserved buat timestamp). Join ke cost center via `av`/`sv`.
+
+**Doc `site` (real, collection `//site`, 1 doc = 1 cost center):** `an` cost center name ("A Product Group") · `sn` site name ("S Product Group") · `av` cost center VID · `sv` site VID · `nm` headcount needed · `st` status ("active") · `af`/`sf` slug ("vtl◆product-group") · `en` blob terenkripsi (jangan render) · **`ll` = ARRAY OF OBJECTS**, tiap titik `{ ln nama titik, li id/QR (==event lq), la lat, lo lng, ra radius }`.
 
 **Token timestamp:** `◀2|T7|epoch▶` (epoch ms) · `◀2|T7|Ddd MMM yyyy HH:mm▶` (formatted). `T7` = timezone Asia/Jakarta UTC+7. Multi-doc pisah `◆`.
 

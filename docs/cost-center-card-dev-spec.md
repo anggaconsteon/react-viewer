@@ -32,9 +32,9 @@ Solusi: **type baru `LIST_MULTIPLE_PANEL_CARD`** (sibling LIST_ITEM_CARD). Pinje
 ```json
 {
   "type": "LIST_MULTIPLE_PANEL_CARD",
-  "ledgerCode": "workforce",
+  "ledgerCode": "site",
   "vidtable": "{tablevid}",
-  "table": "$test/{tenantVid}/ref/{site}//workforce",
+  "table": "$test/{tenantVid}//site",
   "search": "",
   "toDo": "",
   "text": "◆<an>◆<sn>◆Cari cost center◆Ketik nama cost center◆Data tidak ditemukan",
@@ -59,7 +59,7 @@ Solusi: **type baru `LIST_MULTIPLE_PANEL_CARD`** (sibling LIST_ITEM_CARD). Pinje
 ```
 
 - field list-level (`ledgerCode`/`vidtable`/`table`/`search`/`toDo`/`showIcon`/`showProgress`) = pinjem persis dari `LIST_ITEM_CARD` biar dev familiar.
-- `text` (level atas) = dipack `◆`: slotJudulKosong◆`<an>`◆`<sn>`◆labelSearch◆hint◆emptyText. Slot judul kosong (title di app bar, BUKAN bagian widget); leading `◆` = canonical (lihat `json/list-item-card.json`). Search = "Cari cost center". Header kartu: baris-atas = nama cost center (`<an>`), baris-bawah = site (`<sn>`) — **konfirmasi char-code mana yang nama cost center.**
+- `text` (level atas) = dipack `◆`: slotJudulKosong◆`<an>`◆`<sn>`◆labelSearch◆hint◆emptyText. Slot judul kosong (title di app bar, BUKAN bagian widget); leading `◆` = canonical (lihat `json/list-item-card.json`). Search = "Cari cost center". Header kartu: baris-atas = nama cost center (`<an>` = "A Product Group"), baris-bawah = site (`<sn>` = "S Product Group"). ✅ **Konfirmasi real data: `<an>`=cost center name, `<sn>`=site name.**
 - `status` (level atas) = warna strip kiri kartu = status terburuk antar panel (`{ws}`).
 - `panels` = array panel nav, di-render per kartu. Tiap panel: `icon` + `text` (label◆headline◆details) + `status` (pill) + `route`. Beda dari `buttons` LIST_ITEM_CARD (itu aksi+dialog, bukan nav).
 
@@ -69,37 +69,55 @@ Solusi: **type baru `LIST_MULTIPLE_PANEL_CARD`** (sibling LIST_ITEM_CARD). Pinje
 
 | Notasi | Arti | Siapa isi |
 |--------|------|-----------|
-| `<...>` | Field yang **sudah ada di storage** (char-code dari schema workforce) | system (read langsung) |
+| `<...>` | Field yang **sudah ada di storage** (char-code dari doc `site`) | system (read langsung) |
 | `{...}` | Variable yang **dev harus hitung / inject** | developer |
 
-### Field storage `<>` (sudah ada — schema `ref/workforce`)
+### Field storage `<>` (sudah ada — doc `site`, real Firebase)
 
-| Token | Arti |
-|-------|------|
-| `<sn>` | site name |
-| `<an>` | cost center / area name |
-| `<nm>` | headcount needed (jumlah pegawai dibutuhkan) |
-| `<sv>` `<av>` | site VID / cost center VID (untuk konteks route) |
+Sumber: `$test/84214220504259//site` → satu doc = satu cost center.
+
+| Token | Arti | Contoh nilai (real) |
+|-------|------|---------------------|
+| `<an>` | **cost center name** (baris-atas header kartu) | `A Product Group` |
+| `<sn>` | **site name** (baris-bawah header kartu) | `S Product Group` |
+| `<av>` | cost center VID | `83674161979544` |
+| `<sv>` | site VID | `83674161979544` |
+| `<nm>` | headcount needed (jumlah pegawai dibutuhkan) | `2` |
+| `<st>` | status doc | `active` |
+| `<af>` `<sf>` | slug/path (`tenant◆cost-center`) | `vtl◆product-group` |
+| `<en>` | blob terenkripsi (jangan render) | — |
+
+**`ll` = array of OBJECTS** (location list, di doc `site`). Tiap elemen titik:
+
+| Field obj | Arti |
+|-----------|------|
+| `ln` | nama titik (join key ke event `ln`) |
+| `li` | id titik / QR id (== event `lq`) |
+| `la` `lo` | latitude / longitude |
+| `ra` | radius (m) |
 
 ### Variable `{}` (dev buat)
 
 | Token | Arti | Asal hitung |
 |-------|------|-------------|
-| `{llCount}` | jumlah titik | **frontend** `ll.length` (array `ll` di doc workforce) |
-| `{hadir}` | jumlah pegawai hadir | count workforce |
+| `{llCount}` | jumlah titik | **frontend** `ll.length` (array `ll` di doc `site`) |
+| `{hadir}` | jumlah pegawai hadir | count `workforce` (collection terpisah) |
 | `{issues}` | teks masalah ("2 belum scan, 1 lupa clock-out") | count workforce |
 | `{ps}` | status panel kehadiran (`ok`/`warn`/`danger`) | derived |
 | `{staleCount}` | jumlah titik jeda lama | aggregate event |
 | `{longestGap}` | jeda terlama (jam) | aggregate event |
 | `{qs}` | status panel patroli (`ok`/`warn`/`danger`) | derived |
 | `{ws}` | worst status per kartu (`danger`/`warn`/`ok`) | derived: status terburuk antar 2 panel. Dipakai: strip kiri kartu + grup accordion + ringkasan |
-| `{tenantVid}` `{site}` | segment path dinamis (inject, analog `{docId}`) | system |
+| `{tenantVid}` | segment path tenant (inject, analog `{docId}`) | system |
+| `{ccVid}` | konteks cost center (`<av>`) yang di-inject ke page tujuan saat panel di-tap; page tujuan filter sendiri | system |
 
 ---
 
 ## 4. Logic perhitungan (untuk dev)
 
-### 4.1 Panel Kehadiran (dari `ref/workforce`, sub-doc per pegawai)
+### 4.1 Panel Kehadiran (dari collection `workforce` — TERPISAH dari `site`)
+
+⚠️ Pegawai **tidak** di doc `site`. Mereka di collection sibling `workforce` (`$test/{tenantVid}//workforce`). Join ke cost center via `sv`/`av` (cost center VID) == `<av>` doc site.
 
 Field pegawai: `ci` (clock in), `co` (clock out).
 
@@ -128,9 +146,9 @@ jeda_titik   = now − MAX(t WHERE ln = titik AND ty = patrol)   // ms
 
 ### 4.3 Join event ↔ titik
 
-- Daftar titik = array `ll` (location list) di doc workforce.
-- Event nyambung ke titik via **`ln` (event) == nama di `ll` (exact match)**.
-- ⚠️ Lokasi yang diketik manual harus **persis sama** dengan nama di `ll`. Kalau beda (typo/spasi) → event orphan, tidak masuk titik manapun.
+- Daftar titik = array `ll` (array of objects) di doc `site`. Nama titik = `ll[].ln`.
+- Event nyambung ke titik via **`lq` (event, QR id) == `ll[].li` (id titik)** — match by id, robust. (Fallback: `ln` event == `ll[].ln` kalau scan manual tanpa QR.)
+- ⚠️ Lokasi yang diketik manual (tanpa QR) match pakai `ln` string — harus **persis sama** dengan `ll[].ln`. Beda (typo/spasi) → event orphan, tidak masuk titik manapun.
 - Titik di `ll` yang **belum ada event sama sekali** = belum pernah dipatroli. Saran: hitung sebagai jeda lama tapi label "belum pernah" (bukan "X jam"). **Keputusan final dev.**
 
 ### 4.4 Ringkasan status + grup accordion (dari `{ws}` tiap kartu)
@@ -157,7 +175,7 @@ Renderer kelompokkan kartu per `{ws}`, render accordion + baris ringkasan. Hitun
 1. **Render type baru `LIST_MULTIPLE_PANEL_CARD`** — sibling `LIST_ITEM_CARD` + array `panels`. Layout: header (`text`) + strip warna (`status`) + N panel (tiap panel: icon + label + status pill + headline + details + chevron + route).
 2. **`{llCount}`** = `ll.length` dihitung frontend — token/syntax-nya apa?
 3. **Token inject konteks cost-center** ke page tujuan (analog `<request_vid>` / `{docId}`) — namanya apa? Page tujuan akan filter sendiri pakai `search: "<col>◼<token>"` + `conditions`.
-4. **Penempatan di `text`** — `LIST_ITEM_CARD` pack semua di `text` (gak ada `content` terpisah). Urutan diusulkan: `judul◆<sn>◆<an>◆labelSearch◆hint`. Konfirmasi urutan.
+4. **Penempatan di `text`** — `LIST_ITEM_CARD` pack semua di `text` (gak ada `content` terpisah). Urutan diusulkan: `judul◆<an>◆<sn>◆labelSearch◆hint`. Konfirmasi urutan.
 5. **Threshold jeda (`43200000` ms = 12 jam)** — taruh di mana biar configurable (ms, konsisten sama `period` layar lain)?
 6. **Kosakata status** — konfirmasi nilai (`ok`/`warn`/`danger`) + mapping warna (hijau/kuning/merah) + label (Aman/Beres untuk `ok`).
 7. **Grup status + ringkasan** — di-render frontend dari `{ws}` tiap kartu (accordion danger→warn→ok + baris count)? Atau perlu config field di sheet?

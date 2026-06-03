@@ -27,8 +27,9 @@ Layar detail satu cost center: daftar titik patroli & cleaning (Gudang Bahan, Ge
   "type": "LIST_STATISTIC_CARD",
   "ledgerCode": "event-patrol",
   "vidtable": "{tablevid}",
-  "table": "$test/{tenantVid}/ref/{site}//workforce",
-  "search": "",
+  "table": "$test/{tenantVid}//site",
+  "search": "av◼{ccVid}",
+  "conditions": "[[◀av▶◼{ccVid}]]",
   "text": "Cari titik◆Ketik nama titik◆Data tidak ditemukan",
   "period": "24 jam◼86400000★7 hari◼604800000★30 hari◼2592000000",
   "periodDefault": "86400000",
@@ -41,6 +42,7 @@ Layar detail satu cost center: daftar titik patroli & cleaning (Gudang Bahan, Ge
 ```
 
 - Field list-level (`ledgerCode`/`vidtable`/`table`/`search`/`text`/`route`) = mirip `LIST_ITEM_CARD`.
+- ⚠️ **Data source = SATU doc `site`** (cost center yang di-tap, match `<av>`==`{ccVid}` inject), bukan collection event. Tiap kartu titik = satu elemen `ll[]` di doc itu (nama = `ll[].ln`). Agregat kunjungan = left-join event ledger per titik (lihat §5.1).
 - `period` = tab bar. Tiap tab `label◼offsetMs`, `★` antar tab. `periodDefault` = offset tab aktif awal.
 - `stats` = 3 box statistik. Tiap box `value◆label`, `★` antar box.
 - `content` = template kartu titik, dipack `◆` (nama◆tipe◆baris terakhir◆baris jumlah).
@@ -76,7 +78,8 @@ Layar detail satu cost center: daftar titik patroli & cleaning (Gudang Bahan, Ge
 
 | Token | Arti |
 |-------|------|
-| `<ln>` | nama titik (dari array `ll` di doc workforce) |
+| `<ln>` | nama titik (`ll[].ln`, array of objects di doc `site`) |
+| `<li>` | id titik / QR id (`ll[].li`, join ke event `lq`) |
 
 ### Variable `{}` (dev hitung)
 
@@ -92,7 +95,8 @@ Layar detail satu cost center: daftar titik patroli & cleaning (Gudang Bahan, Ge
 | `{totalVisits}` | total kunjungan dalam window | COUNT semua event (`ty` patrol/clean) dalam window |
 | `{noVisitCount}` | titik tanpa kunjungan | COUNT titik di `ll` yang 0 event dalam window |
 | `{typedCount}` | lokasi diketik manual | COUNT event dalam window yang lokasinya diketik (tanpa QR `lq`) |
-| `{tablevid}` `{tenantVid}` `{site}` | segment dinamis (inject) | system |
+| `{tablevid}` `{tenantVid}` | segment dinamis (inject) | system |
+| `{ccVid}` | konteks cost center (`<av>`) yang di-inject dari kartu cost center; widget filter doc `site` ini | system |
 
 ---
 
@@ -100,9 +104,9 @@ Layar detail satu cost center: daftar titik patroli & cleaning (Gudang Bahan, Ge
 
 ### 5.1 Sumber data
 
-- **Titik (authoritative)** = array `ll` di doc workforce. Titik 0-kunjungan WAJIB dari `ll` (gak ada di event ledger) → dibutuhkan untuk `{noVisitCount}`.
+- **Titik (authoritative)** = array `ll` (array of objects) di doc `site` cost center ini. Titik 0-kunjungan WAJIB dari `ll` (gak ada di event ledger) → dibutuhkan untuk `{noVisitCount}`.
 - **Kunjungan** = event ledger (`event/content`), field `ty` (type), `t` (epoch), `ln` (location name), `cn` (creator), `lq` (QR id).
-- Dev expand `ll` → baris, left-join agregat event per titik (join `ln` event == nama di `ll`, **exact match**).
+- Dev expand `ll[]` → baris, left-join agregat event per titik (join event `lq` == `ll[].li`; fallback event `ln` == `ll[].ln` exact match untuk scan manual).
 
 ### 5.2 Per kartu titik (dalam window aktif)
 
