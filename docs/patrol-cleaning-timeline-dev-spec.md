@@ -23,19 +23,26 @@ Riwayat kunjungan satu titik (mis. Gudang Bahan): daftar kronologis tiap kunjung
   "type": "TIMELINE",
   "variant": "periodic",
   "flag": "timeline",
-  "ledgerCode": "event-patrol",
-  "table": "$test/{tenantVid}/event//{eventTable}",
+  "vidtable": "20342033315492",
+  "table": "84214220504259//event",
   "search": "ln◼<point>",
-  "conditions": "[[◀ln▶◼<point>◁site▷◼<site>]]",
+  "conditions": "[[◀ln▶◼<point>◀ty▶◼report-patrol]]",
   "period": "24 jam◼86400000★7 hari◼604800000★30 hari◼2592000000",
   "periodDefault": "604800000",
   "title": "<ln>",
-  "subtitle": "{type} · {visitCount} Kunjungan Periode Ini",
+  "subtitle": "{visitCount} Kunjungan Periode Ini",
   "text": "<ts>◆oleh <cn>◆{method}◆<d>",
   "badge": "{evidence}",
-  "divider": "{gap}"
+  "divider": "{gap}",
+  "image": "<i>"
 }
 ```
+
+> **Sinkron ke live JSON + refactor (2026-06-11):**
+> - **`ledgerCode` DIBUANG (confirmed 2026-06-11).** `ledgerCode` cuma buat **addToEvent**, TIDAK kepake read/list → dibuang dari semua list widget. Engine pilih strategy `{method}`/`{evidence}` via `type`+`variant:"periodic"`, bukan `ledgerCode`. (Sama kaya `LIST_MULTIPLE_PANEL_CARD` & `LIST_STATISTIC_CARD`.)
+> - **`computeMode` TIDAK dipakai** (live JSON gak punya; proposal di `timeline-periodic-dynamic.md` ditolak — derivasi = default behavior type+variant, generic reuse = pakai `<charcode>`).
+> - `subtitle` = `{visitCount} Kunjungan Periode Ini` (drop prefix `{type}` — resolve §7.3). `table`/`conditions` = bentuk konkret live (filter `ty◼report-patrol`, bukan `<site>`).
+> - `variant:"periodic"` & evidence vocab "Bukti kuat"/"GPS saja" = SUDAH konsisten, tak berubah.
 
 - `variant: "periodic"` = variant baru (biasa `timeline`). Renderer pakai variant ini buat layout title+subtitle+range tab.
 - `table` = **event ledger** (bukan workforce). Dev isi nama collection event (`{eventTable}`).

@@ -1,0 +1,68 @@
+{
+    "title": "Vertika Tekno Lokacipta",
+    "hideBottomBar": true,
+    "children": [
+        {
+            "type": "ROUTE_PROGRESS_HEADER",
+            "variant": "identityOnly",
+            "table": "84214220504259//workforce",
+            "search": "VID◼{driverVid}",
+            "nameField": "n",
+            "vehicleTable": "84214220504259//stock_location",
+            "vehicleSearch": "lv◼{vehicleId}",
+            "plateField": "ln",
+            "logoutRoute": "[ROUTE:pauseConfirm]",
+            "text": "Rute Hari Ini◆stop◆gagal◆Drop◆Pickup◆kendaraan ditugaskan◆Keluar◆Belum ditugaskan kendaraan"
+        },
+        {
+            "type": "TXT",
+            "size": 14,
+            "data": "SEBELUM BERANGKAT",
+            "stateSwitch": "HARI INI"
+        },
+        {
+            "type": "PRECONDITION_GATE_CARD",
+            "table": "84214220504259//vehicle_check",
+            "search": "cty◼opening⭘vv◼{vehicleId}⭘cdt◼{today}",
+            "itemsTable": "84214220504259//task",
+            "itemsField": "it",
+            "labelField": "in",
+            "qtyField": "pd",
+            "route": "[ROUTE:custodyConfirm]",
+            "text": "Perlu Aksi◆Konfirmasi Penerimaan Muatan◆Muat dari <2>. Cek & konfirmasi sebelum berangkat.◆Konfirmasi Penerimaan◆membuka layar Konfirmasi Penerimaan (hitung mandiri)◆Muatan dikonfirmasi◆{confirmedSummary} · jumlah aktual◆! Ada selisih dari catatan gudang◆udah dilaporkan, Supervisor lagi review. Kerjaan tetap jalan."
+        },
+        {
+            "type": "INVENTORY_BUCKET_CARD",
+            "table": "84214220504259//asset_cache",
+            "search": "lv◼{vehicleId}",
+            "categoryField": "cd",
+            "buckets": "full◼ok⭘empty◼warn",
+            "gateTable": "84214220504259//vehicle_check",
+            "gateSearch": "cty◼opening⭘vv◼{vehicleId}⭘cdt◼{today}",
+            "text": "Isi Kendaraan Sekarang◆Update otomatis tiap serah-terima (kirim isi, ambil kosong)."
+        },
+        {
+            "type": "DRIVER_STOP_CARD",
+            "variant": "preview",
+            "table": "84214220504259//task",
+            "search": "vv◼{vehicleId}⭘tdt◼{today}",
+            "navState": "assigned",
+            "route": "[ROUTE:taskFeed]",
+            "gateTable": "84214220504259//vehicle_check",
+            "gateSearch": "cty◼opening⭘vv◼{vehicleId}⭘cdt◼{today}",
+            "nameField": "kn",
+            "addressField": "al",
+            "text": "Stop Berikutnya◆Dilaporkan Gagal◆Sudah Selesai◆Pilih sesuai kondisi lapangan◆Mulai Eksekusi◆Selesai◆Customer confirmed◆Dilaporkan gagal — menunggu admin reschedule◆kirim◆ambil◆Pickup Only◆Rute Hari Ini◆{closed} dari {total} stop◆lanjut:◆semua kelar◆{total} tujuan◆Konfirmasi muatan dulu buat mulai — ini tujuan lo hari ini:◆Buka Tasklist (eksekusi)"
+        },
+        {
+            "type": "NAV_ACTION_CARD",
+            "table": "84214220504259//task",
+            "search": "vv◼{vehicleId}⭘tdt◼{today}",
+            "ready": "{allClosed}",
+            "route": "[ROUTE:returnVehicle]",
+            "gateTable": "84214220504259//vehicle_check",
+            "gateSearch": "cty◼opening⭘vv◼{vehicleId}⭘cdt◼{today}",
+            "text": "Return Kendaraan◆Balik & serahkan kendaraan + sisa muatan ke gudang◆Semua kelar — balik & serahkan ke gudang"
+        }
+    ]
+}

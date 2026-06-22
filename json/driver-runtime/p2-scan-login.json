@@ -1,0 +1,29 @@
+{
+    "_doc": "P2 ScanLogin — SINGLE scan page. scanner STANDALONE (no HORIZONTAL_ICON wrapper). `width`/`height` = ukuran tampilan scanner (rename dari imgWidth/imgHeight; width:100 layout lama dibuang). `table`+`search` = validasi (cek workforce field VID == hasil-scan) → kalau ketemu baru addToTable + route. `text` ◆-delimited (label+dialog+error slots; dev convert error).",
+    "_live": "op1Screen page `vertikaTeknoLokaciptaDriverScanLogin` @1001-1005. Widget scanner@198, noticeBar@199. Plug 72. route → DriverHome. Placeholder user: [TABLE_PATH], [FOLDER], [FILENAME].",
+
+    "driverScanLogin": [
+        {
+            "type": "noticeBar",
+            "variant": "warn",
+            "icon": "[ICON]",
+            "text": "Device ini bisa jadi bukan punya lo (HP kantor / admin / temen). Identitas lo dibawa di kartu, bukan di HP ini."
+        },
+        {
+            "type": "scanner",
+            "url": "[QR_ICON_URL]",
+            "text": "Scan Kartu◆Batal◆Sesi dibuka◆Login berhasil◆◆◆◆✔️ Scan kartu ID berhasil. Sesi Driver Runtime aktif.◆OK◆QR salah◆QR yang anda scan salah, coba scan lagi.◆Scan Lagi◆◆◆◆◆◆◆◆◆◆◆◆◆◆",
+            "width": 600,
+            "height": 600,
+            "folder": "[FOLDER]",
+            "filename": "[FILENAME]",
+            "table": "workforce",
+            "search": "VID",
+            "flag": "driver-session-open",
+            "route": "vertikaTeknoLokaciptaDriverHome",
+            "opMode": "qr-single",
+            "displayMode": "full-screen",
+            "addToTable": "[TABLE_PATH]//driver.session⭘retention◼4320⭘description◼driver-session-open⭘flag◼driver-session-open⭘<1>◼driver-session-open⭘<2>◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶⭘<3>◼◀3▶⭘<4>◼◀5▶⭘<5>◼◀6▶"
+        }
+    ]
+}

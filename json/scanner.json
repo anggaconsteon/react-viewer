@@ -1,0 +1,16 @@
+{
+    "_doc": "scanner widget — STANDALONE (no HORIZONTAL_ICON wrapper). Wrapper made it render as a small icon via icon-grid path; direct type:scanner renders the fullscreen card + parses the ◆-delimited text slots. `text` stays ◆-delimited (label + dialog + error slots; dev converts errors, we just supply slots).",
+    "type": "scanner",
+    "url": "https://firebasestorage.googleapis.com/v0/b/otq-01-ase2/o/c%2Fautsorz%2Ficon2%2Ficon-190120-qr-scan-90x90.png?alt=media&token=da753564-7c75-4073-a750-bf2e9c1826c1",
+    "text": "Scan Kartu◆Batal◆Sesi dibuka◆Login berhasil◆◆◆◆✔️ Scan kartu ID berhasil. Sesi Driver Runtime aktif.◆OK◆QR salah◆QR yang anda scan salah, coba scan lagi.◆Scan Lagi◆◆◆◆◆◆◆◆◆◆◆◆◆◆",
+    "imgHeight": 600,
+    "imgWidth": 600,
+    "folder": "[FOLDER]",
+    "filename": "[FILENAME]",
+    "width": 100,
+    "flag": "driver-session-open",
+    "route": "driverHome",
+    "opMode": "qr-single",
+    "displayMode": "full-screen",
+    "addToTable": "[TABLE_PATH]//driver.session⭘retention◼4320⭘description◼driver-session-open⭘flag◼driver-session-open⭘<1>◼driver-session-open⭘<2>◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶⭘<3>◼◀3▶⭘<4>◼◀5▶⭘<5>◼◀6▶"
+}
