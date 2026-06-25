@@ -1,0 +1,9 @@
+{
+  "_doc": "Quick actions launcher grid (H1 section 4.1).",
+  "type": "SELECTABLE_BTN",
+  "mode": "launch",
+  "maxGrid": 3,
+  "text": "Customer Baru◆Order Masuk◆Walk-in",
+  "icons": "👤◆➕◆🚶",
+  "routes": "vertikaTeknoLokaciptaNewCustomer◆vertikaTeknoLokaciptaCreateTaskCustomer◆vertikaTeknoLokaciptaWalkIn"
+}

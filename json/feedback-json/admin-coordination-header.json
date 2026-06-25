@@ -1,0 +1,11 @@
+{
+  "_doc": "Admin coordination header (H1 section 3.1). Identity + chip counts + switch.",
+  "type": "ADMIN_COORDINATION_HEADER",
+  "vidtable": "20342033315492",
+  "taskTable": "84214220504259//task",
+  "vehicleTable": "84214220504259//stock_location",
+  "checkTable": "84214220504259//vehicle_check",
+  "evidenceTable": "84214220504259//evidence",
+  "switchRoute": "",
+  "text": "Koordinasi◆⇄ Ganti◆berjalan◆sinyal"
+}

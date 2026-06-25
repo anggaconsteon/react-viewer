@@ -1,0 +1,9 @@
+{
+  "_doc": "Genesis nudge notice bar (H1 section 4.2).",
+  "type": "NOTICE_BAR",
+  "variant": "info",
+  "icon": "",
+  "text": "Sebagian customer migrasi belum tercatat saldo awal. Catat biar outstanding akurat.",
+  "actionText": "Catat",
+  "actionRoute": "vertikaTeknoLokaciptaSeed"
+}

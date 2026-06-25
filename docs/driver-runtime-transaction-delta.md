@@ -15,7 +15,7 @@ Tiap item di stop sekarang punya jenis transaksi. **Per LINE, bukan item master*
 | **deliver** (default) | stepper drop+pickup | mobil→customer + balik | `pd`/`pp` → `ad`/`ap` | cdo/cdi | DROP + PICKUP |
 | **sale** "Jual" | read-only | mobil→customer **permanen** (ownership pindah) | `ps` → `as` | cdo=full | SALE (`tl=null`) |
 | **purchase** "Beli" | read-only | customer→mobil (ownership ke operator, **naik kendaraan**) | `pb` → `ab` | cdi=empty | PURCHASE |
-| **refill** "Tukar" | read-only | galon customer ditukar 1-1 (kosong in / isi out, **milik customer**) | `pr` → `ar` | — (pakai `item.wt`) | REFILL |
+| **refill** "Tukar" | read-only | galon customer ditukar 1-1 (kosong in / isi out, **milik customer**) | `pr` → `ar` | full out + empty in | **DROP full + PICKUP empty** (2 doc, qt=`ar??pr` dua-duanya) |
 
 ## 2. Reject task (load rejection) — opening-only
 
@@ -51,7 +51,7 @@ Tiap item di stop sekarang punya jenis transaksi. **Per LINE, bukan item master*
 ### `movement.mt` — +2 enum (SALE udah ada)
 `GENESIS, DROP, PICKUP, INTERNAL, SALE, **PURCHASE**, **REFILL**, DAMAGE, LOST, ADJUSTMENT`
 - **PURCHASE** ✚ — inbound beli (`fl`=customer, `tl`=mobil, `cd`=empty biasanya).
-- **REFILL** ✚ — swap 1-1. **`cd` TIDAK dipakai** — CF hardcode (mobil full−qt, empty+qt). 1 doc, dua bucket.
+- **REFILL** ✚ — swap 1-1, di-emit sbg **2 doc** (`mt=REFILL` dua-duanya): DROP full (vv→kl, `cd=cdo`) + PICKUP empty (kl→vv, `cd=cdi`), qt=`ar??pr`. Net mobil = full−qt, empty+qt. ⚠️ **REVISI 2026-06-24:** dulu "1 doc, cd diabaikan, CF hardcode 2 bucket" — DIBATALKAN. `OnMovementCreated`/`delta.ToMutations` murni fl/tl + **wajib `cd≠""`** (doc cd-kosong = no-op). Jadi 2 doc cd-konkret = satu-satunya yg jalan sama engine. CF `OnTaskCompleted` yg emit (lihat `movement-emit-dev-spec.md` §0).
 
 ### Reject — `task.tst` +1 enum (keep vv)
 `tst` += **`load_rejected`** (enum baru, vv DIPERTAHANKAN). Alasan → `evidence` (`ety=notes`, `ept=task`, `erf={tnm}`, `d={reason}`, `cv`/`cn`=penolak). Gak ada `mt`/field baru. Reassign = Admin set `vv`+`tst`.
@@ -67,7 +67,7 @@ Tiap item di stop sekarang punya jenis transaksi. **Per LINE, bukan item master*
 | deliver pickup | empty +`ap` |
 | sale | full −`as` (exit permanen, `mt=SALE tl=null`) |
 | purchase | empty +`ab` (`mt=PURCHASE`) |
-| refill | full −`ar` **dan** empty +`ar` (`mt=REFILL`) |
+| refill | full −`ar` (DROP) **dan** empty +`ar` (PICKUP) — 2 doc `mt=REFILL`, derive generik fl/tl |
 | reject | item gak naik → manifest −, gudang tetap (no movement) |
 
 ---
@@ -120,7 +120,8 @@ task/TASK-20260619-103 → {
 ### movement baru (tipe baru aja — deliver DROP/PICKUP sama kaya seed lama, di-skip)
 ```
 mov SALE     → { mt:"SALE",     fl:"F621a02a983500", tl:null,             ii:"2000000000123", cd:"full",  qt:3, dv:"87544551624342", dn:"Budi Santoso", mrf:"TASK-20260619-101" }
-mov REFILL   → { mt:"REFILL",   fl:"F621a02a983500", tl:"F6239569515300", ii:"9990019000019",            qt:2, dv:"87544551624342", dn:"Budi Santoso", mrf:"TASK-20260619-101" }   // cd diabaikan; CF: full−2 + empty+2 @mobil
+mov REFILL drop   → { mt:"REFILL", fl:"F621a02a983500", tl:"F6239569515300", ii:"9990019000019", cd:"full",  qt:2, dv:"87544551624342", dn:"Budi Santoso", mrf:"TASK-20260619-101" }   // mobil full−2
+mov REFILL pickup → { mt:"REFILL", fl:"F6239569515300", tl:"F621a02a983500", ii:"9990019000019", cd:"empty", qt:2, dv:"87544551624342", dn:"Budi Santoso", mrf:"TASK-20260619-101" }   // mobil empty+2
 mov PURCHASE → { mt:"PURCHASE", fl:"F62c903bbcdd00", tl:"F621a02a983500", ii:"8886012560310", cd:"empty", qt:4, dv:"87544551624342", dn:"Budi Santoso", mrf:"TASK-20260619-102" }
 ```
 
@@ -158,6 +159,6 @@ mov walk-in SALE → { mt:"SALE", fl:"<store/warehouse lv>", tl:null, ii:"<item>
 ## Open / flag dev
 1. **Manifest `ie[]` exclude rejected task** — sebelum custody-count, item dari task yg `tst=load_rejected` jangan diitung (biar ie-vs-ip gak mismatch palsu).
 2. **`wt` denorm ke `it[]`?** SSOT di item; kalau renderer refill butuh offline → denorm (pola `in`).
-3. **REFILL movement `cd`** = ignored; CF interpret dua bucket. Pastikan CF handle.
+3. ✅ **RESOLVED 2026-06-24** — REFILL = **2 doc** (DROP full + PICKUP empty), `cd` konkret per doc. CF emit lewat `OnTaskCompleted`; derive generik fl/tl. (Bukan 1-doc cd-ignored — engine drop doc cd-kosong.)
 4. **Reject re-assign** = domain Admin app (di luar driver). Driver cuma set `vv=null` + evidence.
 5. **Type renderer** SALE/PURCHASE/REFILL read-only + reject sheet = build dev (mockup `Driverruntimefull2.jsx`).

@@ -1,0 +1,18 @@
+{
+  "_doc": "Upcoming task list (H1 section 5.2). Today scheduled + conditional assign.",
+  "type": "UPCOMING_TASK_LIST",
+  "vidtable": "20342033315492",
+  "table": "84214220504259//task",
+  "search": "tst◼assigned⭘tdt◼{today}",
+  "titleField": "kn",
+  "schedField": "tdt",
+  "summaryField": "it",
+  "assignField": "vv",
+  "plateField": "vv",
+  "vehicleTable": "84214220504259//stock_location",
+  "vehicleNameField": "ln",
+  "assignSheet": "vehiclePicker",
+  "assignText": "+ Tugaskan Kendaraan",
+  "updateEventRow": "84214220504259//task⭘tablevid◼20342033315492⭘search◼tnm★{taskVid}⭘vv◼{vehicleId}",
+  "text": "Akan Datang◆kirim◆ambil"
+}

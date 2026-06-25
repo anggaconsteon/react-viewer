@@ -113,6 +113,10 @@ Task yg ditolak driver (Tolak @P4, lihat `driver-stop-card-dev-spec.md` §15 + `
 - `taskManifestList` + `circulationSummary` tambah filter: **`tst≠load_rejected`** pas agregasi.
 - Config: `excludeStatus:"load_rejected"` (atau `statusField:"tst"` + skip-list). Kalau gak di-exclude → manifest (`ie`) ketinggian vs hitung fisik (`ip`) → **selisih palsu** (`dp`) di P6/reveal padahal data bener.
 
+> **⚠️ RENDERER STATUS (2026-06-23) — PENDING.** Config `excludeStatus:"load_rejected"` UDAH live di `taskManifestList` + `circulationSummary`, **tapi renderer belum baca** → test nunjukin keduanya masih nampil SEMUA task (termasuk yang `load_rejected`). Implement = **SAMA mekanik kaya `PRECONDITION_GATE_CARD` `excludeStatus`** — yang **UDAH JALAN** di card "Konfirmasi Penerimaan Muatan" (DriverHome). Yaitu: pas agregasi, **skip task yang `tst == excludeStatus`** (`load_rejected`), live stream (drop otomatis pas task di-reject).
+> - **Opt-in:** kalau `excludeStatus` **kosong (`""`) / absent → JANGAN exclude** (tampil semua). Exclude cuma aktif kalau field-nya diisi.
+> - **`failed` ≠ `load_rejected`:** task `failed` (gagal eksekusi) tetep keitung; cuma `load_rejected` (tolak opening) yang di-skip dari muat awal.
+
 ### B. tx-aware agregasi (slot qty per tx)
 Dulu `dropField:pd`/`pickupField:pp` asumsi **semua deliver**. Sekarang tiap baris `it[]` punya `tx` → slot qty beda:
 

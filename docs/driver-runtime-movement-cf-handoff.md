@@ -72,4 +72,25 @@ Abis ACC → update `movement-cf-dev-spec.md` §11 (OPEN→DECIDED) + memory →
 
 ---
 
+## 6. Reject (`load_rejected`) → unload muatan (NEW — pending, 2026-06-24)
+
+**Flow (confirmed owner):** Admin assign task → **Gudang muat FULL ke mobil** (semua task) + pilih driver → driver review rute @DriverHome → **tolak** stop gak sesuai (opening-only, sebelum custody confirmed). Barang task ditolak harus **di-unload** (balik ke gudang) → muatan + stok mobil berkurang.
+
+**Gap sekarang:** reject submit cuma flip `task.tst=load_rejected` (DSL updateEventRow). **GAK ada turunan** → `vehicle_check.ie[]` + `asset_cache` mobil gak berubah → CustodyCount masih nampil SEMUA item (salah).
+
+**CF harus, pas `task.tst → load_rejected` (opening, sebelum `cst=custody_confirmed`):**
+1. **`asset_cache` mobil** −= item task rejected (unload mobil → gudang).
+2. **`vehicle_check.ie[]`** (doc opening mobil, `cty=opening`) recompute = `Σ(task NON-rejected it[]: pd+ps+pr, exclude purchase pb)`. Kalau ie[] ketinggian vs hitung fisik (ip) → **selisih palsu `dp`** di reveal.
+
+**RESOLVED → detail: `docs/driver-runtime-reject-unload-cf-spec.md`** (dev CF session, 2026-06-24):
+- **Mekanisme: app emit movement unload** `mobil→gudang` (`mt=INTERNAL`, `qt=pd+ps+pr` exclude pb, `mrf=tnm`) → **CF movement EXISTING** otomatis derive `asset_cache` + monthly. **0 CF baru.**
+- ⚠️ Opsi (b) gue ("CF recompute `asset_cache` langsung tanpa movement") = **SALAH**: `asset_cache` = Σ movement (reconcile rebuild dari ledger) → perubahan non-movement **ke-revert tiap reconcile**. Stok WAJIB lewat movement.
+- `ie[]` (manifest plan): app recompute = Σ task non-rejected (atau CF; spec §7 D2).
+- Idempotency: app guard transisi `tst` (double-reject = 1 unload). Reassign → emit load movement ke mobil baru.
+- Open decisions D1–D4 (ACC owner) di spec §7 — default semua **app-side**.
+
+**Constraint:** cuma **opening** (sebelum `custody_confirmed`). Abis confirmed = muatan LOCKED; drop stop setelah itu = **FailedDelivery** (`tst=failed`, barang di truk → reschedule), BUKAN reject. Tombol Tolak udah gated `cst◼custody_confirmed`. Lihat [[project_custody_ie_rebuild]].
+
+---
+
 **MCP gsheets** kadang perlu reconnect (`/mcp`). Dictionary sheet read/write via `mcp__gsheets__*` (grid HARD-CAPPED — gak bisa expand row via MCP).

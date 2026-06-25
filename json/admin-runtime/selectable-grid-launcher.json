@@ -1,0 +1,8 @@
+{
+    "type": "SELECTABLE_BTN",
+    "mode": "launch",
+    "maxGrid": 3,
+    "text": "Customer Baru◆Order Masuk◆Walk-in",
+    "icons": "👤◆➕◆🚶",
+    "routes": "vertikaTeknoLokaciptaNewCustomer◆vertikaTeknoLokaciptaCreateTaskCustomer◆vertikaTeknoLokaciptaWalkIn"
+}

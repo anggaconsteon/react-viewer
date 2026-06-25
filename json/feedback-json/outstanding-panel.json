@@ -1,0 +1,20 @@
+{
+  "_doc": "Outstanding panel (H1 section 5.3). Collapsible aged priority list.",
+  "type": "OUTSTANDING_PANEL",
+  "vidtable": "20342033315492",
+  "table": "84214220504259//asset_cache",
+  "search": "lt◼client",
+  "hideZero": "TRUE",
+  "collapsible": "TRUE",
+  "titleField": "lv",
+  "locationTable": "84214220504259//stock_location",
+  "locationNameField": "ln",
+  "itemField": "ii",
+  "qtyField": "qt",
+  "ageAnchorField": "t",
+  "dangerAge": 14,
+  "warnAge": 7,
+  "actionText": "Jadwalkan",
+  "actionSheet": "vehiclePicker",
+  "text": "Prioritas Pengambilan◆pcs◆hari◆Kritis◆Perhatian◆Normal"
+}

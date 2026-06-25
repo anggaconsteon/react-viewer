@@ -232,6 +232,7 @@ Mockup: tiap baris task di kartu locked ada tombol "Tolak" (amber outline). Driv
   "nameField":"kn","addressField":"al",
   "rejectRoute":"vertikaTeknoLokaciptaRejectTask",
   "taskIdField":"tnm",
+  "excludeStatus":"load_rejected",
   "text":"…(seg lama)…◆Tolak◆Ada stop nggak searah? Tolak sebelum berangkat, dikembalikan ke Admin."
 }
 ```
@@ -240,6 +241,7 @@ Field baru:
 |---|---|
 | `rejectRoute` | page RejectTaskSheet (widget baru, spec terpisah `driver-reject-task-sheet-dev-spec.md`) |
 | `taskIdField` | field id task (`tnm`); nilainya dikirim sebagai `{rejectTaskVid}` ke reject page |
+| `excludeStatus` | status task yang di-DROP dari list (`load_rejected`); lihat §15.5 |
 
 Text +2 segmen di akhir: label tombol ("Tolak") + catatan kaki kartu.
 
@@ -254,3 +256,21 @@ Text +2 segmen di akhir: label tombol ("Tolak") + catatan kaki kartu.
 - Reject **tidak** mengosongkan `vv` (mobil dipertahankan untuk audit Admin). Itu diatur di reject page.
 - Task `tst=load_rejected` hilang dari daftar muatan + dikecualikan dari manifest custody (P5/P6).
 - DSL submit reject ada di `driver-reject-task-sheet-dev-spec.md`. Token runtime baru: `{rejectTaskVid}`.
+
+---
+
+## 15.5 ⚠️ RENDERER WAJIB: drop `load_rejected` dari list (`excludeStatus`) — PENDING
+
+**Config `excludeStatus:"load_rejected"`** (ditambah 2026-06-23, live di `Widget!J203`). Renderer **HARUS**: pas render/aggregate list task, **SKIP task yang `tst == excludeStatus`** (`load_rejected`). Task yang ditolak harus **HILANG** dari "Rute Hari Ini" + dari count "N tujuan".
+
+**Kenapa:** reject = task dikembalikan ke Admin, **bukan tujuan driver lagi** → drop dari rute.
+
+**Live (streaming):** pas reject submit flip `task.tst → load_rejected`, task **otomatis drop** (gak perlu refresh). **Sama mekanik kaya `PRECONDITION_GATE_CARD` `excludeStatus`** — yang **UDAH JALAN** di card "Konfirmasi Penerimaan Muatan". DRIVER_STOP_CARD harus implement logika yang sama.
+
+**`failed` ≠ `load_rejected`:** task `failed` (gagal saat eksekusi) **tetap tampil** (relabel "Dilaporkan gagal", §15.3). Cuma `load_rejected` (tolak opening) yang di-DROP.
+
+**Bukti test (2026-06-23):** reject 3 dari 4 task → **manifest udah drop** ke 1 task (renderer manifest jalan), TAPI **route list masih nampil 4** (renderer DRIVER_STOP_CARD belum baca `excludeStatus`). Ini gap yang harus dibenerin.
+
+**Expected setelah implement:** reject 3 dari 4 → "Rute Hari Ini · **1 tujuan**", cuma task non-rejected.
+
+**Default (opt-in filter):** kalau `excludeStatus` **kosong (`""`) atau gak ada** → renderer **TIDAK exclude apa-apa** → tampil SEMUA task (termasuk `load_rejected`). Exclude cuma aktif kalau field-nya diisi. (Sama buat `PRECONDITION_GATE_CARD` `excludeStatus` — konsisten.)
