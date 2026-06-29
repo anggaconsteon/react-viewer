@@ -95,4 +95,4 @@ Kalau P1 disatuin ke sini: `table:stock_location`, `search:"lt◼client⭘lst◼
 1. **Capture boleh kosong (ad-hoc)?** Task tanpa `vv` boleh ga? Selaras admin-home §6 Q1.
 2. **H1 `schedule` mode** = sheet+capture aja atau route ke Create Task pre-filled? (admin-home §6 Q2)
 3. `captureToken` beda per konteks (`vv` vs `vehicleId`) — biarin (rekomendasi) atau seragamin.
-4. **Satuin P1 customer-picker ke PICKER_LIST?** (Contoh C) — ganti TASK_FEED_LIST flat, kurangi 1 renderer. Butuh keputusan owner.
+4. ~~Satuin P1 customer-picker ke PICKER_LIST?~~ **DECIDED 2026-06-29: PISAH.** P1 tetep `TASK_FEED_LIST` flat (refactor visual = `customer-namelist-and-creator-token-dev-spec.md` §1b). PICKER_LIST = capture-only; TASK_FEED_LIST flat = navigate-list. Jangan disatuin.

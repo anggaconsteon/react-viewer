@@ -44,6 +44,8 @@ Tap row → `route` + bawa nilai `idField` (sama mekanisme kaya driver: tap card
   "idField": "lv",
   "titleField": "ln",
   "addressField": "al",
+  "iconField": "",
+  "searchHint": "Cari customer atau alamat…",
   "typeField": "",
   "itemsField": "",
   "dropField": "",
@@ -54,10 +56,35 @@ Tap row → `route` + bawa nilai `idField` (sama mekanisme kaya driver: tap card
   "returnGateTable": "",
   "returnGateSearch": "",
   "returnRoute": "",
+  "countLabel": "Customer",
+  "emptyText": "Belum ada customer",
   "text": "Customer◆Pilih customer untuk order"
 }
 ```
 Hasil yg diharapin: 1 card "Halooo" / sub "mantap", tap → CreateTaskItem bawa `lv`.
+
+### §1b Visual MODE FLAT — REFACTOR "sama persis" mockup P1
+Flat-mode SEKARANG masih ke-render gaya driver-task-feed (kartu task + drop/pickup) → **jelek buat list customer**. Refactor tampilan flat-mode jadi **PERSIS card mockup** `src/component/AdminCreateTaskIntegrated2.jsx` → `CustomerPickerScreen` (**L343–405**, empty L407). **TETEP GENERIC** — config-driven, customer cuma 1 config; card ini reusable buat list keyed apapun (NOL "customer" baked).
+
+**Anatomi card (per row) — match mockup:**
+| bagian | mockup | config |
+|---|---|---|
+| container | surface, border 1px, radius 12, pad 12×14, mb 8, tap-feedback | — |
+| kiri (avatar) | 40×40 radius 10 bg slate100, emoji | `iconField` (emoji/char) ATAU fallback huruf depan `titleField` |
+| judul | 14px bold, ellipsis 1 baris | `titleField` |
+| sub | 11px textMid, ellipsis 1 baris | `addressField` |
+| badge (opsional) | Chip "↑ {N} outstanding" + warn aging | `badgeTable`+`badgeSearch` (count per-row, token baris `{lv}`) + `badgeLabel` + tier |
+| kanan | chevron `›` textDim | — |
+| header list | "{N} {countLabel}" uppercase dim | `countLabel` (N = jumlah match) |
+| empty | 🔍 + teks (L407) | `emptyText` |
+
+**Search bar (built-in, di ATAS list — mockup L300–331):** box "🔍 + `searchHint`" filter LOKAL row yg udah keload by `titleField`+`addressField` (mockup filter name OR address). ⚠ Di P1 live, TXT-search + TXT-label "Customer" terpisah udah **di-OFF-in (F=FALSE)** — owner mau **list self-contained**: search + count-header + cards + empty NYATU dalam 1 widget (persis mockup). Jadi widget ini WAJIB punya search box sendiri (config `searchHint`), bukan ngandelin TXT luar.
+
+**Badge & genesis-chip = OPSIONAL.** Customer pasang badge outstanding (`badgeTable:asset_cache`, Σ qt). List lain boleh omit → badge gak muncul. Chip "belum di-seed" = **DERIVED customer-specific** (client tanpa GENESIS movement), BUKAN field (cover §4) → skip buat list non-customer.
+
+**Field display tambahan (flat-mode, opsional kecuali title/sub):** `iconField`, `countLabel`, `emptyText`, `badgeTable`, `badgeSearch`, `badgeLabel`.
+
+> GENERIC: card avatar/title/sub/badge/chevron + tap→route = list keyed apapun (customer, item, lokasi, dll). Grouped-mode driver TIDAK berubah.
 
 ### JSON — MODE GROUPED (driver TaskFeed, row 1066, TIDAK BERUBAH — ref backward-compat)
 ```json
