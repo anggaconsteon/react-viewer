@@ -12,6 +12,7 @@
     "vehicleNameField": "ln",
     "assignSheet": "vehiclePicker",
     "assignText": "+ Tugaskan Kendaraan",
+    "emptyText": "Tidak ada order terjadwal hari ini",
     "updateEventRow": "84214220504259//task⭘tablevid◼20342033315492⭘search◼tnm★{taskVid}⭘vv◼{vehicleId}",
     "text": "Akan Datang◆kirim◆ambil"
 }

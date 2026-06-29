@@ -171,9 +171,11 @@ Mockup `UpcomingCard`: customer + chip jadwal + summary item + (plat ATAU tombol
 
 **GENERIC:** list dimana baris bisa "belum lengkap" (field kosong) → tombol inline isi via sheet. Reusable: assign driver, pilih slot, lengkapi data.
 
+**Empty state:** `search` 0 hasil → render `emptyText` (config-driven, BUKAN hardcode). Jangan sembunyiin section diam-diam.
+
 **JSON resolved (H1):**
 ```json
-{"type":"UPCOMING_TASK_LIST","vidtable":"20342033315492","table":"84214220504259//task","search":"tst◼assigned⭘tdt◼{today}","titleField":"kn","schedField":"tdt","summaryField":"it","assignField":"vv","plateField":"vv","vehicleTable":"84214220504259//stock_location","vehicleNameField":"ln","assignSheet":"vehiclePicker","assignText":"+ Tugaskan Kendaraan","updateEventRow":"84214220504259//task⭘tablevid◼20342033315492⭘search◼tnm★{taskVid}⭘vv◼{vehicleId}","text":"Akan Datang◆kirim◆ambil"}
+{"type":"UPCOMING_TASK_LIST","vidtable":"20342033315492","table":"84214220504259//task","search":"tst◼assigned⭘tdt◼{today}","titleField":"kn","schedField":"tdt","summaryField":"it","assignField":"vv","plateField":"vv","vehicleTable":"84214220504259//stock_location","vehicleNameField":"ln","assignSheet":"vehiclePicker","assignText":"+ Tugaskan Kendaraan","emptyText":"Tidak ada order terjadwal hari ini","updateEventRow":"84214220504259//task⭘tablevid◼20342033315492⭘search◼tnm★{taskVid}⭘vv◼{vehicleId}","text":"Akan Datang◆kirim◆ambil"}
 ```
 
 ### 5.3 `OUTSTANDING_PANEL` 🆕 — collapsible aged-list (Prioritas Pengambilan)
@@ -184,9 +186,11 @@ Mockup `OutstandingPanel`: header collapsible "Prioritas Pengambilan ▾" + per 
 
 **GENERIC:** collapsible list ber-tier-umur + aksi per baris. Reusable: aging piutang, SLA breach, item kedaluwarsa.
 
+**Empty state:** `search`+`hideZero` 0 hasil → render `emptyText` (config-driven). Panel tetap muncul (judul "Prioritas Pengambilan") dgn isi emptyText, bukan ngilang.
+
 **JSON resolved (H1):**
 ```json
-{"type":"OUTSTANDING_PANEL","vidtable":"20342033315492","table":"84214220504259//asset_cache","search":"lt◼client","hideZero":"TRUE","collapsible":"TRUE","titleField":"lv","locationTable":"84214220504259//stock_location","locationNameField":"ln","itemField":"ii","qtyField":"qt","ageAnchorField":"t","dangerAge":14,"warnAge":7,"actionText":"Jadwalkan","actionSheet":"vehiclePicker","text":"Prioritas Pengambilan◆pcs◆hari◆Kritis◆Perhatian◆Normal"}
+{"type":"OUTSTANDING_PANEL","vidtable":"20342033315492","table":"84214220504259//asset_cache","search":"lt◼client","hideZero":"TRUE","collapsible":"TRUE","titleField":"lv","locationTable":"84214220504259//stock_location","locationNameField":"ln","itemField":"ii","qtyField":"qt","ageAnchorField":"t","dangerAge":14,"warnAge":7,"actionText":"Jadwalkan","emptyText":"Tidak ada outstanding · semua sudah tertagih","text":"Prioritas Pengambilan◆pcs◆hari◆Kritis◆Perhatian◆Normal"}
 ```
 
 ---

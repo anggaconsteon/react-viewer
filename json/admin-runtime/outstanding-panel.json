@@ -16,5 +16,6 @@
     "warnAge": 7,
     "actionText": "Jadwalkan",
     "actionSheet": "vehiclePicker",
+    "emptyText": "Tidak ada outstanding · semua sudah tertagih",
     "text": "Prioritas Pengambilan◆pcs◆hari◆Kritis◆Perhatian◆Normal"
 }

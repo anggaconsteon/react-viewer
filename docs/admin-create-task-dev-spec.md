@@ -80,6 +80,8 @@ text: "◆Tambah Item◆Transfer Kepemilikan◆Refill◆Jual◆Beli◆Kosong◆P
   "itemCatField": "ic",
   "itemUnitField": "un",
   "waterTypeField": "wt",
+  "searchField": "in",
+  "searchHint": "Cari produk…",
   "outstandingTable": "84214220504259//asset_cache",
   "outstandingSearch": "lt◼client⭘lv◼{kl}",
   "outstandingQtyField": "qt",
@@ -98,6 +100,8 @@ text: "◆Tambah Item◆Transfer Kepemilikan◆Refill◆Jual◆Beli◆Kosong◆P
 }
 ```
 `{kl}` = customer id dari P1 (`idField:lv`). `outstandingSearch` Model B per-client. Output draft `it[]` → di-carry P3/P4, ditulis native di P4 submit.
+
+**Search (productPicker):** `searchField:"in"` = filter katalog lokal by nama item; `searchHint` = placeholder box cari (config-driven, BUKAN hardcode — sejajar customer-picker P1 "Cari customer…"). Picker sheet = search box di atas + list `availableProducts` (exclude yg udah di-task). Empty katalog = "Semua item sudah ditambahkan" (mockup `ProductPickerSheet`).
 
 ### 1.6 Render states
 - empty → CTA "Tambah Item / Transfer / Refill".
