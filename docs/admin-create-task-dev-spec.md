@@ -143,11 +143,36 @@ task (doc baru, key tnm):
   vv   = {vv}                          # vehicle (stock_location vehicle) — TANPA driver
   gl   = {origin warehouse}            # OPEN: dari mana? (lihat §11)
   tdt  = {today}|{scheduled}           # epoch midnight
-  cv   = {adminVid}  cn = {adminName}  # creator
+  cv   = {userVid}   cn = {userName}    # creator (session current-user — lihat customer-namelist-and-creator-token §2; BUKAN {adminVid})
   t    = {now}
   it[] = [ {ii,in,tx, pd,pp,cdo,cdi | ps,cdo | pb,cdi | pr,wt}, … ]   # NATIVE ARRAY
 ```
 **Admin set `vv` + `cv/cn`; TIDAK set driver** (`dv` di-set Gudang). `cv-driver` ≠ `cv-creator` — `cv` di task = creator (lihat dict).
+
+### Resolved target doc — JSON KONKRET (= hasil yg `submitConfirmSheet` native-write WAJIB hasilin)
+Field code semua grounded ke config live P2 (`taskItemBuilder`: `ii/in/tx/pd/pp/ps/pb/pr/hg/cdo/cdi/wt`) + dict. Nilai `ii/in` = contoh (asli dari `//item`); `vv` dari P3 capture; `tdt` epoch midnight.
+```json
+{
+  "tnm": "TSK-1782699404538-0001",
+  "tty": "delivery",
+  "tst": "assigned",
+  "kl": "JBurL9Bpi2mjORSlwntZ",
+  "kn": "Halooo",
+  "al": "mantap",
+  "vv": "<vehicle lv — P3 captureToken vv>",
+  "gl": "<warehouse lv — OPEN §11>",
+  "tdt": "1782604800000",
+  "cv": "{userVid}",
+  "cn": "{userName}",
+  "t": "1782699404538",
+  "ts": "29 Jun 2026 09:16:44",
+  "it": [
+    { "ii": "ITM-G19", "in": "Galon 19L RO", "tx": "deliver", "pd": 10, "pp": 10, "cdo": "penuh", "cdi": "kosong" },
+    { "ii": "ITM-G19", "in": "Galon 19L RO", "tx": "sale", "ps": 2, "cdo": "penuh", "hg": 45000 }
+  ]
+}
+```
+⚠ **KEYSTONE:** `it` di atas = **array Firestore native** (renderer rakit dari draft state → `set()` doc utuh), BUKAN ◆-string. `addToEvent`/DSL gak bisa nest array → makanya submit ini WAJIB native write (cap sama custody `ip[]`/`dp[]`). Begitu doc ini ke-tulis dgn `tst:assigned`+`vv`, Gudang opening udah bisa muat & Driver udah bisa eksekusi (path warehouse→driver udah tested via seed).
 
 ---
 

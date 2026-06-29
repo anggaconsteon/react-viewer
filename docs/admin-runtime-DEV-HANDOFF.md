@@ -22,6 +22,7 @@ Lihat: `npm run dev` (main.jsx → AdminRuntimeGallery buat overview / AdminRunt
 docs/admin-runtime-DEV-HANDOFF.md     # ← ini (cover)
 docs/admin-home-dev-spec.md           # H1 ✅ (REBUILD 2026-06-25 — JSON embedded per §widget)
 docs/admin-create-task-dev-spec.md    # P1–S3 wizard (1 doc, section per-page) ✅
+docs/customer-namelist-and-creator-token-dev-spec.md  # ⚠️ live-test gap: P1 customer-list blank (extend TASK_FEED_LIST groupField-optional) + creator token {adminVid}→{userVid} wire
 docs/admin-feature-handoff.md         # entry point fitur
 json/admin-runtime/*.json             # JSON resolved per widget H1 (7 file: header, signal-list, noticeBar, selectableGrid, running/upcoming/outstanding) — sama isi dgn blok JSON di spec
 ```
@@ -59,6 +60,8 @@ H1 di-rebuild: home gak bisa pake widget generic existing (3× displayStatisticC
 | `noticeBar` | H1 | LOW | **EXTEND** (+`actionText`/`actionRoute` = tombol CTA) | home §4.2 | notice-bar-genesis.json |
 | `taskItemBuilder` | P2 · W1 | **HIGH** | NEW | create-task §1 | — |
 | `vehiclePicker` (sheet) | H1 · P3 | MED | NEW | home §6 | — |
+| `TASK_FEED_LIST` | P1 (+H1 feeds) | LOW | **EXTEND** (`groupField` optional → flat name-list, render all, no status-filter) | customer-namelist §1 | — |
+| `{userVid}`/`{userName}` | N1 (+semua write) | LOW | **WIRE** session token current-user (role-agnostic; N1 `{adminVid}` invalid) | customer-namelist §2 | — |
 
 **Prinsip §0 (WAJIB):** semua widget generic/config-driven — label di `text` ◆-segment, table/search/field=param, status 3-tier theme, route=param. JANGAN hardcode label/collection/route di renderer. (admin-home-dev-spec.md §0)
 
