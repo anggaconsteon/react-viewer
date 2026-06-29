@@ -68,6 +68,37 @@ writeTarget: task.it              # NATIVE ARRAY (lihat §10)
 text: "◆Tambah Item◆Transfer Kepemilikan◆Refill◆Jual◆Beli◆Kosong◆Penuh◆Air RO◆Isi Ulang"
 ```
 
+### 1.5b JSON resolved — LIVE (op1Screen P2 row 1169, mode order)
+```json
+{
+  "type": "TASK_ITEM_BUILDER",
+  "vidtable": "20342033315492",
+  "mode": "order",
+  "itemTable": "84214220504259//item",
+  "itemIdField": "ii",
+  "itemNameField": "in",
+  "itemCatField": "ic",
+  "itemUnitField": "un",
+  "waterTypeField": "wt",
+  "outstandingTable": "84214220504259//asset_cache",
+  "outstandingSearch": "lt◼client⭘lv◼{kl}",
+  "outstandingQtyField": "qt",
+  "outstandingCondField": "cd",
+  "txTypes": "deliver,sale,purchase,refill",
+  "writeTarget": "it",
+  "dropField": "pd",
+  "pickupField": "pp",
+  "saleField": "ps",
+  "buyField": "pb",
+  "refillField": "pr",
+  "priceField": "hg",
+  "condOutField": "cdo",
+  "condInField": "cdi",
+  "text": "Tambah Item◆Transfer Kepemilikan◆Refill◆Jual◆Beli◆Kosong◆Penuh◆Air RO◆Isi Ulang"
+}
+```
+`{kl}` = customer id dari P1 (`idField:lv`). `outstandingSearch` Model B per-client. Output draft `it[]` → di-carry P3/P4, ditulis native di P4 submit.
+
 ### 1.6 Render states
 - empty → CTA "Tambah Item / Transfer / Refill".
 - per baris kartu sesuai tx (lihat mockup `TaskItemCard`: LOAN=2 stepper, SALE/PURCHASE=kondisi toggle+1 qty, REFILL=water toggle+1 qty).
@@ -89,6 +120,8 @@ text: "◆Tambah Item◆Transfer Kepemilikan◆Refill◆Jual◆Beli◆Kosong◆P
 | 5 | "+ Customer Baru" | `buttonRoute` | ✅ | → N1 |
 
 **Write:** none. **Open:** badge outstanding butuh agg asset_cache per client — {dev}.
+
+> ⚠ **UPDATE (live-test 2026-06-29):** list customer **bukan** `displayStatisticCard` lagi — itu render BLANK (stat-card, gak ada renderer name-list). Diganti **`TASK_FEED_LIST` flat-mode** (LIVE row 1163). JSON resolved + perubahan renderer (`groupField` optional) = **`customer-namelist-and-creator-token-dev-spec.md` §1**. Tap row bawa `lv`→`{kl}` ke P2.
 
 ---
 
@@ -117,6 +150,25 @@ text: "◆Tambah Item◆Transfer Kepemilikan◆Refill◆Jual◆Beli◆Kosong◆P
 | 5 | "Lanjut · Review" | `buttonRoute` | ✅ | → P4 |
 
 `vehiclePicker` di-share dgn H1 (assign/reassign/jadwal). Di sini = capture `vv` buat task baru (belum nulis sampai P4 submit).
+
+### §4 JSON resolved — LIVE (op1Screen P3 row 1182, mode capture)
+```json
+{
+  "type": "VEHICLE_PICKER",
+  "mode": "capture",
+  "vidtable": "20342033315492",
+  "table": "84214220504259//stock_location",
+  "search": "lt◼vehicle⭘lst◼active",
+  "plateField": "ln",
+  "driverField": "dv",
+  "taskTable": "84214220504259//task",
+  "taskCountSearch": "vv◼{lv}⭘tst◼assigned",
+  "captureToken": "vv",
+  "route": "",
+  "text": "Pilih Kendaraan◆Pilih kendaraan ini◆task aktif◆Ad-hoc / Nanti◆"
+}
+```
+`mode:capture` = simpan `{vv}` ke draft (gak nulis Firestore, gak navigate). `taskCountSearch` per-kendaraan (`{lv}` = lv kendaraan baris) → badge "N task aktif". `route:""` = stay (CTA "Lanjut · Review" yg navigate ke P4).
 
 ---
 
@@ -173,6 +225,35 @@ Field code semua grounded ke config live P2 (`taskItemBuilder`: `ii/in/tx/pd/pp/
 }
 ```
 ⚠ **KEYSTONE:** `it` di atas = **array Firestore native** (renderer rakit dari draft state → `set()` doc utuh), BUKAN ◆-string. `addToEvent`/DSL gak bisa nest array → makanya submit ini WAJIB native write (cap sama custody `ip[]`/`dp[]`). Begitu doc ini ke-tulis dgn `tst:assigned`+`vv`, Gudang opening udah bisa muat & Driver udah bisa eksekusi (path warehouse→driver udah tested via seed).
+
+### JSON resolved — LIVE (op1Screen P4)
+`taskManifestList` (row 1190) — render draft `it[]` read-only (tx-aware):
+```json
+{
+  "type": "TASK_MANIFEST_LIST",
+  "source": "draft",
+  "itemsField": "it",
+  "dropField": "pd",
+  "pickupField": "pp",
+  "txField": "tx",
+  "saleField": "ps",
+  "refillField": "pr",
+  "buyField": "pb",
+  "text": "Item Order◆item line◆drop◆pickup◆"
+}
+```
+`submitConfirmSheet` (row 1197) — trigger native write task-doc di atas:
+```json
+{
+  "type": "SUBMIT_CONFIRM_SHEET",
+  "source": "draft",
+  "confirmEvent": "task-create",
+  "writeTarget": "task",
+  "route": "vertikaTeknoLokaciptaCreateTaskSuccess",
+  "text": "Buat Task & Assign◆Buat Task & Assign◆Cek Lagi"
+}
+```
+`source:draft` = dua-duanya baca **draft state in-memory** (bukan koleksi). `submitConfirmSheet` `writeTarget:task` → rakit doc (§5 di atas) + native `set()` → route P5.
 
 ---
 
