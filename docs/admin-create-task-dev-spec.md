@@ -171,7 +171,7 @@ text: "◆Tambah Item◆Transfer Kepemilikan◆Refill◆Jual◆Beli◆Kosong◆P
 | 4 | Vehicle card | compose | ✅ | `stock_location(vehicle)` read |
 | 5 | Pickup breakdown (exchange + clearing) | `noticeBar` | ✅ | {dev} cond |
 | 6 | "Setelah submit" | `noticeBar` | ✅ | static |
-| 7 | **Submit "Buat Task & Assign"** | `submitConfirmSheet`/`rbtCta` | 🔶 | **WRITE task (§10)** → P5 |
+| 7 | **Submit "Buat Task & Assign"** | `sendButtonGpsWithEvent` (reuse base-lib, GANTI submitConfirmSheet) | 🔶 | addToEvent header + savesend renderer append `it[]` native (§5/§10) → P5 |
 
 ### Submit payload (task baru — grounded)
 ```
@@ -190,7 +190,7 @@ task (doc baru, key tnm):
 ```
 **Admin set `vv` + `cv/cn`; TIDAK set driver** (`dv` di-set Gudang). `cv-driver` ≠ `cv-creator` — `cv` di task = creator (lihat dict).
 
-### Resolved target doc — JSON KONKRET (= hasil yg `submitConfirmSheet` native-write WAJIB hasilin)
+### Resolved target doc — JSON KONKRET (= bentuk akhir task doc: header via `sendButtonGpsWithEvent` addToEvent + `it[]` native-append)
 Field code semua grounded ke config live P2 (`taskItemBuilder`: `ii/in/tx/pd/pp/ps/pb/pr/hg/cdo/cdi/wt`) + dict. Nilai `ii/in` = contoh (asli dari `//item`); `vv` dari P3 capture; `tdt` epoch midnight.
 ```json
 {
@@ -213,7 +213,7 @@ Field code semua grounded ke config live P2 (`taskItemBuilder`: `ii/in/tx/pd/pp/
   ]
 }
 ```
-⚠ **KEYSTONE:** `it` di atas = **array Firestore native** (renderer rakit dari draft state → `set()` doc utuh), BUKAN ◆-string. `addToEvent`/DSL gak bisa nest array → makanya submit ini WAJIB native write (cap sama custody `ip[]`/`dp[]`). Begitu doc ini ke-tulis dgn `tst:assigned`+`vv`, Gudang opening udah bisa muat & Driver udah bisa eksekusi (path warehouse→driver udah tested via seed).
+⚠ **KEYSTONE (split):** submit pakai **`sendButtonGpsWithEvent`** (reuse base-lib row 192, bukan widget baru). Button `addToEvent` nulis **HEADER scalar** (`tty/tst/kl/kn/al/vv/tdt/cv/cn/t`) — itu jalan. TAPI **`it[]` = array, `addToEvent` GAK BISA nest array**. Jadi renderer `savesend` WAJIB **ALSO append draft `it[]` sbg native Firestore array** ke task doc yg sama (cap = custody `ip[]`/`dp[]`; solve sekali). `it` di JSON atas = hasil gabungan (header DSL + it[] native). Begitu doc lengkap ke-tulis (`tst:assigned`+`vv`+`it[]`), Gudang muat & Driver eksekusi (path warehouse→driver tested via seed). Token `{kl}/{kn}/{al}/{vv}` dari draft (butuh draft-carry); `{userVid}/{userName}` session; `{today}` system.
 
 ### JSON resolved — LIVE (op1Screen P4)
 `taskManifestList` (row 1190) — render draft `it[]` read-only (tx-aware):
@@ -231,18 +231,14 @@ Field code semua grounded ke config live P2 (`taskItemBuilder`: `ii/in/tx/pd/pp/
   "text": "Item Order◆item line◆drop◆pickup◆"
 }
 ```
-`submitConfirmSheet` (row 1197) — trigger native write task-doc di atas:
+`sendButtonGpsWithEvent` (LIVE row 1190 — reuse base-lib row 192, GANTI submitConfirmSheet) — RBT `savesend` nulis task header + chain dialog → P5:
 ```json
-{
-  "type": "SUBMIT_CONFIRM_SHEET",
-  "source": "draft",
-  "confirmEvent": "task-create",
-  "writeTarget": "task",
-  "route": "vertikaTeknoLokaciptaCreateTaskSuccess",
-  "text": "Buat Task & Assign◆Buat Task & Assign◆Cek Lagi"
-}
+{"type":"RBT","alignment":"spaceevenly","children":[{"text":"✓ Buat Task & Assign","action":"savesend","route":"vertikaTeknoLokaciptaCreateTaskSuccess","delay":5,"gpsPosition":"","flag":"task-create","addToEvent":"84214220504259//task⭘r◼4320⭘tablevid◼20342033315492⭘tty◼delivery⭘tst◼assigned⭘kl◼{kl}⭘kn◼{kn}⭘al◼{al}⭘vv◼{vv}⭘tdt◼{today}⭘cv◼{userVid}⭘cn◼{userName}⭘t◼◀2▶⭘ts◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶","chain":{"type":"DO_DIALOG","title":"Task Dibuat","children":[{"type":"TXT","data":"Task masuk antrian Gudang · status assigned, nunggu loading"},{"type":"RBT","alignment":"center","children":[{"text":"Ok","route":"vertikaTeknoLokaciptaCreateTaskSuccess"}]}]}}]}
 ```
-`source:draft` = dua-duanya baca **draft state in-memory** (bukan koleksi). `submitConfirmSheet` `writeTarget:task` → rakit doc (§5 di atas) + native `set()` → route P5.
+- `addToEvent` → task header scalar (jalan via DSL). **`it[]` TIDAK di sini** → renderer `savesend` append draft `it[]` native (keystone di atas).
+- `taskManifestList` baca **draft state in-memory** (review read-only). `gpsPosition:""` = admin office, no GPS.
+
+**Design (mockup `TaskSummaryScreen` L1595–2061):** render review sbg **kartu ringkasan menarik** (kartu customer · kartu items/manifest · kartu kendaraan · tombol submit besar) — JANGAN TXT polos `Customer: {kn}`. Renderer styling, samain mockup biar konsisten sama P1.
 
 ---
 
