@@ -86,7 +86,7 @@ text: "◆Tambah Item◆Transfer Kepemilikan◆Refill◆Jual◆Beli◆Kosong◆P
   "outstandingSearch": "lt◼client⭘lv◼{kl}",
   "outstandingQtyField": "qt",
   "outstandingCondField": "cd",
-  "txTypes": "deliver,sale,purchase,refill",
+  "txTypes": "deliver",
   "writeTarget": "it",
   "dropField": "pd",
   "pickupField": "pp",
@@ -102,6 +102,8 @@ text: "◆Tambah Item◆Transfer Kepemilikan◆Refill◆Jual◆Beli◆Kosong◆P
 `{kl}` = customer id dari P1 (`idField:lv`). `outstandingSearch` Model B per-client. Output draft `it[]` → di-carry P3/P4, ditulis native di P4 submit.
 
 **Search (productPicker):** `searchField:"in"` = filter katalog lokal by nama item; `searchHint` = placeholder box cari (config-driven, BUKAN hardcode — sejajar customer-picker P1 "Cari customer…"). Picker sheet = search box di atas + list `availableProducts` (exclude yg udah di-task). Empty katalog = "Semua item sudah ditambahkan" (mockup `ProductPickerSheet`).
+
+**⚠ Tx-button gating (BUG live 2026-06-29 — RENDERER FIX):** tombol transaksi (Tambah Item=`deliver` · Jual=`sale` · Beli=`purchase` · Refill=`refill`) **WAJIB di-render dari `txTypes` doang** — type yg gak ada di list = tombol HILANG; urutan `txTypes` = urutan tombol. **Live-test:** set `txTypes:"deliver"` di app live → **4 tombol tetep muncul semua** = renderer SEKARANG hardcode tombol, gak baca `txTypes`. Fix = renderer loop `txTypes` buat bikin tombol (config-driven, no deploy buat tambah/kurang). Owner mau mulai `deliver` aja, tambah `sale`/`purchase`/`refill` nanti via JSON. Field-map per type (`saleField`/`buyField`/`refillField`/cond) tetep ada di config — cuma kepake kalau type-nya aktif.
 
 ### 1.6 Render states
 - empty → CTA "Tambah Item / Transfer / Refill".
@@ -145,34 +147,17 @@ text: "◆Tambah Item◆Transfer Kepemilikan◆Refill◆Jual◆Beli◆Kosong◆P
 
 ## §4. P3 — VehicleAssignment (Step 3/4) — reuse
 
+> 📄 **Spec widget lengkap: `picker-list-widget-dev-spec.md`** (type `PICKER_LIST` — generic single-select picker, shared P3+H1, di-genericize dari VEHICLE_PICKER). App live skrg: "wrong widget name" (renderer belum ada).
+
 | # | elemen | widget | st | data |
 |---|---|---|---|---|
 | 1 | Header | `workspaceHeader` | 🔶 | static |
 | 2 | Context strip (customer · ↓drop ↑pickup) | `text` | ✅ | totals {dev} |
-| 3 | Vehicle list (plat·type·status·taskCount·✓·ad-hoc) | `vehiclePicker` *or* `displayStatisticCard` keyed | 🆕? | `stock_location` `lt=vehicle`; capture `{vv}`. **Spec lengkap di `admin-home-dev-spec.md` §2.3** |
+| 3 | Vehicle list (plat·type·status·taskCount·✓·ad-hoc) | `PICKER_LIST` (mode capture) | 🆕 | `stock_location` `lt=vehicle`; capture `{vv}`. **Spec `picker-list-widget-dev-spec.md`** |
 | 4 | Doctrine note (assign kendaraan ≠ orang) | `noticeBar` | ✅ | static |
 | 5 | "Lanjut · Review" | `buttonRoute` | ✅ | → P4 |
 
-`vehiclePicker` di-share dgn H1 (assign/reassign/jadwal). Di sini = capture `vv` buat task baru (belum nulis sampai P4 submit).
-
-### §4 JSON resolved — LIVE (op1Screen P3 row 1182, mode capture)
-```json
-{
-  "type": "VEHICLE_PICKER",
-  "mode": "capture",
-  "vidtable": "20342033315492",
-  "table": "84214220504259//stock_location",
-  "search": "lt◼vehicle⭘lst◼active",
-  "plateField": "ln",
-  "driverField": "dv",
-  "taskTable": "84214220504259//task",
-  "taskCountSearch": "vv◼{lv}⭘tst◼assigned",
-  "captureToken": "vv",
-  "route": "",
-  "text": "Pilih Kendaraan◆Pilih kendaraan ini◆task aktif◆Ad-hoc / Nanti◆"
-}
-```
-`mode:capture` = simpan `{vv}` ke draft (gak nulis Firestore, gak navigate). `taskCountSearch` per-kendaraan (`{lv}` = lv kendaraan baris) → badge "N task aktif". `route:""` = stay (CTA "Lanjut · Review" yg navigate ke P4).
+`PICKER_LIST` (mode capture) di-share dgn H1 (assign/reassign/jadwal). Di sini = capture `vv` buat task baru (belum nulis sampai P4 submit). **JSON resolved LIVE (row 1178) = `picker-list-widget-dev-spec.md` §7 Contoh A.**
 
 ---
 

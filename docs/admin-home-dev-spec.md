@@ -197,11 +197,13 @@ Mockup `OutstandingPanel`: header collapsible "Prioritas Pengambilan ▾" + per 
 
 ## 6. Sheet — `vehiclePicker` (reuse, LIVE Widget row 233)
 
+> 📄 **Spec widget lengkap: `picker-list-widget-dev-spec.md`** (type `PICKER_LIST` — generic single-select, di-genericize dari VEHICLE_PICKER 2026-06-29; NEW renderer, shared H1+P3). ⚠ Kalau template H1 ini udah ke-publish live sbg `VEHICLE_PICKER`, rename ke `PICKER_LIST` pas garap H1.
+
 Bottom-sheet pilih kendaraan, 3 mode (judul beda, list sama): `assign` (set vv), `reassign` (load_rejected→assigned+vv baru), `schedule` (outstanding→pickup task+vv). `captureToken:"vehicleId"` → caller (signal-list / upcoming / outstanding) yang nulis. Write = `updateEventRow` scalar (BUKAN array).
 
-**JSON resolved (sheet):**
+**JSON resolved (sheet)** — `picker-list-widget-dev-spec.md` §7 Contoh B:
 ```json
-{"type":"VEHICLE_PICKER","vidtable":"20342033315492","table":"84214220504259//stock_location","search":"lt◼vehicle","plateField":"ln","typeField":"ty","captureToken":"vehicleId","text":"Pilih Kendaraan◆task aktif◆Ad-hoc / Lainnya◆Kendaraan tidak tetap"}
+{"type":"PICKER_LIST","vidtable":"20342033315492","table":"84214220504259//stock_location","search":"lt◼vehicle","titleField":"ln","subField":"ty","captureToken":"vehicleId","adhocLabel":"Ad-hoc / Lainnya","emptyText":"Belum ada kendaraan","text":"Pilih Kendaraan◆Pilih◆task aktif"}
 ```
 > **DEV CONFIRMED (2026-06-25):** JSON ini diterima persis (`typeField:"ty"` + text-slot OK). Open Q7 KELAR. Verify Widget row 233 live match (MCP).
 

@@ -59,7 +59,7 @@ H1 di-rebuild: home gak bisa pake widget generic existing (3× displayStatisticC
 | `selectableGrid` | H1 | LOW | **EXTEND** (+`mode:launch`+`routes`/`icons`, tap=navigate, backward-compat) | home §4.1 | selectable-grid-launcher.json |
 | `noticeBar` | H1 | LOW | **EXTEND** (+`actionText`/`actionRoute` = tombol CTA) | home §4.2 | notice-bar-genesis.json |
 | `taskItemBuilder` | P2 · W1 | **HIGH** | NEW | create-task §1 | — |
-| `vehiclePicker` (sheet) | H1 · P3 | MED | NEW | home §6 | — |
+| `PICKER_LIST` (generic; ex-VEHICLE_PICKER) | H1 · P3 | MED | **NEW** (app: "wrong widget name") | **picker-list-widget-dev-spec.md** | — |
 | `TASK_FEED_LIST` | P1 (+H1 feeds) | LOW | **EXTEND** (`groupField` optional → flat name-list, render all, no status-filter) | customer-namelist §1 | — |
 | `{userVid}`/`{userName}` | N1 (+semua write) | LOW | **WIRE** session token current-user (role-agnostic; N1 `{adminVid}` invalid) | customer-namelist §2 | — |
 
