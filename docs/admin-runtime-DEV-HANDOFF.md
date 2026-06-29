@@ -58,10 +58,12 @@ H1 di-rebuild: home gak bisa pake widget generic existing (3× displayStatisticC
 | `OUTSTANDING_PANEL` | H1 | MED | **NEW** (collapsible aged) | home §5.3 | outstanding-panel.json |
 | `selectableGrid` | H1 | LOW | **EXTEND** (+`mode:launch`+`routes`/`icons`, tap=navigate, backward-compat) | home §4.1 | selectable-grid-launcher.json |
 | `noticeBar` | H1 | LOW | **EXTEND** (+`actionText`/`actionRoute` = tombol CTA) | home §4.2 | notice-bar-genesis.json |
-| `taskItemBuilder` | P2 · W1 | **HIGH** | NEW | create-task §1 | — |
+| `taskItemBuilder` | P2 · W1 | **HIGH** | NEW (+**gate tx-button dari `txTypes`** — live-test 2026-06-29: tombol Tambah/Jual/Beli/Refill HARDCODED, abai txTypes; +search `searchField`/`searchHint`) | create-task §1 + §1.5b | — |
 | `PICKER_LIST` (generic; ex-VEHICLE_PICKER) | H1 · P3 | MED | **NEW** (app: "wrong widget name") | **picker-list-widget-dev-spec.md** | — |
-| `TASK_FEED_LIST` | P1 (+H1 feeds) | LOW | **EXTEND** (`groupField` optional → flat name-list, render all, no status-filter) | customer-namelist §1 | — |
-| `{userVid}`/`{userName}` | N1 (+semua write) | LOW | **WIRE** session token current-user (role-agnostic; N1 `{adminVid}` invalid) | customer-namelist §2 | — |
+| `TASK_FEED_LIST` flat | P1 (+H1) | MED | **EXTEND** (`groupField` optional→flat + **visual refactor = card mockup P1**: avatar/title/sub/badge/chevron, search built-in + "{N}" header + emptyText, self-contained) | customer-namelist §1 + §1b | — |
+| `sendButtonGpsWithEvent` submit + `it[]` native-append | P4 | **HIGH** | savesend (reuse, LIVE row 1190) nulis header via addToEvent; **renderer WAJIB append draft `it[]` native** (= keystone) | create-task §5 | — |
+| draft-carry token | P2→P4 | **HIGH** | bawa `{kl}/{kn}/{al}/{vv}`+`it[]` draft lintas page → P4 review+submit | create-task §3/§5 | — |
+| `{userVid}`/`{userName}` | N1·P4·semua write | LOW | **WIRE** session token current-user (role-agnostic; N1 `{adminVid}` invalid) | customer-namelist §2 | — |
 
 **Prinsip §0 (WAJIB):** semua widget generic/config-driven — label di `text` ◆-segment, table/search/field=param, status 3-tier theme, route=param. JANGAN hardcode label/collection/route di renderer. (admin-home-dev-spec.md §0)
 
@@ -69,8 +71,8 @@ H1 di-rebuild: home gak bisa pake widget generic existing (3× displayStatisticC
 `workspaceHeader` · `taskManifestList` · `submitConfirmSheet` · `displayStatisticCard` keyed · `noticeBar` · `stepper` · `selectableGrid` · `switch` · `datePicker` · `textField` · `buttonRoute` · `displayList`.
 → kalau renderer driver-nya udah jalan, Admin tinggal config. Status renderer: `driver-runtime-DEV-HANDOFF.md`.
 
-### ⛔ Blocker bareng — native array write
-`task.it[]` (P4 submit) + `taskItemBuilder` butuh **native Firestore array write** — DSL gak support array. **Capability yang SAMA dengan custody `ip[]`/`dp[]`**. Solve sekali → kebuka Admin P4 + custody chain. Sampai itu, P4 submit ketahan.
+### ⛔ Blocker bareng — native array write (KEYSTONE)
+`task.it[]` (P4 submit) butuh **native Firestore array write** — DSL/`addToEvent` gak bisa nest array. P4 submit = `sendButtonGpsWithEvent` (addToEvent nulis HEADER scalar) → renderer `savesend` **WAJIB ALSO append draft `it[]` sbg native array** ke doc yg sama. **Capability SAMA dengan custody `ip[]`/`dp[]`** — solve sekali, kebuka Admin P4 + custody. Sampai itu, item task gak ke-tulis (header doang).
 
 ---
 
@@ -106,16 +108,25 @@ Tambahan: Admin set `vv`+`cv/cn`(creator), **TIDAK** set driver (`dv` di-set Gud
 
 ---
 
-## 6. Build order (saran)
-1. **EXTEND dulu** (kecil, additive, unblock H1 cepet): `selectableGrid` (+launcher) + `noticeBar` (+action).
-2. `adminCoordinationHeader` (LOW) — warm-up renderer baru.
-3. Feed H1 read-only: `RUNNING_TASK_LIST` → `OUTSTANDING_PANEL` (tier umur) → `UPCOMING_TASK_LIST` (+assign sheet).
-4. `vehiclePicker` sheet + write scalar (task.vv) — dipake signal-list/upcoming/outstanding.
-5. `coordinationSignalList` (H1, derive lintas-koleksi) — paling berat.
-6. `taskItemBuilder` (P2) + **native array write** → buka P4 submit.
-7. Walk-in (W) terakhir — nunggu jsx final.
+## 6. Build order — FOKUS CORE FLOW dulu (admin→warehouse→driver "sampai task"; walk-in di-KEEP)
+Target user: **1 flow task kebuat dari admin → muncul di Gudang → Driver eksekusi.** Urut biar cepet nyambung:
 
-> Config H1 udah live — dev tinggal bikin renderer per widget, test langsung resolve di op1Screen row 1145.
+**A. Core task-create (P1→P5) — prioritas:**
+1. `PICKER_LIST` (P3 pilih kendaraan) — sekarang "wrong widget name".
+2. `taskItemBuilder` (P2) + gate tombol `txTypes` + search.
+3. `TASK_FEED_LIST` flat + visual mockup (P1 list customer).
+4. **draft-carry** token (`{kl}/{kn}/{al}/{vv}`+`it[]` lintas P1→P4).
+5. **KEYSTONE**: `savesend` renderer append draft `it[]` native (P4 submit) + wire `{userVid}/{userName}`.
+   → abis 1-5: admin emit task lengkap → **Gudang+Driver langsung consume** (path itu udah tested via seed).
+
+**B. H1 home (paralel/nyusul):**
+6. EXTEND `selectableGrid`(+launcher) + `noticeBar`(+action) — kecil.
+7. `adminCoordinationHeader` (LOW) → feed read-only `RUNNING`/`UPCOMING`/`OUTSTANDING_PANEL`.
+8. `coordinationSignalList` (paling berat, derive lintas-koleksi).
+
+**C. Walk-in (W) — DITUNDA** (owner keep dulu sampe core kelar).
+
+> Config semua udah live di op1Screen — dev bikin renderer per type, test langsung resolve. "wrong widget name" = type belum ada renderer-nya.
 
 ---
 
