@@ -62,7 +62,7 @@ H1 di-rebuild: home gak bisa pake widget generic existing (3× displayStatisticC
 | `PICKER_LIST` (generic; ex-VEHICLE_PICKER) | H1 · P3 | MED | **NEW** (app: "wrong widget name") | **picker-list-widget-dev-spec.md** | — |
 | `TASK_FEED_LIST` flat | P1 (+H1) | MED | **EXTEND** (`groupField` optional→flat + **visual refactor = card mockup P1**: avatar/title/sub/badge/chevron, search built-in + "{N}" header + emptyText, self-contained) | customer-namelist §1 + §1b | — |
 | `sendButtonGpsWithEvent` submit + `it[]` native-append | P4 | **HIGH** | savesend (reuse, LIVE row 1190) nulis header via addToEvent; **renderer WAJIB append draft `it[]` native** (= keystone) | create-task §5 | — |
-| draft-carry token | P2→P4 | **HIGH** | bawa `{kl}/{kn}/{al}/{vv}`+`it[]` draft lintas page → P4 review+submit | create-task §3/§5 | — |
+| **draft-carry (customer+vehicle+items)** | P1→P4 | **HIGH** | ⚠ live-test 2026-06-30: **cuma `it[]` yg nyampe P4** (manifest jalan; customer/vehicle BLANK, `{kl}` gak ke-carry — header-query lv◼{kl} no-effect). Bawa customer `kl/kn/al` + vehicle `vv` **JUGA** (bukan items doang) → render kartu P4 + submit write | create-task §5 | — |
 | `{userVid}`/`{userName}` | N1·P4·semua write | LOW | **WIRE** session token current-user (role-agnostic; N1 `{adminVid}` invalid) | customer-namelist §2 | — |
 
 **Prinsip §0 (WAJIB):** semua widget generic/config-driven — label di `text` ◆-segment, table/search/field=param, status 3-tier theme, route=param. JANGAN hardcode label/collection/route di renderer. (admin-home-dev-spec.md §0)
