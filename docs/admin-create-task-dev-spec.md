@@ -173,6 +173,13 @@ text: "◆Tambah Item◆Transfer Kepemilikan◆Refill◆Jual◆Beli◆Kosong◆P
 | 6 | "Setelah submit" | `noticeBar` | ✅ | static |
 | 7 | **Submit "Buat Task & Assign"** | `sendButtonGpsWithEvent` (reuse base-lib, GANTI submitConfirmSheet) | 🔶 | addToEvent header + savesend renderer append `it[]` native (§5/§10) → P5 |
 
+### ⚠ LIVE-TEST 2026-06-30 — token `{}` di TXT display = LITERAL (FIXED)
+P4 live nampilin `Customer: {kn} — {al}` + `Kendaraan: {vv}` **mentah**; TAPI `taskManifestList` JALAN (item "Amidis Galon 19 Liter · 3 drop · 3 pickup" dari draft).
+**Sebab:** renderer **gak nge-substitusi `{}` di teks display TXT**. Token `{}` cuma di-inject di **search / write DSL** (query/addToEvent), BUKAN di `data` TXT. Manifest jalan krn baca draft terstruktur (`source:draft`), bukan interpolasi teks.
+**FIX (live):** customer → query lewat **header** (`WORKSPACE_HEADER` `search:lv◼{kl}` → `titleField:ln`/`addressField:al`, pola P2 = proven). 2 TXT stub (`{kn}`/`{vv}`) di-OFF (F=FALSE row 1185/1187).
+**Vehicle:** nyusul di kartu design (renderer baca draft `vv`, ATAU query `lv◼{vv}`→`ln`) — P3 `PICKER_LIST` belum kebangun, `vv` belum ke-capture.
+**ATURAN REUSABLE:** display nilai dinamis = widget **QUERY / draft-bound**, JANGAN `{token}` di teks TXT (gak ke-interpolasi).
+
 ### Submit payload (task baru — grounded)
 ```
 task (doc baru, key tnm):
