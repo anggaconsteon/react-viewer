@@ -27,17 +27,20 @@ Draft = objek in-memory yg **NAMBAH tiap step**. ⚠ Live-test 2026-06-30: **cum
 
 | step | terima (draft in) | DISPLAY | capture/build | draft out |
 |---|---|---|---|---|
-| P1 | — | list customer (search) | pilih 1 customer | **customer{kl,kn,al,(pic,ph)}** |
+| P1 | — | list customer (search) | pilih 1 customer | **customer{kl,kn,al,pic}** |
 | P2 | customer | **header customer** + banner outstanding | build `it[]` | customer + **it[]** |
 | P3 | customer+it[] | **header customer** + Σdrop/pickup | pilih kendaraan | + **vv** |
 | P4 | customer+it[]+vv | **kartu customer** + manifest `it[]` + kartu kendaraan | review | submit → `task{kl,kn,al,vv,it[],…}` |
 | P5 | task | customer + kendaraan + Σdrop/pickup | — | — |
 
 ### 0.3 Header customer DI SETIAP STEP (P2·P3·P4) — mockup pattern
-Mockup nampilin strip customer di ATAS tiap langkah: **"🏪 {kn} / {pic} · {ph}"** (+ alamat penuh di kartu P4). WAJIB konsisten tiap step, dibaca dari **draft customer** (sama sumber kayak `taskManifestList` baca draft `it[]`). **JANGAN `{token}` di teks TXT** (gak ke-interpolasi) **JANGAN re-query** (`{kl}` gak ke-carry — udah ke-test, no-effect).
+Mockup nampilin strip customer di ATAS tiap langkah: **"🏪 {kn} / {pic}"** (`pic` = combined "Pak Budi · 081234567890"; + alamat penuh di kartu P4). WAJIB konsisten tiap step, dibaca dari **draft customer** (sama sumber kayak `taskManifestList` baca draft `it[]`). **JANGAN `{token}` di teks TXT** (gak ke-interpolasi) **JANGAN re-query** (`{kl}` gak ke-carry — udah ke-test, no-effect).
 
-### 0.4 ⚠ Field gap — PIC + phone
-Header butuh `pic` ("Pak Budi") + `ph` ("081234567890"). `stock_location` SEKARANG cuma `ln`/`al`. N1 nangkep "PIC/Kontak" tapi **GAK nulis** (no field). **Tech-lead: assign field code** (mis. `lpic`/`lph`) + N1 write + carry di draft. Sampai itu, header tampil `kn`+`al` aja.
+### 0.5 ⚠ Nomor row = INDIKATIF (sheet re-order pas sync)
+op1Screen **re-order pas sync** → page pindah row. **Cari page by ROUTE NAME di col A** (`vertikaTeknoLokacipta…`), JANGAN andelin nomor row di doc ini. Contoh: N1 (`…NewCustomer`) tadinya ~1201 → sekarang **806**.
+
+### 0.4 Field customer (UDAH komplit di N1)
+N1 (`stock_location lt=client`) nulis: `ln`(nama) · `al`(alamat) · **`pic`** (PIC/Kontak combined, form 1 field "Nama · No. HP" → ◁14▷ → "Pak Budi · 081234567890" = persis display mockup). Header pakai `kn`(=ln) + `al` + `pic`. **`pic` UDAH ke-write live** (gak perlu nambah). Display = renderer baca draft, **bukan** config baru. (Future opsi: split phone struktur `ph` = butuh 2 form field; combined `pic` cukup.)
 
 ---
 
