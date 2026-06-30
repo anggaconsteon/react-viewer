@@ -33,8 +33,18 @@ Draft = objek in-memory yg **NAMBAH tiap step**. ⚠ Live-test 2026-06-30: **cum
 | P4 | customer+it[]+vv | **kartu customer** + manifest `it[]` + kartu kendaraan | review | submit → `task{kl,kn,al,vv,it[],…}` |
 | P5 | task | customer + kendaraan + Σdrop/pickup | — | — |
 
-### 0.3 Header customer DI SETIAP STEP (P2·P3·P4) — mockup pattern
-Mockup nampilin strip customer di ATAS tiap langkah: **"🏪 {kn} / {pic}"** (`pic` = combined "Pak Budi · 081234567890"; + alamat penuh di kartu P4). WAJIB konsisten tiap step, dibaca dari **draft customer** (sama sumber kayak `taskManifestList` baca draft `it[]`). **JANGAN `{token}` di teks TXT** (gak ke-interpolasi) **JANGAN re-query** (`{kl}` gak ke-carry — udah ke-test, no-effect).
+### 0.3 Header customer DI SETIAP STEP (P2·P3·P4) — widget `CONTEXT_CARD` (NEW) + carry DRAFT
+Mockup nampilin **kartu customer** di ATAS tiap langkah: "🏪 {kn} / {pic}" + banner OUTSTANDING / "belum di-seed". Resolusi (di-acc brainstorm 2026-06-30):
+
+**(a) Carry = DRAFT** (BUKAN routeParams). P1 klik customer (`TASK_FEED_LIST` tap) → renderer **set `draft.customer` = {kl,kn,al,pic}** (field row yg di-tap), sama mekanisme kaya item masuk `draft.it[]`. Lewat P2→P3→P4 otomatis. (`taskManifestList` udah bukti draft carry jalan.)
+
+**(b) Display = `CONTEXT_CARD`** (NEW widget generic, Widget tab @250). Baca `draft` (draftKey `customer`) → kartu icon+`titleField`(kn)+`metaField`(pic)+`subField`(al) + banner: query `badgeTable`(asset_cache) by `{kl}` draft → ada row = "OUTSTANDING CUSTOMER"+Σ; 0 row = `seedLabel` "belum di-seed". Generic — ganti draftKey/field = context entity apapun.
+
+JSON resolved (P2/P3/P4, taro setelah workspaceHeader):
+```json
+{"type":"CONTEXT_CARD","source":"draft","draftKey":"customer","iconField":"","titleField":"kn","metaField":"pic","subField":"al","badgeTable":"84214220504259//asset_cache","badgeSearch":"lt◼client⭘lv◼{kl}","badgeField":"qt","seedLabel":"CUSTOMER BELUM DI-SEED","text":"OUTSTANDING CUSTOMER◆Customer ada {n} tabung dibalikin. Pickup = drop (exchange) + outstanding (clearing).◆Saldo awal belum dicatat. Saran pickup dimatikan — set manual."}
+```
+**Penempatan:** P2/P3/P4 → `workspaceHeader` jadi **judul doang** (no-query; P2 skrg masih `search:lv◼{kl}` → kosongin), + `CONTEXT_CARD` row-2 (setelah header). **DEV deps:** (1) list-tap populate `draft.customer`, (2) `CONTEXT_CARD` renderer. Config sheet pasang pas renderer jadi (insert row-2 + sync-reorder = barengan renderer, hindari churn). **JANGAN `{token}` di TXT** (gak interpolasi) / **JANGAN re-query header** ({kl} route-param putus, udah ke-test).
 
 ### 0.5 ⚠ Nomor row = INDIKATIF (sheet re-order pas sync)
 op1Screen **re-order pas sync** → page pindah row. **Cari page by ROUTE NAME di col A** (`vertikaTeknoLokacipta…`), JANGAN andelin nomor row di doc ini. Contoh: N1 (`…NewCustomer`) tadinya ~1201 → sekarang **806**.
