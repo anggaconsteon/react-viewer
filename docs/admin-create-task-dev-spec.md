@@ -127,7 +127,19 @@ text: "◆Tambah Item◆Transfer Kepemilikan◆Refill◆Jual◆Beli◆Kosong◆P
 
 **Write:** none. **Open:** badge outstanding butuh agg asset_cache per client — {dev}.
 
-> ⚠ **UPDATE (live-test 2026-06-29):** list customer **bukan** `displayStatisticCard` lagi — itu render BLANK (stat-card, gak ada renderer name-list). Diganti **`TASK_FEED_LIST` flat-mode** (LIVE row 1163). JSON resolved + perubahan renderer (`groupField` optional) = **`customer-namelist-and-creator-token-dev-spec.md` §1**. Tap row bawa `lv`→`{kl}` ke P2.
+**List customer = `TASK_FEED_LIST` flat-mode** (LIVE row 1163). BUKAN `displayStatisticCard` (stat-card → render BLANK). Tap bawa `lv`→`{kl}` ke P2.
+
+**Renderer extend `TASK_FEED_LIST` (2 hal):**
+1. **`groupField` optional** — kosong = MODE FLAT (render SEMUA row match `search`, no section-header, no status-filter). Non-empty = grouped (driver, gak berubah).
+2. **Visual = kartu mockup `CustomerPickerScreen` (L343-405):** avatar (`iconField` emoji/char ATAU fallback huruf depan `titleField`) + `titleField` (judul) + `addressField` (sub) + badge opsional + chevron `›`. **Search bar built-in** (`searchHint`, filter title+address lokal) + header "{N} {countLabel}" + `emptyText`. **Self-contained** (TXT search/label terpisah udah di-OFF). GENERIC — reusable list keyed apapun.
+
+JSON resolved LIVE (row 1163):
+```json
+{"type":"TASK_FEED_LIST","vidtable":"20342033315492","table":"84214220504259//stock_location","search":"lt◼client⭘lst◼active","groupField":"","idField":"lv","titleField":"ln","addressField":"al","iconField":"","searchHint":"Cari customer atau alamat…","route":"vertikaTeknoLokaciptaCreateTaskItem","countLabel":"Customer","emptyText":"Belum ada customer","text":"Customer◆Pilih customer untuk order"}
+```
+(field delivery-only kosong `typeField`/`itemsField`/`dropField`/`pickupField`/`returnGate*` = di-skip di flat mode.)
+
+**Token creator (N1 + SEMUA write):** wire **`{userVid}`/`{userName}`** = session current-user (role-agnostic). N1 sempet `{adminVid}` (ngarang, gak ke-wire) → ke-simpen LITERAL. Pakai `{userVid}`/`{userName}` (nama final konfirmasi dev; jangan reuse `{driverVid}`).
 
 ---
 
@@ -147,7 +159,7 @@ text: "◆Tambah Item◆Transfer Kepemilikan◆Refill◆Jual◆Beli◆Kosong◆P
 
 ## §4. P3 — VehicleAssignment (Step 3/4) — reuse
 
-> 📄 **Spec widget lengkap: `picker-list-widget-dev-spec.md`** (type `PICKER_LIST` — generic single-select picker, shared P3+H1, di-genericize dari VEHICLE_PICKER). App live skrg: "wrong widget name" (renderer belum ada).
+**`PICKER_LIST`** = generic single-select picker (pilih 1 dari koleksi + capture token + badge count + baris ad-hoc). NEW renderer (app skrg: "wrong widget name"). Detail render + JSON di bawah. (Deep-dive opsional: `picker-list-widget-dev-spec.md`.)
 
 | # | elemen | widget | st | data |
 |---|---|---|---|---|
@@ -157,7 +169,12 @@ text: "◆Tambah Item◆Transfer Kepemilikan◆Refill◆Jual◆Beli◆Kosong◆P
 | 4 | Doctrine note (assign kendaraan ≠ orang) | `noticeBar` | ✅ | static |
 | 5 | "Lanjut · Review" | `buttonRoute` | ✅ | → P4 |
 
-`PICKER_LIST` (mode capture) di-share dgn H1 (assign/reassign/jadwal). Di sini = capture `vv` buat task baru (belum nulis sampai P4 submit). **JSON resolved LIVE (row 1178) = `picker-list-widget-dev-spec.md` §7 Contoh A.**
+**Render (per baris):** `titleField` (judul) + `subField` (tag) + `metaField` (baris-3 opsional) + badge "{N} {countLabel}" (count `countTable` WHERE `countSearch`, token baris `{lv}`) + chevron. Baris ekstra ad-hoc (`adhocLabel`). Empty = `emptyText`. `mode:capture` = bind `captureToken` ke draft, **gak navigate/nulis** (CTA halaman yg navigate). Shared H1 (assign/reassign) via `mode` caller. GENERIC — reusable picker apapun (gudang/slot/kategori).
+
+JSON resolved LIVE (row 1178, capture `vv`):
+```json
+{"type":"PICKER_LIST","mode":"capture","vidtable":"20342033315492","table":"84214220504259//stock_location","search":"lt◼vehicle⭘lst◼active","titleField":"ln","subField":"ty","metaField":"dv","countTable":"84214220504259//task","countSearch":"vv◼{lv}⭘tst◼assigned","captureToken":"vv","route":"","adhocLabel":"Ad-hoc / Nanti","emptyText":"Belum ada kendaraan aktif","text":"Pilih Kendaraan◆Pilih kendaraan ini◆task aktif"}
+```
 
 ---
 
