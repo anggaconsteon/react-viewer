@@ -42,8 +42,9 @@ Mockup nampilin **kartu customer** di ATAS tiap langkah: "🏪 {kn} / {pic}" + b
 
 JSON resolved (P2/P3/P4, taro setelah workspaceHeader):
 ```json
-{"type":"CONTEXT_CARD","source":"draft","draftKey":"customer","iconField":"","titleField":"kn","metaField":"pic","subField":"al","badgeTable":"84214220504259//asset_cache","badgeSearch":"lt◼client⭘lv◼{kl}","badgeField":"qt","seedLabel":"CUSTOMER BELUM DI-SEED","text":"OUTSTANDING CUSTOMER◆Customer ada {n} tabung dibalikin. Pickup = drop (exchange) + outstanding (clearing).◆Saldo awal belum dicatat. Saran pickup dimatikan — set manual."}
+{"type":"CONTEXT_CARD","source":"draft","wizardKey":"admin_create_task","draftKey":"customer","iconField":"","titleField":"kn","metaField":"pic","subField":"al","badgeTable":"84214220504259//asset_cache","badgeSearch":"lt◼client⭘lv◼{kl}","badgeField":"qt","seedLabel":"CUSTOMER BELUM DI-SEED","text":"OUTSTANDING CUSTOMER◆Customer ada {n} tabung dibalikin. Pickup = drop (exchange) + outstanding (clearing).◆Saldo awal belum dicatat. Saran pickup dimatikan — set manual."}
 ```
+⚠ **ALIGN ke model live (2026-06-30):** P4 submit udah jadi **`TASK_CREATE_SUBMIT`** (`wizardKey:"admin_create_task"`) — baca wizard-draft → tulis task native. CONTEXT_CARD WAJIB baca **draft yg SAMA** (`wizardKey:"admin_create_task"`, `draftKey:"customer"`) — konsisten sama submit + `taskManifestList source:draft`. Draft model: wizard `admin_create_task` punya `.customer{kl,kn,al,pic}` + `.it[]` + `.vv`. (P3 PICKER_LIST live udah +styling `rowIcon`/`titleMono`/`accentColor` — fold ke template 247 pas stabil.)
 **Penempatan:** P2/P3/P4 → `workspaceHeader` jadi **judul doang** (no-query; P2 skrg masih `search:lv◼{kl}` → kosongin), + `CONTEXT_CARD` row-2 (setelah header). **DEV deps:** (1) list-tap populate `draft.customer`, (2) `CONTEXT_CARD` renderer. Config sheet pasang pas renderer jadi (insert row-2 + sync-reorder = barengan renderer, hindari churn). **JANGAN `{token}` di TXT** (gak interpolasi) / **JANGAN re-query header** ({kl} route-param putus, udah ke-test).
 
 ### 0.5 ⚠ Nomor row = INDIKATIF (sheet re-order pas sync)
