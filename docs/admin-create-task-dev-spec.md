@@ -173,12 +173,15 @@ text: "◆Tambah Item◆Transfer Kepemilikan◆Refill◆Jual◆Beli◆Kosong◆P
 | 6 | "Setelah submit" | `noticeBar` | ✅ | static |
 | 7 | **Submit "Buat Task & Assign"** | `sendButtonGpsWithEvent` (reuse base-lib, GANTI submitConfirmSheet) | 🔶 | addToEvent header + savesend renderer append `it[]` native (§5/§10) → P5 |
 
-### ⚠ LIVE-TEST 2026-06-30 — token `{}` di TXT display = LITERAL (FIXED)
-P4 live nampilin `Customer: {kn} — {al}` + `Kendaraan: {vv}` **mentah**; TAPI `taskManifestList` JALAN (item "Amidis Galon 19 Liter · 3 drop · 3 pickup" dari draft).
-**Sebab:** renderer **gak nge-substitusi `{}` di teks display TXT**. Token `{}` cuma di-inject di **search / write DSL** (query/addToEvent), BUKAN di `data` TXT. Manifest jalan krn baca draft terstruktur (`source:draft`), bukan interpolasi teks.
-**FIX (live):** customer → query lewat **header** (`WORKSPACE_HEADER` `search:lv◼{kl}` → `titleField:ln`/`addressField:al`, pola P2 = proven). 2 TXT stub (`{kn}`/`{vv}`) di-OFF (F=FALSE row 1185/1187).
-**Vehicle:** nyusul di kartu design (renderer baca draft `vv`, ATAU query `lv◼{vv}`→`ln`) — P3 `PICKER_LIST` belum kebangun, `vv` belum ke-capture.
-**ATURAN REUSABLE:** display nilai dinamis = widget **QUERY / draft-bound**, JANGAN `{token}` di teks TXT (gak ke-interpolasi).
+### ⚠ LIVE-TEST 2026-06-30 — P4 customer/vehicle BLANK = DRAFT-CARRY GAP (renderer)
+P4 live: `Customer: {kn} — {al}` + `Kendaraan: {vv}` **mentah**; TAPI `taskManifestList` JALAN (item "Amidis Galon 19 Liter · 3 drop · 3 pickup" dari draft).
+**2 temuan test:**
+1. **Token `{}` di TXT display = LITERAL.** Renderer gak nge-substitusi `{}` di teks `data`. Token `{}` cuma di-inject di **search/write DSL**, bukan teks tampil.
+2. **`{kl}` GAK ke-carry ke P4.** Dicoba header-query (`WORKSPACE_HEADER search:lv◼{kl}`) → **gak ngefek** (customer tetep blank) → REVERTED. Bukti: cuma **draft `it[]`** yg nyampe P4 (makanya manifest doang yg render); token scalar customer/vehicle ilang setelah page asalnya.
+**Akar:** P4 cuma terima draft items. Data customer (`kl/kn/al`) + kendaraan (`vv`) **gak ke-carry**.
+**FIX (RENDERER, bukan sheet):** **draft-carry** — bawa customer+vehicle (bukan cuma items) lintas P1→P4, render jadi **kartu** (baca draft, pola sama `taskManifestList`). Ini juga yg bikin **WRITE** jalan (submit `kn◼{kn}`/`al◼{al}`/`vv◼{vv}` butuh nilai-nilai itu) + **design kartu sesuai mockup** `TaskSummaryScreen`.
+**Sheet MAXED:** manifest+button JALAN = config bener. Sisa P4 = draft-carry + card render (dev). TXT stub `{kn}`/`{vv}` di-OFF (F=FALSE 1185/1187, literal).
+**ATURAN REUSABLE:** display nilai dinamis = widget **QUERY / draft-bound**, JANGAN `{token}` di teks TXT.
 
 ### Submit payload (task baru — grounded)
 ```
