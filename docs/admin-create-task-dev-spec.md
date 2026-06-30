@@ -17,6 +17,30 @@ H1 ─Walk-in→ W1 ─counter→ W3(selesai)
 
 ---
 
+## §0. FLOW · STATE · DESIGN — BACA DULU (yg sering kelewat → app beda mockup)
+
+### 0.1 Design = PERSIS mockup (visual SSOT)
+Renderer **WAJIB styling tiap layar sesuai mockup** `src/component/AdminCreateTaskIntegrated2.jsx` (npm run dev → **Admin Runtime Gallery 2**). **App live ≠ mockup = renderer belum di-styling, BUKAN config/json salah.** Config nentuin *"widget apa + data apa"*; **look = 100% renderer**. Mockup = acuan pixel tiap screen — JANGAN render versi polos/generic.
+
+### 0.2 State carry (draft) — apa yg dibawa antar-langkah
+Draft = objek in-memory yg **NAMBAH tiap step**. ⚠ Live-test 2026-06-30: **cuma `it[]` yg nyampe P4** → customer/vehicle BLANK. WAJIB bawa SEMUA (akumulatif):
+
+| step | terima (draft in) | DISPLAY | capture/build | draft out |
+|---|---|---|---|---|
+| P1 | — | list customer (search) | pilih 1 customer | **customer{kl,kn,al,(pic,ph)}** |
+| P2 | customer | **header customer** + banner outstanding | build `it[]` | customer + **it[]** |
+| P3 | customer+it[] | **header customer** + Σdrop/pickup | pilih kendaraan | + **vv** |
+| P4 | customer+it[]+vv | **kartu customer** + manifest `it[]` + kartu kendaraan | review | submit → `task{kl,kn,al,vv,it[],…}` |
+| P5 | task | customer + kendaraan + Σdrop/pickup | — | — |
+
+### 0.3 Header customer DI SETIAP STEP (P2·P3·P4) — mockup pattern
+Mockup nampilin strip customer di ATAS tiap langkah: **"🏪 {kn} / {pic} · {ph}"** (+ alamat penuh di kartu P4). WAJIB konsisten tiap step, dibaca dari **draft customer** (sama sumber kayak `taskManifestList` baca draft `it[]`). **JANGAN `{token}` di teks TXT** (gak ke-interpolasi) **JANGAN re-query** (`{kl}` gak ke-carry — udah ke-test, no-effect).
+
+### 0.4 ⚠ Field gap — PIC + phone
+Header butuh `pic` ("Pak Budi") + `ph` ("081234567890"). `stock_location` SEKARANG cuma `ln`/`al`. N1 nangkep "PIC/Kontak" tapi **GAK nulis** (no field). **Tech-lead: assign field code** (mis. `lpic`/`lph`) + N1 write + carry di draft. Sampai itu, header tampil `kn`+`al` aja.
+
+---
+
 ## §1. `taskItemBuilder` 🆕 — widget INTI (P2 · W1 · re-skin S1)
 
 Bangun array baris transaksi. Add/remove baris, tiap baris punya **jenis transaksi** (`tx`) → field `it[]` beda. **Output = `task.it[]` (native array).**

@@ -67,6 +67,8 @@ H1 di-rebuild: home gak bisa pake widget generic existing (3× displayStatisticC
 
 **Prinsip §0 (WAJIB):** semua widget generic/config-driven — label di `text` ◆-segment, table/search/field=param, status 3-tier theme, route=param. JANGAN hardcode label/collection/route di renderer. (admin-home-dev-spec.md §0)
 
+> ⚠ **DESIGN + FLOW (sering kelewat → app beda mockup): `admin-create-task-dev-spec.md` §0.** (1) Renderer WAJIB **styling tiap layar PERSIS mockup** `AdminCreateTaskIntegrated2.jsx` — app polos = renderer belum di-styling, BUKAN config salah. (2) **Draft carry customer+vehicle+items** (bukan items doang). (3) **Header customer muncul TIAP step** (P2/P3/P4), baca dari draft. Dev udah implement fungsional tapi beda mockup = 3 hal ini belum ke-styling/ke-wire.
+
 ### Reuse renderer (shared driver — sebagian masih PENDING di handoff driver)
 `workspaceHeader` · `taskManifestList` · `submitConfirmSheet` · `displayStatisticCard` keyed · `noticeBar` · `stepper` · `selectableGrid` · `switch` · `datePicker` · `textField` · `buttonRoute` · `displayList`.
 → kalau renderer driver-nya udah jalan, Admin tinggal config. Status renderer: `driver-runtime-DEV-HANDOFF.md`.
