@@ -4,6 +4,13 @@ Entry tunggal buat dev yang ngerjain **Admin Runtime (Koordinasi)** — sisi kan
 
 Admin **reuse ~90%** library widget yang udah ada (driver/op1Screen). Kerjaan baru dev = sedikit. Doc ini bilang persis: apa yang dikirim, apa yang dibangun, apa yang bukan urusan dev.
 
+> 📦 **PAKET CORE (yg dikirim sekarang — fokus P1→P5 "sampai task"):**
+> 1. **`docs/admin-runtime-DEV-HANDOFF.md`** (doc ini — baca DULU)
+> 2. **`docs/admin-create-task-dev-spec.md`** (P1–P5 self-contained + semua JSON; baca §0 dulu: flow/state/design)
+> 3. **`src/component/AdminCreateTaskIntegrated2.jsx`** (mockup = **visual SSOT**; `npm run dev` → Admin Runtime Gallery 2)
+>
+> Doc lain (`picker-list-widget-dev-spec.md`, `customer-namelist-and-creator-token-dev-spec.md`, `admin-home-dev-spec.md`) = **deep-dive opsional**, gak wajib buat mulai. H1 + walk-in = fase nyusul.
+
 ---
 
 ## 1. KIRIM INI (paket lengkap)
