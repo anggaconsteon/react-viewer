@@ -162,9 +162,9 @@ text: "◆Tambah Item◆Transfer Kepemilikan◆Refill◆Jual◆Beli◆Kosong◆P
 
 JSON resolved LIVE (row 1163):
 ```json
-{"type":"TASK_FEED_LIST","vidtable":"20342033315492","table":"84214220504259//stock_location","search":"lt◼client⭘lst◼active","groupField":"","idField":"lv","titleField":"ln","addressField":"al","iconField":"","searchHint":"Cari customer atau alamat…","route":"vertikaTeknoLokaciptaCreateTaskItem","countLabel":"Customer","emptyText":"Belum ada customer","text":"Customer◆Pilih customer untuk order"}
+{"type":"TASK_FEED_LIST","vidtable":"20342033315492","table":"84214220504259//stock_location","search":"lt◼client⭘lst◼active","groupField":"","idField":"lv","titleField":"ln","addressField":"al","iconField":"","searchHint":"Cari customer atau alamat…","badgeTable":"84214220504259//asset_cache","badgeSearch":"lt◼client⭘lv◼{lv}","badgeField":"qt","badgeLabel":"outstanding","seedLabel":"belum di-seed","route":"vertikaTeknoLokaciptaCreateTaskItem","countLabel":"Customer","emptyText":"Belum ada customer","text":"Customer◆Pilih customer untuk order"}
 ```
-(field delivery-only kosong `typeField`/`itemsField`/`dropField`/`pickupField`/`returnGate*` = di-skip di flat mode.)
+**Badge per-row (mockup):** renderer **SUM `badgeField`(qt)** dari `badgeTable` WHERE `badgeSearch` (token baris `{lv}`) → chip "↑ {sum} {badgeLabel}". Kalau `badgeSearch` **0 row** (client belum ada GENESIS/asset_cache) → chip **`seedLabel`** ("belum di-seed"). Satu query, dua hasil. (field delivery-only kosong `typeField`/`dropField`/dll = di-skip di flat mode.)
 
 **Token creator (N1 + SEMUA write):** wire **`{userVid}`/`{userName}`** = session current-user (role-agnostic). N1 sempet `{adminVid}` (ngarang, gak ke-wire) → ke-simpen LITERAL. Pakai `{userVid}`/`{userName}` (nama final konfirmasi dev; jangan reuse `{driverVid}`).
 
@@ -196,11 +196,11 @@ JSON resolved LIVE (row 1163):
 | 4 | Doctrine note (assign kendaraan ≠ orang) | `noticeBar` | ✅ | static |
 | 5 | "Lanjut · Review" | `buttonRoute` | ✅ | → P4 |
 
-**Render (per baris):** `titleField` (judul) + `subField` (tag) + `metaField` (baris-3 opsional) + badge "{N} {countLabel}" (count `countTable` WHERE `countSearch`, token baris `{lv}`) + chevron. Baris ekstra ad-hoc (`adhocLabel`). Empty = `emptyText`. `mode:capture` = bind `captureToken` ke draft, **gak navigate/nulis** (CTA halaman yg navigate). Shared H1 (assign/reassign) via `mode` caller. GENERIC — reusable picker apapun (gudang/slot/kategori).
+**Render (per baris):** `titleField` (judul) + `subField` (tag) + `metaField` (baris-3) + **status pill** (`statusSearch` >0 row → `statusOnLabel` "On Route" amber; else `statusOffLabel` "Available" hijau) + badge "{N} {countLabel}" (count `countTable` WHERE `countSearch`, token baris `{lv}`) + chevron. Baris ekstra ad-hoc (`adhocLabel`). Empty = `emptyText`. `mode:capture` = bind `captureToken` ke draft, **gak navigate/nulis**. GENERIC — reusable picker apapun. **Status (mockup "AVAILABLE/ON ROUTE"):** `statusSearch:"vv◼{lv}⭘tst◼on_delivery"` (count di `countTable`); ada trip aktif → On Route, else Available.
 
-JSON resolved LIVE (row 1178, capture `vv`):
+JSON resolved LIVE (capture `vv`):
 ```json
-{"type":"PICKER_LIST","mode":"capture","vidtable":"20342033315492","table":"84214220504259//stock_location","search":"lt◼vehicle⭘lst◼active","titleField":"ln","subField":"ty","metaField":"dv","countTable":"84214220504259//task","countSearch":"vv◼{lv}⭘tst◼assigned","captureToken":"vv","route":"","adhocLabel":"Ad-hoc / Nanti","emptyText":"Belum ada kendaraan aktif","text":"Pilih Kendaraan◆Pilih kendaraan ini◆task aktif"}
+{"type":"PICKER_LIST","mode":"capture","vidtable":"20342033315492","table":"84214220504259//stock_location","search":"lt◼vehicle⭘lst◼active","titleField":"ln","subField":"ty","metaField":"dv","countTable":"84214220504259//task","countSearch":"vv◼{lv}⭘tst◼assigned","statusSearch":"vv◼{lv}⭘tst◼on_delivery","statusOnLabel":"On Route","statusOffLabel":"Available","captureToken":"vv","route":"","adhocLabel":"Ad-hoc / Nanti","emptyText":"Belum ada kendaraan aktif","text":"Pilih Kendaraan◆Pilih kendaraan ini◆task aktif"}
 ```
 
 ---
@@ -292,7 +292,14 @@ Field code semua grounded ke config live P2 (`taskItemBuilder`: `ii/in/tx/pd/pp/
 - `addToEvent` → task header scalar (jalan via DSL). **`it[]` TIDAK di sini** → renderer `savesend` append draft `it[]` native (keystone di atas).
 - `taskManifestList` baca **draft state in-memory** (review read-only). `gpsPosition:""` = admin office, no GPS.
 
-**Design (mockup `TaskSummaryScreen` L1595–2061):** render review sbg **kartu ringkasan menarik** (kartu customer · kartu items/manifest · kartu kendaraan · tombol submit besar) — JANGAN TXT polos `Customer: {kn}`. Renderer styling, samain mockup biar konsisten sama P1.
+**Design (mockup `TaskSummaryScreen` L1595–2061) — semua baca DRAFT, bukan TXT token:**
+- **Kartu CUSTOMER** — `{kn}` + alamat `{al}` + `{pic}` ("Pak Budi · 081…"), dari **draft customer** (carry P1).
+- **Kartu ITEM TASK** — `taskManifestList` (udah ada) + total drop/pickup.
+- **Kartu KENDARAAN DITUGASKAN** — plat dari **draft `vv`** (carry P3) → query/denorm `ln`.
+- **Pickup Breakdown** — computed: exchange (kosong) + clearing (outstanding) = total pickup ({dev} derive).
+- Tombol submit besar (`sendButtonGpsWithEvent`).
+
+⚠ Customer/kendaraan = **draft-bound** (sama sumber `taskManifestList` baca draft `it[]`). JANGAN TXT `{kn}`/`{vv}` (literal — udah ke-test). Stub TXT di P4 udah di-OFF; renderer render kartu dari draft. Styling samain mockup.
 
 ---
 
