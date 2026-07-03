@@ -3,7 +3,7 @@
 **Tanggal:** 2026-07-03
 **Status:** DESIGN — disetujui user, menunggu review tech lead (call path + repo Go)
 **Repo terdampak:** `web-dev` (Next.js) + service Go BARU (Cloud Run) + VTL Master sheet (`14kDPqAw...`)
-**Menggantikan:** pendekatan custom-content-type per fitur (`contentResetDevice` / `type:"RESET_DEVICE"` — renderer belum pernah dibuat, tidak ada kode yang dibuang)
+**Menggantikan:** pendekatan custom-content-type per fitur — untuk fitur BARU (PHK dst). **Reset device TIDAK diubah** (keputusan user 2026-07-03): `contentResetDevice` dibiarkan as-is, jalur eksekusinya tetap yang sekarang. Migrasi ke FORM opsional, nanti kalau perlu.
 
 ---
 
@@ -264,7 +264,7 @@ Auto-generate dari schema tiap handler. Guna builder: setelah nyusun form di she
 actions-service/
   main.go            HTTP server: POST /actions, GET /actions, health
   registry.go        map[string]Action — {"PHK": PHK, "MUTASI": Mutasi, "ADD_USER": AddUser,
-                     "REAKTIVASI": Reaktivasi, "RESET_DEVICE": ResetDevice}
+                     "REAKTIVASI": Reaktivasi}   // RESET_DEVICE tidak dimigrasi (dibiarkan as-is)
   action.go          type Action { Name, Description string; Fields []FieldSpec;
                      Authorize func(Caller) error; Steps []Step }
                      type Step { Name string; Run func(ctx *Ctx) StepResult }
@@ -341,7 +341,7 @@ Row baru (col A = `contentForm`, col J = Base JSON):
 - `[FIELDS]` = **single unquoted token** (Cara 1 — pattern yang sudah terbukti di `contentResetDevice`): satu cell param berisi JSON array fields utuh.
 - `[CONFIRM]` unquoted (boolean). `[COLUMNS]` unquoted (number) — token selalu muncul di template, jadi resolver WAJIB kasih default kalau param kosong (idiom sama dengan `[ROWHEADER]` default 1/2 di contentSpreadsheet): `[CONFIRM]`→`TRUE`, `[COLUMNS]`→`1`.
 - Resolver col D = per-widget minimal SUBSTITUTE (idiom 2026-06-02), token→param col mengikuti konvensi Web Screen. Usulan mapping (final saat implementasi sheet, ikuti kolom kosong yang tersedia): `[ID]`→G, `[ACTION]`→H, `[CONFIRM]`→I, `[COLUMNS]`→J, `[SUBMIT_LABEL]`→K, `[SUBMIT_VARIANT]`→L, `[SUCCESS_TOAST]`→M, `[THEN]`→N, `[FIELDS]`→O.
-- `contentResetDevice` (J12) **superseded** — reset device dinyatakan ulang sebagai `contentForm` + `action:"RESET_DEVICE"`. Renderer `RESET_DEVICE` belum pernah dibuat di web-dev, jadi tidak ada kode dibuang.
+- `contentResetDevice` (J12) **dibiarkan as-is** — reset device tidak diubah (keputusan 2026-07-03). Semua fitur baru pakai `contentForm`.
 
 ### 8.2 Web Screen — contoh page `phk` (registry row 29, sudah ada)
 
@@ -371,11 +371,13 @@ Bikin Mutasi/Reaktivasi = copy 2 rows, ganti H + O. Zero deploy.
 
 | Fase | Isi | Deploy |
 |---|---|---|
-| 1 | web-dev: `FormContent` type + renderer `components/form/*` + `/api/actions` proxy + `form-options` action. Go service skeleton (registry, steps, 1 action: `RESET_DEVICE`) | web-dev + Go |
-| 2 | Sheet: template `contentForm` + page Reset Device via FORM. Verifikasi end-to-end live | sheet only |
-| 3 | Go: `PHK`, `MUTASI`, `ADD_USER`, `REAKTIVASI` (port per-fitur dari autsorz.js) | Go only |
-| 4 | Sheet: page PHK/Mutasi/Pendaftaran/Reaktivasi (rows 23-30 Web Screen sudah ada header-nya) | sheet only |
+| 1 | web-dev: `FormContent` type + renderer `components/form/*` + `/api/actions` proxy + status + `form-options` action. Go service skeleton (registry, steps, 1 action pertama: **`PHK`**) | web-dev + Go |
+| 2 | Sheet: template `contentForm` + page PHK (Web Screen row 29 sudah ada header). Verifikasi end-to-end live | sheet only |
+| 3 | Go: `MUTASI`, `ADD_USER`, `REAKTIVASI` (port per-fitur dari autsorz.js) | Go only |
+| 4 | Sheet: page Mutasi/Pendaftaran/Reaktivasi (rows 23-27 Web Screen sudah ada header-nya) | sheet only |
 | 5 | Batch input (upload Excel → `records[]` multi) — **future, jangan dibangun sekarang** | — |
+
+Reset device: di luar scope (dibiarkan as-is). Catatan: PHK belum ada di `autsorz.js` (fitur baru) — urutan step-nya perlu didefinisikan bareng user/tech lead saat fase 1; kandidat awal = subset step Mutasi (update Induk + Proxy + CP1 status nonaktif + invitation revoke), TO BE CONFIRMED.
 
 ---
 
