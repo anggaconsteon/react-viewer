@@ -108,6 +108,7 @@ type PageContent = SpreadsheetContent | FormContent   // menu.type.ts:132 — sl
 | `submitVariant` | — (default `default`) | `default` \| `destructive` \| `outline` — vocab `ButtonVariant` existing |
 | `onSuccess.toast` | — | Toast sukses (Sonner, pattern existing) |
 | `onSuccess.then` | — (default `RESET_FORM`) | `RESET_FORM` (kosongkan form) \| `REFRESH_CONTENT` (bump `spreadsheetSyncKey` — refresh grid SPREADSHEET di page yang sama) |
+| `columns` | — (default `1`) | Jumlah field per baris untuk SEMUA field form ini. `1` = vertikal ke bawah; `2` = ke bawah 2-2; dst. Per-field `width` meng-override. Lihat §3.4 |
 | `fields[]` | ✅ | Daftar field, urutan = urutan render |
 
 ### 3.3 Keys per field
@@ -125,26 +126,30 @@ type PageContent = SpreadsheetContent | FormContent   // menu.type.ts:132 — sl
 | `value` (untuk `hidden`) | Token session: `{userEmail}` \| `{userName}` \| `{today}`. **Di-inject Next server-side saat submit** — nilai kiriman client di-override, tidak bisa dipalsu |
 | `width` | — (default `full`) | `full` \| `1/2` \| `1/3` \| `2/3` \| `1/4` \| `3/4` — lebar field. Lihat §3.4 |
 
-### 3.4 Layout — arah form ditentukan `width` per field, TANPA config form-level
+### 3.4 Layout — `columns` form-level + `width` per-field override
 
-Tidak ada key `direction`/`layout` di level form. Arah = konsekuensi `width`:
+Dua level, saling melengkapi:
 
-- Semua field default `full` → form vertikal ke bawah (kasus normal, tidak menulis apa-apa).
-- Dua field sejajar → keduanya `"1/2"`. Tiga sejajar → `"1/3"`. Kombinasi bebas (`"1/3"`+`"2/3"`, dst).
-- Field mengalir kiri→kanan sesuai urutan `fields[]`, wrap otomatis kalau tidak muat satu baris.
-
-Implementasi renderer: CSS grid 12 kolom. Map span: `full`=12, `3/4`=9, `2/3`=8, `1/2`=6, `1/3`=4, `1/4`=3. **Responsive:** di bawah breakpoint `sm` (mobile) semua field dipaksa full — tanpa config.
+1. **`columns` (form-level, default `1`)** — jumlah field per baris untuk seluruh form. Kasus umum cukup ini: `columns:2` → field mengalir kiri→kanan, turun 2-2.
+2. **`width` (per field, opsional)** — override untuk baris tidak rata: `full` \| `1/2` \| `1/3` \| `2/3` \| `1/4` \| `3/4`. Field tanpa `width` mengikuti `columns`.
 
 ```
-width semua full (default):        tanggal & alasan "1/2":
-┌────────────────────────┐         ┌────────────────────────┐
-│ Pegawai                │         │ Pegawai         (full) │
-├────────────────────────┤         ├───────────┬────────────┤
-│ Tanggal                │         │ Tanggal   │ Alasan     │
-├────────────────────────┤         │ (1/2)     │ (1/2)      │
-│ Alasan                 │         └───────────┴────────────┘
-└────────────────────────┘
+columns: 1 (default)      columns: 2                 columns: 2, catatan width:"full"
+┌──────────────┐          ┌────────┬────────┐        ┌────────┬────────┐
+│ Pegawai      │          │ Pegawai│ Tanggal│        │ Pegawai│ Tanggal│
+├──────────────┤          ├────────┼────────┤        ├────────┼────────┤
+│ Tanggal      │          │ Alasan │ Posisi │        │ Alasan │ Posisi │
+├──────────────┤          ├────────┼────────┤        ├────────┴────────┤
+│ Alasan       │          │ Client │ …      │        │ Catatan  (full) │
+└──────────────┘          └────────┴────────┘        └─────────────────┘
 ```
+
+Aturan render:
+
+- Implementasi: CSS grid 12 kolom. Default span field = `12 / columns`. Map `width`: `full`=12, `3/4`=9, `2/3`=8, `1/2`=6, `1/3`=4, `1/4`=3.
+- Urutan isi SELALU kiri→kanan lalu turun (mengikuti urutan `fields[]`) — tab order keyboard tetap natural. **Tidak ada key `direction`**: "horizontal sejajar semua" = `columns` = jumlah field; column-fill (isi kolom kiri penuh dulu) sengaja tidak didukung (tab order rusak).
+- Field `hidden` tidak memakan slot grid.
+- **Responsive:** di bawah breakpoint `sm` (mobile) semua field dipaksa full-width — tanpa config.
 
 ---
 
@@ -309,22 +314,22 @@ Doc ID = `requestId`. Read-before-run: doc ada & `status:"done"` → balas hasil
 Row baru (col A = `contentForm`, col J = Base JSON):
 
 ```
-{"type":"FORM","id":"[ID]","action":"[ACTION]","confirm":[CONFIRM],"submitLabel":"[SUBMIT_LABEL]","submitVariant":"[SUBMIT_VARIANT]","onSuccess":{"toast":"[SUCCESS_TOAST]","then":"[THEN]"},"fields":[[FIELDS]]}
+{"type":"FORM","id":"[ID]","action":"[ACTION]","confirm":[CONFIRM],"columns":[COLUMNS],"submitLabel":"[SUBMIT_LABEL]","submitVariant":"[SUBMIT_VARIANT]","onSuccess":{"toast":"[SUCCESS_TOAST]","then":"[THEN]"},"fields":[[FIELDS]]}
 ```
 
 - `[FIELDS]` = **single unquoted token** (Cara 1 — pattern yang sudah terbukti di `contentResetDevice`): satu cell param berisi JSON array fields utuh.
-- `[CONFIRM]` unquoted (boolean).
-- Resolver col D = per-widget minimal SUBSTITUTE (idiom 2026-06-02), token→param col mengikuti konvensi Web Screen. Usulan mapping (final saat implementasi sheet, ikuti kolom kosong yang tersedia): `[ID]`→G, `[ACTION]`→H, `[CONFIRM]`→I, `[SUBMIT_LABEL]`→J, `[SUBMIT_VARIANT]`→K, `[SUCCESS_TOAST]`→L, `[THEN]`→M, `[FIELDS]`→N.
+- `[CONFIRM]` unquoted (boolean). `[COLUMNS]` unquoted (number) — token selalu muncul di template, jadi resolver WAJIB kasih default kalau param kosong (idiom sama dengan `[ROWHEADER]` default 1/2 di contentSpreadsheet): `[CONFIRM]`→`TRUE`, `[COLUMNS]`→`1`.
+- Resolver col D = per-widget minimal SUBSTITUTE (idiom 2026-06-02), token→param col mengikuti konvensi Web Screen. Usulan mapping (final saat implementasi sheet, ikuti kolom kosong yang tersedia): `[ID]`→G, `[ACTION]`→H, `[CONFIRM]`→I, `[COLUMNS]`→J, `[SUBMIT_LABEL]`→K, `[SUBMIT_VARIANT]`→L, `[SUCCESS_TOAST]`→M, `[THEN]`→N, `[FIELDS]`→O.
 - `contentResetDevice` (J12) **superseded** — reset device dinyatakan ulang sebagai `contentForm` + `action:"RESET_DEVICE"`. Renderer `RESET_DEVICE` belum pernah dibuat di web-dev, jadi tidak ada kode dibuang.
 
 ### 8.2 Web Screen — contoh page `phk` (registry row 29, sudah ada)
 
-| Row | A | B | C | G (ID) | H (ACTION) | I (CONFIRM) | J (LABEL) | K (VARIANT) | … | N (FIELDS) |
-|---|---|---|---|---|---|---|---|---|---|---|
-| 29 | `phk` | =assembler | | | | | | | | *(meta U:AE existing)* |
-| 30 | `1` | `contentForm` | `content` | `form-phk` | `PHK` | `TRUE` | `Proses PHK` | `destructive` | | `[{"id":"vid",…},…]` |
+| Row | A | B | C | G (ID) | H (ACTION) | I (CONFIRM) | J (COLUMNS) | K (LABEL) | L (VARIANT) | … | O (FIELDS) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 29 | `phk` | =assembler | | | | | | | | | *(meta U:AE existing)* |
+| 30 | `1` | `contentForm` | `content` | `form-phk` | `PHK` | `TRUE` | `2` | `Proses PHK` | `destructive` | | `[{"id":"vid",…},…]` |
 
-Bikin Mutasi/Reaktivasi = copy 2 rows, ganti H + N. Zero deploy.
+Bikin Mutasi/Reaktivasi = copy 2 rows, ganti H + O. Zero deploy.
 
 ---
 
