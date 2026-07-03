@@ -75,7 +75,7 @@ Ini yang tersimpan di `users/{uid}.j` (satu node menu di tree):
             "optionsSrc": "https://docs.google.com/spreadsheets/d/1x94Q1qXb4ouoxZNwLPoKjEKifnEq6-8aEMPMhzz4Mps/edit",
             "optionsRange": "Pegawai!C3:D" },
           { "id": "tanggal", "label": "Tanggal Efektif", "input": "date", "required": true,
-            "width": "1/2" },
+            "width": "1/2", "default": "{today}" },
           { "id": "alasan", "label": "Alasan", "input": "dropdown", "required": true,
             "width": "1/2",
             "options": "Resign◆Kontrak habis◆Pelanggaran◆Lainnya" },
@@ -120,10 +120,12 @@ type PageContent = SpreadsheetContent | FormContent   // menu.type.ts:132 — sl
 | `input` | `text` \| `number` \| `date` \| `textarea` \| `dropdown` \| `hidden` |
 | `required` | Validasi client + server. Field yang sedang tersembunyi oleh `visibleIf` → tidak dikirim & required tidak berlaku |
 | `options` | Dropdown statis, ◆-separated: `"Resign◆Kontrak habis◆…"` |
-| `optionsSrc` + `optionsRange` | Dropdown live dari sheet. Kolom 1 range = **value** (dikirim), kolom 2 = **label** (tampil); 1 kolom = value=label. Resolve **server-side** (service account) saat form mount — client tidak pegang akses sheet |
+| `optionsSrc` + `optionsRange` | Dropdown live dari sheet. Kolom 1 range = **value** (dikirim), kolom 2 = **label** (tampil); 1 kolom = value=label. Resolve **server-side** (service account) saat form mount — client tidak pegang akses sheet. Hasil di-cache server 60 detik (N operator buka form barengan = 1 hit Sheets API) |
+| `dependsOn` + `filterColumn` | **Cascading dropdown.** `dependsOn:"clientTujuan"` + `filterColumn:"F"` → options hanya baris yang kolom `F`-nya = nilai field `clientTujuan` terpilih. Parent berubah → options re-fetch, nilai field ini di-reset. Sebelum parent terisi → dropdown disabled ("pilih … dulu"). Hanya valid bersama `optionsSrc` |
+| `default` | Nilai awal saat form dibuka (operator bisa ganti). String literal (`"Aktif"`) atau token (`"{today}"`). Berlaku juga setelah `RESET_FORM` |
 | `visibleIf` | `"fieldId◼nilai"` — field muncul hanya jika field lain bernilai itu. Simbol ◼ konsisten DSL existing |
 | `pattern` | Regex validasi tambahan (mis. `^628[0-9]+$` untuk HP) |
-| `value` (untuk `hidden`) | Token session: `{userEmail}` \| `{userName}` \| `{today}`. **Di-inject Next server-side saat submit** — nilai kiriman client di-override, tidak bisa dipalsu |
+| `value` (untuk `hidden`) | Token session: `{userEmail}` \| `{userName}` \| `{today}`. **Di-inject Next server-side saat submit** — nilai kiriman client di-override, tidak bisa dipalsu. **`{today}` = tanggal WIB (Asia/Jakarta), format `YYYY-MM-DD`** — BUKAN UTC (jam 00–07 WIB beda hari kalau salah zona) |
 | `width` | — (default `full`) | `full` \| `1/2` \| `1/3` \| `2/3` \| `1/4` \| `3/4` — lebar field. Lihat §3.4 |
 
 ### 3.4 Layout — `columns` form-level + `width` per-field override
@@ -211,7 +213,26 @@ Semantik:
 
 1. Step jalan **berurutan**; error 1 step **tidak menghentikan** step berikutnya (mirror perilaku `autsorzMutasi()` dkk — tiap step nulis ke sistem berbeda, laporan per step). HTTP tetap 200; status per step yang bercerita.
 2. `dryRun:true` → step mode preview: baca target, hitung `changes[{target,from,to}]` (persis format `lama=>baru` milik `directUpdate`), **tidak menulis apa pun**.
-3. Error level request: `400` validasi (`errors:[{field,message}]` → UI highlight field), `401` no session (di Next), `403` `authorize` hook menolak, `404` action tidak ada di registry, `409` — tidak dipakai; duplicate `requestId` balas `200` + hasil run pertama + flag `"replayed": true`.
+3. Error level request: `400` validasi (`errors:[{field,message}]` → UI highlight field), `401` no session (di Next), `403` authorize menolak (§7.7), `404` action tidak ada di registry, `409` — tidak dipakai; duplicate `requestId` balas `200` + hasil run pertama + flag `"replayed": true`.
+
+### 5.2b Progress untuk action panjang — `GET /api/actions/status?requestId=…`
+
+Reactivate = 11 step buka banyak spreadsheet → eksekusi bisa 10–30 detik. Mekanisme (TANPA background job — aman dari CPU-throttle Cloud Run):
+
+- `POST /actions` eksekusi **tetap synchronous** (Next proxy timeout longgar, 300 detik). Selama request jalan, Go **update doc `action_logs/{requestId}` setiap step selesai** (`status:"running"`, `steps[]` bertambah).
+- UI: fire POST, lalu **paralel** polling `GET /api/actions/status?requestId=…` tiap 2 detik → render progress list (✓ done / ⟳ running / ○ pending) + progress bar. POST balik = hasil final, polling stop.
+- Refresh browser di tengah eksekusi aman: `requestId` sama → replay hasil / status terkini, tidak dobel eksekusi.
+
+```json
+{ "requestId": "a1b2…", "status": "running",
+  "steps": [
+    { "name": "Arsip ke UpdateUser", "status": "done" },
+    { "name": "Invitation ke Induk", "status": "done" },
+    { "name": "Invitation ke Proxy", "status": "running" }
+  ] }
+```
+
+Dry-run tidak butuh polling (read-only, cepat) — response sync biasa.
 
 ### 5.3 Introspection: `GET /api/actions` (Next proxy → Go `GET /actions`)
 
@@ -275,7 +296,7 @@ actions-service/
 
 ### 6.3 Idempotency + audit — Firestore `action_logs`
 
-Doc ID = `requestId`. Read-before-run: doc ada & `status:"done"` → balas hasil tersimpan (`replayed:true`), **tidak eksekusi ulang**.
+Doc ID = `requestId`. Read-before-run: doc ada & `status:"done"` → balas hasil tersimpan (`replayed:true`), **tidak eksekusi ulang**. `status` = `running` \| `done`; doc di-update **per step selesai** selama eksekusi (sumber data endpoint status §5.2b).
 
 ```json
 {
@@ -302,7 +323,7 @@ Doc ID = `requestId`. Read-before-run: doc ada & `status:"done"` → balas hasil
 4. Action allowlist = keys registry (`404` kalau tidak dikenal).
 5. Validasi schema server-side di Go (mirror introspection) — client validation cuma UX.
 6. Hidden session token di-inject Next dari session — client tidak bisa memalsukan `{userEmail}`.
-7. Slot `Authorize(caller)` per action — isi RBAC menyusul (mis. cek email vs daftar admin); lubangnya dibuat sekarang supaya penambahan tidak mengubah kontrak.
+7. **Authorize v1 = kepemilikan menu** (di Next proxy, zero admin surface baru): user boleh eksekusi action X **hanya jika menu JSON (`j`) miliknya memuat page ber-`action:"X"`**. Menu sudah RBAC-ed via sheet Otorisasi → API otomatis ikut aturan yang sama; cabut menu PHK dari user di sheet = user itu juga tidak bisa menembak API-nya. Lolos check → 403 kalau tidak. Slot `Authorize(caller)` per action di Go tetap ada untuk aturan lebih halus kelak (tidak mengubah kontrak).
 8. Audit lengkap di `action_logs` (siapa, kapan, payload, hasil per step, requestId).
 
 ---
@@ -337,6 +358,8 @@ Bikin Mutasi/Reaktivasi = copy 2 rows, ganti H + O. Zero deploy.
 
 **Error:** §5.2. Pesan error Sheets API (quota/permission) diteruskan verbatim di `message` step — tidak ditelan.
 
+**Known limitation — race dua operator:** dua operator memproses orang yang sama bersamaan → sheet write last-write-wins (tidak transactional). Diterima sebagai risiko: mitigasi = dry-run preview (operator lihat nilai sekarang sebelum konfirmasi) + audit `action_logs` lengkap untuk rekonstruksi. Tidak dibangun locking.
+
 **Testing** (web-dev tidak punya test framework — tidak dipaksakan):
 - `ACTIONS_TEST_MODE=1` env di Go → semua ssid target di-swap ke copy (`aumCP1C`/`auzCP1C` — konstanta copy sudah ada di autsorz.js, pola test lama dipertahankan). Eksekusi beneran, sheet sandbox.
 - Dry-run = harness natural: preview tanpa tulis.
@@ -356,7 +379,33 @@ Bikin Mutasi/Reaktivasi = copy 2 rows, ganti H + O. Zero deploy.
 
 ---
 
-## 11. Open questions (tech lead)
+## 11. Future — sketch, JANGAN dibangun sekarang
+
+### 11.1 Prefill / edit mode (untuk page `perubahanData`, Web Screen row 25)
+
+Pilih record kunci → form ter-isi data existing → operator ubah sebagian → submit. Sketch schema (final saat page-nya digarap):
+
+```json
+{ "type": "FORM", "action": "PERUBAHAN_DATA",
+  "record": {
+    "keyField": "vid",
+    "src": "https://docs.google.com/spreadsheets/d/1x94Q…/edit",
+    "range": "Pegawai!C3:K",
+    "map": "vid◆nama◆phone◆posisi◆client" },
+  "fields": [ "…field id match nama di map…" ] }
+```
+
+`keyField` berubah → fetch row by key dari `range` → populate field yang `id`-nya ada di `map`. Schema v1 tidak menghalangi penambahan key `record` ini.
+
+### 11.2 File upload (foto pegawai, AddUser)
+
+Butuh field type `file` + Firebase Storage + aturan size/mime. **PARKED** — didesain saat dibutuhkan.
+
+### 11.3 Batch / upload Excel
+
+`records[]` sudah array — loop existing. Parser Excel + UI table review = kerjaan terpisah.
+
+## 12. Open questions (tech lead)
 
 1. **Call path:** konfirmasi browser → Next proxy → Go private (rekomendasi §2) vs Go publik.
 2. **Repo Go:** repo sendiri (`actions-service`) atau monorepo dengan CF asset_cache?
