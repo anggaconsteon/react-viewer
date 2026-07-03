@@ -74,8 +74,10 @@ Ini yang tersimpan di `users/{uid}.j` (satu node menu di tree):
           { "id": "vid", "label": "Pegawai", "input": "dropdown", "required": true,
             "optionsSrc": "https://docs.google.com/spreadsheets/d/1x94Q1qXb4ouoxZNwLPoKjEKifnEq6-8aEMPMhzz4Mps/edit",
             "optionsRange": "Pegawai!C3:D" },
-          { "id": "tanggal", "label": "Tanggal Efektif", "input": "date", "required": true },
+          { "id": "tanggal", "label": "Tanggal Efektif", "input": "date", "required": true,
+            "width": "1/2" },
           { "id": "alasan", "label": "Alasan", "input": "dropdown", "required": true,
+            "width": "1/2",
             "options": "Resign◆Kontrak habis◆Pelanggaran◆Lainnya" },
           { "id": "alasanLain", "label": "Alasan Lainnya", "input": "textarea",
             "visibleIf": "alasan◼Lainnya", "required": true },
@@ -121,6 +123,28 @@ type PageContent = SpreadsheetContent | FormContent   // menu.type.ts:132 — sl
 | `visibleIf` | `"fieldId◼nilai"` — field muncul hanya jika field lain bernilai itu. Simbol ◼ konsisten DSL existing |
 | `pattern` | Regex validasi tambahan (mis. `^628[0-9]+$` untuk HP) |
 | `value` (untuk `hidden`) | Token session: `{userEmail}` \| `{userName}` \| `{today}`. **Di-inject Next server-side saat submit** — nilai kiriman client di-override, tidak bisa dipalsu |
+| `width` | — (default `full`) | `full` \| `1/2` \| `1/3` \| `2/3` \| `1/4` \| `3/4` — lebar field. Lihat §3.4 |
+
+### 3.4 Layout — arah form ditentukan `width` per field, TANPA config form-level
+
+Tidak ada key `direction`/`layout` di level form. Arah = konsekuensi `width`:
+
+- Semua field default `full` → form vertikal ke bawah (kasus normal, tidak menulis apa-apa).
+- Dua field sejajar → keduanya `"1/2"`. Tiga sejajar → `"1/3"`. Kombinasi bebas (`"1/3"`+`"2/3"`, dst).
+- Field mengalir kiri→kanan sesuai urutan `fields[]`, wrap otomatis kalau tidak muat satu baris.
+
+Implementasi renderer: CSS grid 12 kolom. Map span: `full`=12, `3/4`=9, `2/3`=8, `1/2`=6, `1/3`=4, `1/4`=3. **Responsive:** di bawah breakpoint `sm` (mobile) semua field dipaksa full — tanpa config.
+
+```
+width semua full (default):        tanggal & alasan "1/2":
+┌────────────────────────┐         ┌────────────────────────┐
+│ Pegawai                │         │ Pegawai         (full) │
+├────────────────────────┤         ├───────────┬────────────┤
+│ Tanggal                │         │ Tanggal   │ Alasan     │
+├────────────────────────┤         │ (1/2)     │ (1/2)      │
+│ Alasan                 │         └───────────┴────────────┘
+└────────────────────────┘
+```
 
 ---
 
@@ -128,7 +152,7 @@ type PageContent = SpreadsheetContent | FormContent   // menu.type.ts:132 — sl
 
 | File | Isi |
 |---|---|
-| `view-form.tsx` | Loop `fields`, state nilai, evaluasi `visibleIf`, orkestrasi submit (dry-run → confirm → exec), disabled saat pending, generate `requestId` (uuid) per intent submit |
+| `view-form.tsx` | Loop `fields` dalam CSS grid 12-kolom (`width` → span, §3.4), state nilai, evaluasi `visibleIf`, orkestrasi submit (dry-run → confirm → exec), disabled saat pending, generate `requestId` (uuid) per intent submit |
 | `form-field.tsx` | Switch per `input` type → shadcn existing (`Input`, `Select`, `Calendar`/date-picker, `Textarea`). `hidden` tidak dirender |
 | `confirm-dialog.tsx` | Dialog preview dry-run: daftar `changes` (`from → to`) per step + Batal/Konfirmasi |
 | `result-list.tsx` | Hasil eksekusi: ✓/✗ per step + message |
