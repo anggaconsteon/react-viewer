@@ -7,6 +7,17 @@ import AdminRuntimeGallery2 from './AdminRuntimeGallery2.jsx'
 import AdminRuntimeGallery from './AdminRuntimeGallery.jsx'
 import AdminRuntimeFlow from './AdminRuntimeFlow.jsx'
 import WorkerShowcase from '../App.jsx'
+import FieldRuntimeSystem from './web/04_Field_Runtime_System.jsx'
+import OwnerRuntimeDesktop from './web/OwnerRuntimeDesktopDriver.jsx'
+import CustomerOutstandingMobile from './web/CustomerOutstandingMobile.jsx'
+import AssetStockMobile from './web/AssetStockMobile.jsx'
+import SalesSupervisor from './web/SalesSupervisor.jsx'
+import SalesWorkerApp from './web/SalesWorkerApp.jsx'
+import FateGallery from './web/Fate_gallery.jsx'
+import FateOpsGallery from './web/Fate_ops_gallery.jsx'
+import FateModelGallery from './web/Fate_model_gallery.jsx'
+import FateOpsApp from './web/Fate_ops_app.jsx'
+import FateModelApp from './web/Fate_model_app_revisi.jsx'
 
 // Single entry point. Pick a gallery from the top bar instead of editing main.jsx.
 // Add a new gallery: import it, then add one { id, label, Comp } row to the right category.
@@ -40,6 +51,29 @@ const CATEGORIES = [
     color: '#0d9488',
     items: [
       { id: 'worker', label: 'Worker Live Card', Comp: WorkerShowcase },
+      { id: 'field-runtime', label: 'Field Runtime System', Comp: FieldRuntimeSystem },
+      { id: 'owner-desktop', label: 'Owner Runtime Desktop', Comp: OwnerRuntimeDesktop },
+      { id: 'customer-outstanding', label: 'Customer Outstanding', Comp: CustomerOutstandingMobile },
+      { id: 'asset-stock', label: 'Asset Stock', Comp: AssetStockMobile },
+    ],
+  },
+  {
+    group: 'Sales',
+    color: '#db2777',
+    items: [
+      { id: 'sales-supervisor', label: 'Sales Supervisor', Comp: SalesSupervisor },
+      { id: 'sales-worker', label: 'Sales Worker App', Comp: SalesWorkerApp },
+    ],
+  },
+  {
+    group: 'Fate',
+    color: '#0891b2',
+    items: [
+      { id: 'fate-gallery', label: 'Fate Gallery', Comp: FateGallery },
+      { id: 'fate-ops-gallery', label: 'Fate Ops Gallery', Comp: FateOpsGallery },
+      { id: 'fate-model-gallery', label: 'Fate Model Gallery', Comp: FateModelGallery },
+      { id: 'fate-ops-app', label: 'Fate Ops App', Comp: FateOpsApp },
+      { id: 'fate-model-app', label: 'Fate Model App', Comp: FateModelApp },
     ],
   },
 ]

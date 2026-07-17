@@ -25,7 +25,8 @@
       "Bash(go doc *)",
       "Bash(rtk go *)",
       "Bash(go mod *)",
-      "Bash(rtk ls *)"
+      "Bash(rtk ls *)",
+      "Bash(rtk find *)"
     ]
   }
 }

@@ -51,7 +51,9 @@ Mirror O1 minus executor (driver udah fix), plus result R1/R2. Urutan: header �
 
 ---
 
-## 2. `CUSTODY_COUNT_LIST` variant — closing count vs expected
+## 2. Count widget — closing count vs expected
+
+> **UPDATE 2026-06-29:** `CUSTODY_COUNT_LIST` render 2-card nama kembar (per-`cd` doc) = bikin bingung. **Keputusan: ganti ke `ITEM_EXECUTION_LIST` varian `pivot`** (nama item sekali, 2 stepper Penuh/Kosong di 1 card). Spec varian: **`docs/item-execution-list-variant-dev-spec.md`** (§3 resolved JSON). C1 live tetep `CUSTODY_COUNT_LIST` sampe dev build varian `pivot`, baru swap 1 PR. Sub-bab di bawah = desain LAMA (CUSTODY_COUNT_LIST), dipertahankan utk referensi data (source/`writeField:ip`/full+empty tetep sama).
 
 Beda dari O1: expected = **asset_cache mobil** (sisa yang seharusnya), count **full + empty** (returnable balik kosong), tulis **`ip`**.
 
@@ -112,7 +114,7 @@ Sisa yang seharusnya di mobil = `asset_cache` `lv◼{vehicleId}` (per item+cd, f
 
 ## 6. OPEN / confirm
 
-1. **P12 ↔ C1 movement** — siapa bikin movement INTERNAL (mobil→gudang)? Driver P12 (klaim) atau gudang C1 (counted ip = truth) atau CF dari closing? **Rec:** INTERNAL diturunkan dari `ip` counted gudang (truth) via CF. = movement/CF track, di luar widget. **Flag.**
+1. **Closing INTERNAL movement (mobil→gudang) — RESOLVED 2026-06-29:** **TRIGGER = closing `vehicle_check` doc ke-tulis** (tap "Simpan Penutupan", `cty◼closing`+`ip[]`). CF baru (onCreate/onWrite `vehicle_check` `cty◼closing`) baca `ip[]` → emit movement `fl:mobil`→`tl:gudang`, qty=`ip` (truth, bukan expected). BUKAN P12, BUKAN widget. Selisih `dp` gak ngubah qty (cuma flag investigation). Detail di DEV-HANDOFF §C + `docs/driver-runtime-movement-cf-handoff.md`. **Butuh dev CF build.**
 2. **Closing blind?** — mock visible (tampil expected). Anti-bias mau blind kaya driver custody? Same widget, flip `blind`. Konfirmasi.
 3. **`{openingCnm}`** — buat update cst closed, butuh cnm opening. Lookup `cty◼opening⭘vv◼{vehicleId}⭘cdt◼{today}` → ambil `cnm`. OK.
 4. **R1/R2 = page atau sheet?** — mock full-screen. Rec page (`...WarehouseClosingResult`), branch by `rs`. Konfirmasi.

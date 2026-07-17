@@ -25,3 +25,7 @@ dist-ssr
 
 # Brainstorming companion
 .superpowers/
+.images/*
+
+# Cloud Function sources — contain GAS deployment IDs (AKfyc…), never commit
+scripts/function-source*/

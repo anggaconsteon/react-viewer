@@ -1,0 +1,96 @@
+B899 [F]: =base!$A$2
+D899 [F]: =base!$B$2
+F899 [F]: =TRUE
+B900 [F]: ="separator"
+D900 [F]: =SUBSTITUTE(SUBSTITUTE(VLOOKUP(B900, Widget!$A:$G, 7, FALSE), """afterSpacing"":0", """afterSpacing"":[TEMP]"), "[TEMP]", IF(G900="small", 0, IF(G900="medium", 28, IF(G900="large", 50, IF(G900="extra-large", 90, 12)))))
+F900 [F]: =TRUE
+B901 [F]: ="text"
+D901 [F]: =SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(VLOOKUP(B901, Widget!$A:$G, 7, FALSE), "[DATA]", H901), """size"":18", """size"":[TEMP]"), "[TEMP]", IF(G901="small", 14, IF(G901="medium", 28, IF(G901="large", 48, IF(G901="extra-large", 70, 18)))))
+F901 [B]: True
+G901 [F]: ="medium"
+H901 [F]: ="Lapor temuan"
+B902 [F]: ="text"
+D902 [F]: =SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(VLOOKUP(B902, Widget!$A:$G, 7, FALSE), "[DATA]", H902), """size"":18", """size"":[TEMP]"), "[TEMP]", IF(G902="small", 14, IF(G902="medium", 28, IF(G902="large", 48, IF(G902="extra-large", 70, 18)))))
+F902 [B]: True
+G902 [F]: ="small"
+H902 [F]: ="Isi form lalu kirim"
+B903 [F]: ="separator"
+D903 [F]: =SUBSTITUTE(SUBSTITUTE(VLOOKUP(B903, Widget!$A:$G, 7, FALSE), """afterSpacing"":0", """afterSpacing"":[TEMP]"), "[TEMP]", IF(G903="small", 0, IF(G903="medium", 28, IF(G903="large", 50, IF(G903="extra-large", 90, 12)))))
+F903 [B]: True
+G903 [F]: ="small"
+B904 [F]: ="autoNumber"
+D904 [F]: =SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(VLOOKUP(B904, Widget!$A:$G, 7, FALSE), "[POSITION]", J904), "[TEXT]", H904), "[TEMPLATE]", I904), "[COLOR]", G904)
+F904 [F]: =TRUE
+G904 [F]: ="blue_700"
+H904 [F]: ="No. Permohonan:◆[DIBUAT OTOMATIS]"
+I904 [F]: ="REQ-{{YYYY}}-{{COUNTER(vtl.request,6)}}"
+J904 [N]: 17
+B905 [F]: ="lqrTextField2"
+D905 [F]: =SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(VLOOKUP(B905,Widget!$A:$G,7,FALSE),"[QRTYPE]",Q905),"[TABLE]",L905),"[TEXT]",H905),"[MARGIN]",N905),"[ICON]",G905),"[LABEL]",M905),"[HINT]",K905),"""[POSITION]""",J905),"[BUTTONICON]",I905),"""[LOCATIONNAMEPOSITION]""",R905),"[FAKEGPSALLOWED]",S905),"[OUTPOSITIONALLOWED]",T905),"""size"":14","""size"":"&U905)
+F905 [F]: =TRUE
+G905 [F]: ="pin_drop"
+H905 [F]: ="Lokasi◆Kode lokasi◆Batal◆Scan QR lokasi◆Pencarian◆Tulis nama atau site◆{\\\""searchDisplayType\\\"":\\\""text1\\\"", \\\""content\\\"":\\\""Lokasi : <1>\\\\nToleransi : <4> meter\\\""}◆Lokasi tidak ada dalam daftar◆Lokasi tidak dalam daftar◆Anda di luar batas lokasi◆QR Tidak dikenal◆QR Tidak dikenal◆Lokasi tidak valid◆Nonaktifkan Fake GPS◆Diluar Area Absensi◆Silahkan menuju lokasi yang ditentukan"
+I905 [F]: ="qr_code_2"
+J905 [F]: =5
+K905 [F]: ="Scan QR atau isi lokasi"
+L905 [F]: =""
+M905 [F]: =""
+N905 [F]: ="10,0,0,0"
+O905 [F]: ="italic"
+P905 [F]: ="Lokasi◆Pilih◆Batal"
+Q905 [F]: ="lqr"
+R905 [F]: =11
+S905 [F]: =FALSE
+T905 [F]: =FALSE
+U905 [N]: 12
+B906 [F]: ="textField"
+D906 [F]: =SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(VLOOKUP(B906, Widget!$A:$G, 7, FALSE), "[ICON]", G906), "[LABEL]", H906), "[VALUE]", I906), "[POSITION]", J906), "[HINT]", K906)
+F906 [F]: =TRUE
+G906 [F]: =59389
+H906 [F]: ="Judul"
+J906 [N]: 8
+K906 [F]: ="Isi Judul Insiden"
+B907 [F]: ="selectableGrid"
+D907 [F]: =SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(VLOOKUP(B907, Widget!$A:$G, 7, FALSE), "[ICON]", G907), "[VARIANT]", H907), "[POSITION]", J907), "[TITLE]",I907), "[TEXT]", L907), "[BGSELECTED]", K907), "[MAXGRID]", M907), "[HEIGHT]", N907)
+F907 [F]: =TRUE
+G907 [F]: ="pin_drop"
+H907 [F]: ="grid"
+I907 [F]: ="JENIS KELUHAN"
+J907 [N]: 7
+K907 [F]: ="gray"
+L907 [F]: ="Kebersihan◆AC & pendingin◆Listrik & lampu◆Maintenance"
+M907 [S]: 2
+N907 [N]: 50
+B908 [F]: ="getImages1"
+D908 [F]: =SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(VLOOKUP(B908, Widget!$A:$G, 7, FALSE), "[BUTTON]", G908), "[LABEL]", H908), "[POSITION]", J908), "[PREVIEWSIZE]", I908), "[DEFAULTIMAGES]",K908), "[MARGIN]",N908), "[STYLE]",O908), "[LABELPOSITION]",M908), "[SIZE]",L908), "[ALIGNMENT]",P908), "[IMGPAR]",T908), "[FOLDER]",U908), "[FILENAME]",W908),"""[MAX_IMAGES]""",V908)
+F908 [F]: =TRUE
+G908 [F]: ="+"
+H908 [F]: =VLOOKUP(100900, Locale!$B:$C, 2, FALSE)
+I908 [F]: =120
+J908 [N]: 4
+L908 [F]: =18
+M908 [F]: ="end"
+N908 [F]: ="0,0,0,50"
+O908 [F]: ="Normal"
+P908 [F]: ="spaceEvenly"
+T908 [F]: ="400,400,80"
+U908 [F]: =auzSettings!$J$22
+V908 [F]: =5
+B909 [F]: ="3LineBorderForm"
+D909 [F]: =SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(VLOOKUP(B909, Widget!$A:$G, 7, FALSE), "[ICON]", G909), "[LABEL]", H909), "[VALUE]", I909), "[POSITION]", J909), "[HINT]", K909)
+F909 [F]: =TRUE
+G909 [F]: =57527
+H909 [F]: ="Catatan"
+J909 [N]: 3
+P909 [F]: =$L$7
+Q909 [F]: ="Pilih Site"
+B910 [F]: ="selectableVertical"
+D910 [F]: =SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(VLOOKUP(B910, Widget!$A:$G, 7, FALSE), "[ICON]",G910), "[TITLE]", I910), "[HEIGHT]", K910), "[POSITION]", J910), "[TEXT]", M910), "[VARIANT]", H910), "[BGSELECTED]", L910)
+F910 [F]: =TRUE
+G910 [F]: ="assessment"
+H910 [F]: ="vertical"
+I910 [F]: ="TINGKAT URGENSI"
+J910 [N]: 6
+K910 [N]: 64
+L910 [F]: ="gray"
+M910 [F]: ="Mendesak◇Bahaya, banjir, akses publik kena◇red◆Perlu segera◇Mengganggu operasional◇orange◆Bisa nanti◇Tidak mengganggu◇green"

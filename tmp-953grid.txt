@@ -1,0 +1,101 @@
+B953 [F]: ="{""title"":"""&$B$116&""",""hideBottomBar"":true,""children"":["&MID(CONCATENATE(E954:E970), 2, 50000)&"]}"
+D953 [F]: ="JSON--"
+E953 [F]: =ARRAYFORMULA(IF(ROW(D953:D970)=ROW(D953), "JSON", IF(ISERROR(D953:D970), "", IF(D953:D970="", "", IF(F953:F970<>TRUE, "", ","&D953:D970)))))
+F953 [F]: ="Displayed"
+B954 [F]: =base!$A$2
+D954 [F]: =base!$B$2
+F954 [B]: False
+B955 [F]: ="separator"
+D955 [F]: =SUBSTITUTE(SUBSTITUTE(VLOOKUP(B955, Widget!$A:$G, 7, FALSE), """afterSpacing"":0", """afterSpacing"":[TEMP]"), "[TEMP]", IF(G955="small", 0, IF(G955="medium", 28, IF(G955="large", 50, IF(G955="extra-large", 90, 12)))))
+F955 [F]: =TRUE
+G955 [F]: ="small"
+B956 [F]: ="text"
+D956 [F]: =SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(VLOOKUP(B956, Widget!$A:$G, 7, FALSE), "[DATA]", H956), """size"":18", """size"":[TEMP]"), "[TEMP]", IF(G917="small", 14, IF(G917="medium", 18, IF(G917="large", 20, IF(G917="extra-large", 24, 18)))))
+F956 [F]: =TRUE
+G956 [S]: medium
+H956 [F]: ="Detail Temuan"
+B957 [F]: ="separator"
+D957 [F]: =SUBSTITUTE(SUBSTITUTE(VLOOKUP(B957, Widget!$A:$G, 7, FALSE), """afterSpacing"":0", """afterSpacing"":[TEMP]"), "[TEMP]", IF(G957="small", 0, IF(G957="medium", 28, IF(G957="large", 50, IF(G957="extra-large", 90, 12)))))
+F957 [F]: =TRUE
+G957 [F]: ="small"
+B958 [F]: ="workerCardDetail"
+D958 [F]: =SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(VLOOKUP(B958, Widget!$A:$G, 7, FALSE), "[ROLE]", H958), "[VIDTABLE]", L383), "[TABLE]", J958), "[SEARCH]", K958), "[CONDITIONS]", L958), "[TEXT]", M958)
+F958 [F]: =FALSE
+J958 [F]: =auzSettings!$J$45
+K958 [F]: ="1◼<no_request>"
+L958 [F]: ="[[◀1▶◼<no_request>]]"
+M958 [F]: ="WORKER◆<6>◆<24> . <8>"
+B959 [S]: displayItemCardDetail
+D959 [F]: =SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(VLOOKUP(B959, Widget!$A:$G, 7, FALSE), "[FLAG]", G959), "[ROLE]", H959), "[VIDTABLE]", L383), "[TABLE]", J959), "[SEARCH]", K959), "[CONDITIONS]", L959), "[TEXT]", M959), "[CONTENT]", N959), "[REASON]", P959), "[STATUS]", Q959), "[IMAGE]", R959)
+F959 [F]: =TRUE
+G959 [F]: ="approve-request-detail"
+J959 [F]: =auzSettings!$J$45
+K959 [F]: ="1◼<request_vid>"
+L959 [F]: ="[[◀1▶◼<request_vid>]]"
+M959 [F]: ="<1>◆<15>◆<19> . <16>◆Dilaporkan oleh◆Waktu Lapor◆Lokasi◆Ditugaskan ke◆Keterangan◆Dokumen Pendukung"
+N959 [F]: ="<6>◆<11>◆<14>◆<24>"
+P959 [F]: ="<18>"
+Q959 [F]: ="<2>"
+R959 [F]: ="<17>"
+B960 [S]: timeline
+D960 [F]: =SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(VLOOKUP(B960, Widget!$A:$G, 7, FALSE), "[FLAG]", G960),"[VARIANT]", G960), "[TABLE]", H960), "[TEXT]", I960), "[SEARCH]", J960)
+F960 [F]: =TRUE
+G960 [F]: ="timeline"
+H960 [F]: =auzSettings!$J$46
+I960 [F]: ="Riwayat Aktifitas◆<10>◆<30>◆<7>"
+J960 [F]: ="1◼<request_vid>"
+B961 [S]: txfWithSendButton
+D961 [F]: =SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(VLOOKUP(B961, Widget!$A:$G, 7, FALSE), "[ROLE]", H961), "[VIDTABLE]", L383), "[TABLE]", J961), "[ICON]", L961), "[HINT]", M961), "[TEXT]", K961), "[POSITION]", N961), "[BUTTONICON]", O961), "[BUTTONLABEL]", P961), "[DISABLEDWHENEMPTY]", Q961), "[ATTACHMENTENABLED]", R961), "[ATTACHMENTFOLDER]", S961), "[ATTACHMENTMAX]", U961), "[ADDTOTABLE]", T961), "[SOURCE]", V961)
+F961 [F]: =FALSE
+J961 [F]: =auzSettings!$J$47
+K961 [F]: ="Add a comment...◆Send◆Attach file◆Komentar kosong"
+L961 [F]: ="attach_file"
+M961 [F]: ="Add a comment..."
+N961 [N]: 7
+O961 [F]: ="send"
+P961 [F]: ="Send"
+Q961 [F]: ="TRUE"
+R961 [F]: ="TRUE"
+S961 [F]: ="id/2026/vtl/request-comment//<no_request>"
+T961 [F]: =auzSettings!$J$47&"⭘retention◼4320⭘tablevid◼20342033315492⭘index◼<no-request>★S⭘<1>◼<no-request>⭘<2>◼"&Settings!$B$2&"⭘<3>◼"&Settings!$B$1&"⭘<4>◼◁7▷⭘<5>◼◀2|T"&System!$B$3&"|Ddd MMM yyyy HH:mm▶⭘<6>◼⭘<7>◼"
+U961 [N]: 3
+V961 [F]: ="camera◆gallery"
+B962 [F]: ="workflowButtonTriage"
+D962 [F]: =SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(VLOOKUP(B962, Widget!$A:$G, 7, FALSE), "[ALIGNMENT]", G962), "[TEXT1]", H962), "[BUTTONCOLOR1]", I962), "[TEXTCOLOR1]", J962), "[ACTION1]", K962), "[TITLE1]", L962), "[ROUTE1]", M962), "[TEXT2]", N962), "[ADDTOTABLE1]", O962), "[ADDTOTABLE2]", P962), "[UPDATETABLEROW2]", Q962), "[UPDATETABLEROW3]", J962), "[ADDTOTABLE3]", S962)
+F962 [B]: True
+G962 [F]: ="report-incident"
+H962 [F]: ="Kembalikan"
+I962 [F]: ="2◼MENUNGGU"
+K962 [F]: =2
+O962 [F]: =auzSettings!$J$46&"⭘retention◼0⭘description◼report-incident-history⭘flag◼report-incident-history⭘tablevid◼20342033315492⭘index◼1★S◼2★S◼3★N◼5★N◼9★S⭘<1>◼<no_request>⭘<2>◼KEMBALIKAN⭘⭘<3>◼"&Settings!$B$1&"⭘<4>◼"&Settings!$B$2&"⭘<5>◼⭘<6>◼⭘<7>◼◀2|T"&System!$B$3&"|Ddd MMM yyyy HH:mm▶⭘<8>◼◀2▶⭘<9>◼MENUNGGU⭘<10>◼"&VLOOKUP('op1'!$B$5, auzSettings!$C$10:$E$170, 3, FALSE)&"⭘<27>◼⭘<28>◼⭘<29>◼⭘<30>◼Dikembalikan — catatan: ◁3▷"
+P962 [F]: =auzSettings!$J$46&"⭘retention◼0⭘description◼report-incident-history⭘flag◼report-incident-history⭘tablevid◼20342033315492⭘index◼1★S⭘<1>◼<no_request>⭘<2>◼TERIMA⭘<3>◼"&Settings!$B$1&"⭘<4>◼"&Settings!$B$2&"⭘<5>◼⭘<6>◼⭘<7>◼◀2|T"&System!$B$3&"|Ddd MMM yyyy HH:mm▶⭘<8>◼◀2▶⭘<9>◼DITINJAU⭘<10>◼"&VLOOKUP('op1'!$B$5, auzSettings!$C$10:$E$170, 3, FALSE)&"⭘<27>◼⭘<28>◼⭘<29>◼⭘<30>◼Laporan diterima oleh "&VLOOKUP('op1'!$B$5, auzSettings!$C$10:$E$170, 3, FALSE)&""
+Q962 [F]: =auzSettings!$J$45&"⭘tablevid◼20342033315492⭘search◼1★<no_request>⭘<2>◼DITINJAU"
+R962 [F]: ="$test/report-incident//vtl.report-incident⭘tablevid◼20342033315492⭘search◼1★<no_request>⭘<2>◼DITINJAU⭘<23>◼◁16▷⭘<24>◼◁26▷"
+S962 [F]: ="$test/report-incident//vtl.report-incident-history⭘retention◼0⭘description◼report-incident-history⭘flag◼report-incident-history⭘tablevid◼20342033315492⭘index◼1★S◼2★S◼3★N◼5★N◼9★S⭘<1>◼<no_request>⭘<2>◼ASSIGN⭘<3>◼"&Settings!$B$1&"⭘<4>◼"&Settings!$B$2&"⭘<5>◼◁16▷⭘<6>◼◁26▷⭘<7>◼◀2|T"&System!$B$3&"|Ddd MMM yyyy HH:mm▶⭘<8>◼◀2▶⭘<9>◼DITINJAU⭘<10>◼"&VLOOKUP('op1'!$B$5, auzSettings!$C$10:$E$170, 3, FALSE)&"⭘<27>◼⭘<28>◼⭘<29>◼⭘<30>◼Diterima & di-assign ke ◁26▷"
+B963 [F]: ="workflowButtonHandle"
+D963 [F]: =SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(VLOOKUP(B963, Widget!$A:$G, 7, FALSE), "[ALIGNMENT]", G963), "[TEXT1]", H963), "[BUTTONCOLOR1]", I963), "[TEXTCOLOR1]", J963), "[ACTION1]", K963), "[TITLE1]", L963), "[ROUTE1]", M963), "[TEXT2]", N963), "[UPDATETABLEROW1]", O963), "[ADDTOTABLE1]", P963), "[UPDATETABLEROW2]", Q963), "[ADDTOTABLE2]", R963), "[ROUTE2]", S963)
+F963 [B]: True
+G963 [F]: ="report-incident"
+H963 [F]: ="Re-assign"
+I963 [F]: ="2◼DITINJAU◆2◼ASSIGN"
+J963 [F]: ="Assign Petugas"
+K963 [F]: ="Pilih petugas yang akan ditugaskan"
+L963 [F]: ="vtl.workforce"
+M963 [S]: 16
+N963 [F]: ="Pilih Nama◆Pilih◆Batal◆Scan QR di name tag◆Pencarian◆Tulis nama atau site◆{\\\""searchDisplayType\\\"":\\\""text1\\\"", \\\""content\\\"":\\\""VID : <0>\\\\nNama : <1>\\\\nSite : <5>\\\""}◆Lokasi tidak ada dalam daftar◆Pengguna tidak ada dalam daftar◆Anda di luar batas lokasi yang ditentukan◆QR Tidak dikenal◆Error"
+O963 [F]: =auzSettings!$J$45&"⭘tablevid◼20342033315492⭘search◼1★<no_request>⭘<2>◼ASSIGN⭘<23>◼◁16▷⭘<24>◼◁26▷"
+P963 [F]: =auzSettings!$J$46&"⭘retention◼0⭘description◼report-incident-history⭘flag◼report-incident-history⭘tablevid◼20342033315492⭘index◼1★S◼2★S◼3★N◼5★N◼9★S⭘<1>◼<no_request>⭘<2>◼RE-ASSIGN⭘<3>◼"&Settings!$B$1&"⭘<4>◼"&Settings!$B$2&"⭘<5>◼◁16▷⭘<6>◼◁26▷⭘<7>◼◀2|T"&System!$B$3&"|Ddd MMM yyyy HH:mm▶⭘<8>◼◀2▶⭘<9>◼ASSIGN⭘<10>◼"&VLOOKUP('op1'!$B$5, auzSettings!$C$10:$E$170, 3, FALSE)&"⭘<27>◼⭘<28>◼⭘<29>◼⭘<30>◼Laporan di-re-assign ke ◁26▷"
+Q963 [F]: =auzSettings!$J$45&"⭘tablevid◼20342033315492⭘search◼1★<no_request>⭘<2>◼SELESAI"
+R963 [F]: =auzSettings!$J$46&"⭘retention◼0⭘description◼report-incident-history⭘flag◼report-incident-history⭘tablevid◼20342033315492⭘index◼1★S◼2★S◼3★N◼5★N◼9★S⭘<1>◼<no_request>⭘<2>◼SELESAI⭘<3>◼"&Settings!$B$1&"⭘<4>◼"&Settings!$B$2&"⭘<5>◼⭘<6>◼⭘<7>◼◀2|T"&System!$B$3&"|Ddd MMM yyyy HH:mm▶⭘<8>◼◀2▶⭘<9>◼SELESAI⭘<10>◼"&VLOOKUP('op1'!$B$5, auzSettings!$C$10:$E$170, 3, FALSE)&"⭘<27>◼⭘<28>◼⭘<29>◼⭘<30>◼Laporan ditandai selesai oleh "&VLOOKUP('op1'!$B$5, auzSettings!$C$10:$E$170, 3, FALSE)&""
+B964 [F]: ="workflowButtonDialog"
+D964 [F]: =SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(VLOOKUP(B964, Widget!$A:$G, 7, FALSE), "[FLAG]", G964), "[TEXT1]", H964), "[SEARCH]", I964), "[ROUTE]", J964), """[GPS_POSITION]""", K964), "[ADDTOTABLE]", M964), "[UPDATETABLEROW]", L964),"[TITLE1]", N964), "[BUTTONCONFIRMATION1]", O964), "[BUTTONCOLOR]", P964)
+F964 [B]: True
+G964 [F]: ="report-incident"
+H964 [F]: ="Tutup Laporan"
+I964 [F]: ="2◼SELESAI"
+K964 [F]: =2
+L964 [F]: ="$test/report-incident//vtl.report-incident⭘tablevid◼20342033315492⭘search◼1★<no_request>⭘<2>◼DITUTUP"
+M964 [F]: ="$test/report-incident//vtl.report-incident-history⭘retention◼0⭘description◼report-incident-history⭘flag◼report-incident-history⭘tablevid◼20342033315492⭘index◼1★S◼2★S◼3★N◼5★N◼9★S⭘<1>◼<no_request>⭘<2>◼DITUTUP⭘<3>◼"&Settings!$B$1&"⭘<4>◼"&Settings!$B$2&"⭘<5>◼⭘<6>◼⭘<7>◼◀2|T"&System!$B$3&"|Ddd MMM yyyy HH:mm▶⭘<8>◼◀2▶⭘<9>◼DITUTUP⭘<10>◼"&VLOOKUP('op1'!$B$5, auzSettings!$C$10:$E$170, 3, FALSE)&"⭘<27>◼⭘<28>◼⭘<29>◼⭘<30>◼Laporan ditutup oleh "&VLOOKUP('op1'!$B$5, auzSettings!$C$10:$E$170, 3, FALSE)&""
+N964 [F]: ="Tutup Laporan"
+O964 [F]: ="Laporan ditutup dan tidak dapat diubah lagi."
+P964 [F]: ="red"

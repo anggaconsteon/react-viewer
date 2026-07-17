@@ -1,125 +1,81 @@
-# Walk-in Counter (POS) — Design Spec
+# Walk-in Counter (POS) — Design v2
 
-Design hasil brainstorm 2026-06-30. Scope: **counter ("Dibawa Langsung") only**; "Dikirim" nyusul (mode/tx-type tambahan, reuse P3–P5). Semua widget **generic**. Nota = **layer komersial cross-runtime** (admin walk-in SEKARANG + driver delivery NANTI + tempat lain). Analisa keputusan + opsi: `walkin-pos-analysis.md`.
+**v2 2026-07-07** (supersede v1 2026-06-30 — brainstorm ulang, keputusan final user). Scope v1 ship: **counter only, SALE only, tanpa tab, 1 depo, sampai CETAK NOTA.**
+Dev spec per role: `walkin-flutter-dev-spec.md` (renderer) + `walkin-nota-cf-dev-spec.md` (Go).
 
-**Prinsip inti:** stok TETEP via `movement`→CF→`asset_cache` (flow existing, gak berubah). Nota = SSOT **komersial** (harga/total/bayar) yang **nempel di atas** movement — gak ganggu stok.
-
----
-
-## 1. Flow + Widget inventory
-
-```
-W1 Intake ──proceed: tulis movement(stok) + nota(komersial)──▶ W3 Nota ──cetak / transaksi baru
-```
-
-### W1 — Intake Pembelian
-| # | widget | jenis | isi |
-|---|---|---|---|
-| 1 | `workspaceHeader` | reuse 225 | "Intake Pembelian", backRoute Home |
-| 2 | payment toggle | reuse `selectableGrid` maxGrid 2 | Tunai/Transfer → capture `bym` (pindah dari W3, biar nota nulis lengkap pas proceed) |
-| 3 | buyer name | reuse `textField` | opsional ("Umum") → `by` |
-| 4 | item builder | **`taskItemBuilder` mode `walkin`** (EXTEND) | txTypes `sale,refill` + `priceField:hg` (sale=qty+harga override dari `item.hrg`; refill=waterType+qty, tukar 1:1) |
-| 5 | total + proceed | reuse `sendButtonGpsWithEvent` 192 | total Rp (renderer Σ sale) → tulis nota+movement → W3 |
-
-### W3 — Nota Penjualan
-| # | widget | jenis | isi |
-|---|---|---|---|
-| 1 | `workspaceHeader` | reuse 225 | "Nota Penjualan" |
-| 2 | nota render | **`RECEIPT_DOC`** (NEW generic) | baca nota tertulis by `nno`: header depo · meta · lines · total · metode · stamp LUNAS |
-| 3 | Cetak Nota | reuse `printBluetooth` | thermal 80mm |
-| 4 | Transaksi Baru | reuse `rbtCta` | → W1 reset |
-
-**Cuma 1 widget BARU = `RECEIPT_DOC`.** Sisanya reuse/extend. Fulfillment toggle (Dibawa/Dikirim) OMIT sekarang (counter implied); pas Dikirim dibikin → +`switch`/mode + reuse P3–P5.
+**Prinsip tetap:** stok via `movement`→CF→`asset_cache` (jalur existing). Nota = layer komersial (harga/total/bayar) di atas movement, cross-runtime (walkin sekarang, driver delivery nanti).
 
 ---
 
-## 2. JSON resolved (generic)
+## 0. Keputusan v2 (final, hasil brainstorm 2026-07-07)
 
-### NEW `RECEIPT_DOC` (reusable: nota/invoice/tanda-terima)
-```json
-{
-  "type": "RECEIPT_DOC",
-  "vidtable": "20342033315492",
-  "table": "84214220504259//nota",
-  "search": "nno◼{notaId}",
-  "title": "NOTA PENJUALAN",
-  "headerTable": "84214220504259//stock_location",
-  "headerSearch": "lv◼{gl}",
-  "headerNameField": "ln", "headerAddrField": "al", "headerContactField": "ph",
-  "noField": "nno", "buyerField": "by", "dateField": "ts",
-  "linesField": "li", "lineNameField": "in", "lineQtyField": "qt", "linePriceField": "hg", "lineSubField": "sub",
-  "totalField": "tot", "methodField": "bym", "statusField": "st",
-  "text": "NOTA PENJUALAN◆No.◆Pembeli◆TOTAL◆LUNAS◆Terima kasih 🙏◆consteon"
-}
+| topik | keputusan |
+|---|---|
+| Fulfillment | **Counter only** — tab Dibawa/Dikirim DIHAPUS, langsung form. "Dikirim" nanti = mode. |
+| Tx types | **SALE only** v1. Refill nyusul (`txTypes` tambahan, schema siap). |
+| Harga | **`item.hrg` master = default + kasir override per line.** Jangka panjang: pricelist per-customer jadi lapisan default — form gak berubah. |
+| Depo `gl` | **Bake literal 1 depo** di config. Multi-depo nanti = ganti literal → picker (schema `nota.gl` udah ada). |
+| Nota write | **Native widget** (`NOTA_CREATE_SUBMIT`, pola TASK_CREATE_SUBMIT) — `li[]` array gak bisa lewat addToEvent (limitasi DSL). Kontrol sheet tetap: flag/route/chain/GPS/addToEvent evidence = param. |
+| Movement | **Mekanisme A: CF `OnNotaCreated`** — app nulis 1 doc nota; CF loop `li[]` → SALE movement per line. Renderer NOL urusan movement. |
+| `nno` | Counter backend `NOTA-{{YYYY}}-{{COUNTER(vtl.nota,6)}}` via `run generate_number` riding savesend (proven di tnm). Namespace SENDIRI. |
+| Cetak | **PRN existing di-extend: variant `keyed`** — mesin template utuh (TEXT/FEED/HR/ROW/LOOP/QRCODE/CUT); yang baru cuma data-binding: (1) `{{field}}` skalar dari doc, (2) `<LOOP source='li'>` array dalam doc. |
+| Pembeli | Nama bebas (kosong = "Umum"), TANPA stock_location. `kl` optional (kosong di counter). |
+| Status | `st:"LUNAS"` selalu (counter). Field ada biar nanti bisa piutang. |
+
+## 1. Flow + halaman
+
 ```
-Generic: header depo (query `{gl}`), meta (no/pembeli/tgl), lines table (`li[]`: nama×qty×harga=sub), total, metode, stamp `statusField`. Ganti table/field → dokumen cetak apapun.
+AdminHome ─▶ W1 vertikaTeknoLokaciptaWalkIn (REBUILD total, ganti mock lama)
+             1 workspaceHeader        "Walk-in · Counter"
+             2 selectableGrid pos 1   PEMBAYARAN: Tunai◆Transfer            → bym
+             3 textField pos 12       Pembeli (kosong = Umum)               → by
+             4 taskItemBuilder        mode walkin: item+qty+harga(hrg default, override)+subtotal → draft li[]
+             5 autoNumber (NUMBER)    pos 17 · "No. Nota: [DIBUAT OTOMATIS]" · template NOTA-{{YYYY}}-{{COUNTER(vtl.nota,6)}} · executable generate_number (pola tnm CreateTaskSummary)
+             6 NOTA_CREATE_SUBMIT     TOTAL Rp + [Buat Nota] · run 17:generate_number → tulis nota native + nno → route W3 bawa {nno}
+                    │
+                    ▼  CF OnNotaCreated: loop li[] → movement SALE per line (fl=depo, nref=nno)
+                       → asset_cache depo turun (OnMovementCreated existing)
 
-### W1 (reuse)
-```json
-{"type":"SELECTABLE_BTN","variant":"grid","title":"PEMBAYARAN","maxGrid":2,"position":1,"text":"Tunai◆Transfer"}
-{"type":"TXF","variant":"text","label":"Pembeli","currentValue":"","hint":"Nama pembeli — kosongkan untuk Umum","position":2,"size":14,"line":1,"border":true}
-{"type":"TASK_ITEM_BUILDER","vidtable":"20342033315492","mode":"walkin","itemTable":"84214220504259//item","itemIdField":"ii","itemNameField":"in","itemCatField":"ic","waterTypeField":"wt","priceSourceField":"hrg","searchField":"in","searchHint":"Cari produk…","txTypes":"sale,refill","writeTarget":"nota.li","qtyField":"qt","priceField":"hg","text":"Tambah Item◆+ Produk◆+ Refill Galon◆Jual◆Refill◆Air RO◆Isi Ulang"}
-```
-W3 reuse: `workspaceHeader` + `printBluetooth` + `rbtCta`.
-
----
-
-## 3. Write architecture + schema (nyambung flow existing)
-
-**1 transaksi SALE = 2 tulisan (stok + komersial), link via `nno`:**
-```
-W1 proceed →
-  ├─ per line SALE   → movement {mt:SALE,  fl:{gl}, tl:null, ii, qt, er:ADMIN, t, nref:{nno}}   ← STOK (CF→asset_cache, existing)
-  ├─ per line REFILL → movement {mt:REFILL, fl:{gl}, ii, qt, er:ADMIN, t, nref:{nno}}            ← STOK
-  └─ 1 nota          → header scalar + li[] native snapshot                                      ← KOMERSIAL
-→ W3 RECEIPT_DOC(nota by nno) → printBluetooth
-```
-**Movement schema GAK berubah** (cuma +`nref` opsional buat trace). Stok turun lewat movement→CF→asset_cache **kayak biasa**.
-
-### Schema `nota` (NEW collection, cross-runtime)
-```
-nota (key nno):
-  nno   nomor (generated)
-  src   walkin | delivery          ← cross-runtime (driver: src=delivery)
-  ref   counter-session | task tnm ← sumber
-  kl    customer id (OPTIONAL; counter Umum = kosong; delivery = client stock_location)
-  by    nama pembeli (Umum=kosong)
-  bym   tunai | transfer
-  st    LUNAS                       ← counter selalu lunas
-  gl    depo (warehouse)
-  tot   total Rp
-  li[]  [{ii,in,qt,hg,sub}, …]      ← NATIVE ARRAY snapshot beku
-  cv/cn kasir · t/ts
+           W3 vertikaTeknoLokaciptaWalkInNota (BARU)
+             1 workspaceHeader        "Nota Penjualan"
+             2 TXT ringkas            "{nno} tersimpan · LUNAS"
+             3 PRN variant keyed      template 80mm (header depo · meta · lines · total · QRCODE nno) → CETAK
+             4 rbtCta                 "Transaksi Baru" → W1
 ```
 
-### `kl` optional — counter gak butuh stock_location
-Counter = LUNAS, no outstanding, no custody → pembeli "Umum" anonim, **gak bikin stock_location**. Stok keluar depo (`movement fl:{gl}, tl:null`). `nota.kl` kosong. (Opsional link `kl` kalau pembeli = client existing yg dikenal.) `kl` keisi cuma di `src:delivery` (driver, customer terdaftar).
+Widget baru/extend: `taskItemBuilder mode walkin` (extend) · `NOTA_CREATE_SUBMIT` (baru, clone pola) · `PRN keyed` (extend). RECEIPT_DOC layar (v1 2026-06-30) **DITUNDA** — PRN template udah jadi bentuk nota; layar cukup ringkas.
 
-### Cross-runtime (driver, nanti — NOL rombak)
-Driver delivery yg ada sale line (`task.it[]` tx=sale+hg) → selesai antar → tulis nota `src:delivery, ref:tnm, kl:{customer}` + reuse `RECEIPT_DOC`. Schema + widget udah generic.
+## 2. Schema `nota` (koleksi BARU, doc auto-id)
 
----
+```
+nno    "NOTA-2026-000001"   counter vtl.nota
+src    "walkin"             (driver nanti: "delivery")
+ref    ""                   (driver nanti: tnm)
+kl     ""                   optional — counter Umum kosong
+by     "" | nama pembeli
+bym    "tunai" | "transfer"
+st     "LUNAS"
+gl     "F621558e33b612"     depo (bake v1)
+tot    45000                Number
+li[]   [{ii,in,qt,hg,sub}]  NATIVE array — snapshot BEKU (harga saat transaksi)
+cv/cn  kasir (session) · t epoch Number · ts formatted
+search "nno★NOTA-2026-000001"
+```
 
-## 4. Dependencies / blocker
-| dep | sama dengan | status |
-|---|---|---|
-| native-array write `nota.li[]` | keystone `task.it[]` / custody `ip[]`/`dp[]` | solve sekali, kebuka semua |
-| movement-per-line emit (loop) | driver movement-emit (per `it[]` line) | renderer |
-| `taskItemBuilder` mode `walkin` | extend builder existing (multi-use P2 order) | renderer |
-| `RECEIPT_DOC` widget | NEW generic | renderer |
-| `item.hrg` price source | D1 tech-lead | ratify |
-| schema `nota` (+src/ref/kl) | D3 tech-lead | ratify |
-| `getMoneyInput` (harga override) | D10 — bisa internal taskItemBuilder | renderer |
+`li[]` snapshot beku = nota lama gak berubah walau harga master berubah. Master `item` +field **`hrg`** (harga default, Number) — kolom baru Master_Item + seed.
 
-## 5. Tech-lead decisions (ratify dulu — detail `walkin-pos-analysis.md`)
-Resolved di brainstorm: nota=widget generic (RECEIPT_DOC) · write pas W1→W3 · payment di W1 · nota cross-runtime (src/ref/kl) · `kl` optional (counter no stock_location). **Sisa butuh ratify:** D1 (item.hrg) · D3 (schema nota final) · D5 (harga refill/parkir) · D9 (gl depo dari session?).
+## 3. Movement (CF, spec terpisah)
 
-## 6. Build order (abis ratify)
-1. Tech-lead ratify D1/D3/D5/D9.
-2. `RECEIPT_DOC` widget (generic) + `nota` collection.
-3. `taskItemBuilder` mode `walkin` (extend) + harga input.
-4. native-array write `nota.li[]` + movement-per-line emit (shared keystone).
-5. W1+W3 op1Screen page (generic, pola P1–P5).
-6. Driver nota (reuse) — fase lain.
+`OnNotaCreated` (mirror OnVehicleOpening): trigger `nota` created → per line `li[]` qt>0 → movement `{mt:SALE, fl:gl, ii, qt, er:ADMIN, nref:nno, d:"walkin sale", t, ts}` — TANPA `tl` (keluar sistem) → depo −qt. `mid = sale-{nno}-{ii}` (deterministik, idempotent; gak tabrakan sama `sale-{tnm}-{ii}` delivery).
 
-**Core galon (P1–P5) gak kena.** Walk-in = layer komersial terpisah di atas movement existing.
+## 4. Build order
+
+1. **Gue (sekarang):** Master_Item +`hrg` + seeder · dictionary (`nota` tab, flag `admin-walkin-sale`, CF/mid registry, counter `vtl.nota`) · 2 dev spec.
+2. **CF dev:** `OnNotaCreated` (independen, bisa duluan).
+3. **Flutter:** builder mode walkin → NOTA_CREATE_SUBMIT → PRN keyed.
+4. **Gue:** page W1/W3 + template PRN di-flip LIVE **bareng build renderer** (aturan ship config-ahead-of-renderer).
+5. Test end-to-end: W1 jual 2 item (1 harga override) → nota kebentuk (`nno` urut, `li[]` beku, `tot` bener) → stok depo turun sejumlah qty → W3 cetak nota thermal kebaca.
+
+## 5. Nanti (SUDAH disiapin schema-nya, JANGAN dibangun sekarang)
+
+Refill (`txTypes`+harga jasa) · multi-depo (picker `gl`) · pricelist per-customer (lapisan default `hrg`) · piutang (`st`) · nota driver (`src:delivery, ref:tnm, kl` keisi — reuse PRN keyed + schema, nol rombak) · RECEIPT_DOC layar.

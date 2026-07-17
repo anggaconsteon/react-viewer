@@ -1,0 +1,137 @@
+{
+    "title": "Vertika Tekno Lokacipta",
+    "hideBottomBar": true,
+    "children": [
+        {
+            "type": "WORKSPACE_HEADER",
+            "vidtable": "20342033315492",
+            "table": "84214220504259//stock_location",
+            "search": "lv◼{activeVehicle}",
+            "idField": "lv",
+            "titleField": "ln",
+            "addressField": "",
+            "backRoute": "vertikaTeknoLokaciptaWarehouseFeed",
+            "text": "Pengecekan Pembukaan◆Verify Fisik vs Plan"
+        },
+        {
+            "type": "executor_designate_card",
+            "vidtable": "20342033315492",
+            "workforceTable": "84214220504259//workforce",
+            "nameField": "n",
+            "vidField": "vid",
+            "siteField": "",
+            "text": "PENGEMUDI◆Belum ditentukan — pilih sebelum berangkat◆Tentukan◆Ganti◆TENTUKAN PENGEMUDI◆Siapa yang ngantar?◆Pilih siapa pun yang available hari ini. Admin akan diberi tahu kalau berubah.◆Tidak ada pegawai tersedia"
+        },
+        {
+            "type": "NOTICE_BAR",
+            "variant": "info",
+            "icon": "",
+            "text": "Planned Loading. Ekspektasi dari aggregate task hari ini. Hitung fisik, verify vs plan — lapor kalau selisih sebelum berangkat."
+        },
+        {
+            "type": "TASK_MANIFEST_LIST",
+            "vidtable": "20342033315492",
+            "table": "84214220504259//task",
+            "search": "vv◼{activeVehicle}⭘tdt◼{today}⭘tst◼assigned",
+            "idField": "tnm",
+            "titleField": "kn",
+            "subtitleField": "al",
+            "itemsField": "it",
+            "dropField": "pd",
+            "pickupField": "pp",
+            "txField": "tx",
+            "saleField": "ps",
+            "refillField": "pr",
+            "buyField": "pb",
+            "excludeStatus": "load_rejected",
+            "route": "",
+            "text": "Load Origin◆task◆item line◆drop◆pickup◆"
+        },
+        {
+            "type": "TXT",
+            "size": 14,
+            "data": "Hitung fisik untuk verify plan:"
+        },
+        {
+            "type": "TXT",
+            "size": 14,
+            "data": "RETURNABLE"
+        },
+        {
+            "type": "CUSTODY_COUNT_LIST",
+            "vidtable": "20342033315492",
+            "table": "84214220504259//task",
+            "search": "vv◼{activeVehicle}⭘tdt◼{today}⭘tst◼assigned",
+            "aggregate": "it",
+            "planField": "pd",
+            "saleField": "ps",
+            "refillField": "pr",
+            "excludeStatus": "load_rejected",
+            "joinTable": "84214220504259//item",
+            "joinKey": "ii",
+            "labelField": "in",
+            "catField": "ic",
+            "filter": "ic◼returnable",
+            "blind": "FALSE",
+            "writeField": "ie",
+            "writeCond": "full",
+            "text": ""
+        },
+        {
+            "type": "TXT",
+            "size": 14,
+            "data": "CONSUMABLE"
+        },
+        {
+            "type": "CUSTODY_COUNT_LIST",
+            "vidtable": "20342033315492",
+            "table": "84214220504259//task",
+            "search": "vv◼{activeVehicle}⭘tdt◼{today}⭘tst◼assigned",
+            "aggregate": "it",
+            "planField": "pd",
+            "saleField": "ps",
+            "refillField": "pr",
+            "excludeStatus": "load_rejected",
+            "joinTable": "84214220504259//item",
+            "joinKey": "ii",
+            "labelField": "in",
+            "catField": "ic",
+            "filter": "ic◼consumable",
+            "blind": "FALSE",
+            "writeField": "ie",
+            "writeCond": "full",
+            "text": ""
+        },
+        {
+            "type": "TXF",
+            "variant": "text",
+            "icon": 57527,
+            "label": "Catatan Checker",
+            "currentValue": "",
+            "hint": "Kondisi loading / stok / hambatan...",
+            "maxLength": 0,
+            "size": 14,
+            "position": 5,
+            "line": 3,
+            "border": true
+        },
+        {
+            "_note": "Widget native TETAP (handle array ie[] + bikin doc). DITAMBAH colokan savesend: action/gpsPosition/flag/addToEvent → abis native write, jalanin pipeline savesend → Event + GPS ketulis. Lihat docs/savesend-array-write-dev-spec.md.",
+            "type": "CUSTODY_COUNT_SUBMIT",
+            "mode": "opening",
+            "vidtable": "20342033315492",
+            "checkTable": "84214220504259//vehicle_check",
+            "workforceTable": "84214220504259//workforce",
+            "vidField": "vid",
+            "nameField": "n",
+            "writeCond": "full",
+            "action": "savesend",
+            "gpsPosition": 2,
+            "flag": "warehouse-opening-check",
+            "addToEvent": "84214220504259//evidence⭘r◼4320⭘tablevid◼20342033315492⭘ety◼notes⭘ept◼check⭘erf◼{activeVehicle}⭘d◼◁5▷⭘cv◼{checkerVid}⭘cn◼{checkerName}⭘t◼◀2▶⭘ts◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶",
+            "updateEventRow": "84214220504259//stock_location⭘tablevid◼20342033315492⭘search◼lv★{activeVehicle}⭘dv◼{chosenVid}⭘dn◼{chosenName}",
+            "route": "vertikaTeknoLokaciptaWarehouseFeed",
+            "text": "Submit · Catat Muatan"
+        }
+    ]
+}

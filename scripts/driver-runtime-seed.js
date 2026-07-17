@@ -4,7 +4,7 @@
 // Bound script utk spreadsheet dictionary (1_XHmo5...).
 //
 // SUMBER BARU (2026-06-22): admin-entry 2-layer
-//   MASTER  : Master_Item · Master_Mobil · Master_Customer · Master_Gudang · Master_Driver
+//   MASTER  : Master_Item · Master_Kendaraan · Master_Customer · Master_Gudang · Master Pegawai · Master_Supplier
 //   HARIAN  : Setup (1 dispatch) · Tugas (stop) · Barang (item per stop)
 //   (BUKAN lagi dummy-block dict tab / parseDummyBlock.)
 //
@@ -29,9 +29,21 @@
 //   Reload sheet → menu "🔥 Driver Seed".
 // ============================================================
 
+const CONFIG = {
+    FIRESTORE_PROJECT_ID: 'otq-01',
+    MOBILE_TABLE_DOC_ID: '20342033315492',
+    TABLE_VID: '84214220504259',
+    SERVICE_ACCOUNT_KEY: 'FIRESTORE_SERVICE_ACCOUNT',
+    BATCH_SIZE: 500,
+    // ⚠️ SAFETY: default false = TIDAK PERNAH menghapus apapun (upsert only).
+    // Orphan (doc di Firestore yg gak ada di sheet) cuma dilaporin.
+    // Set true HANYA kalau yakin mau full-sync — itupun masih minta confirm.
+    ENABLE_DELETE: false,
+};
+
 // const CONFIG = {
-//     FIRESTORE_PROJECT_ID: 'otq-01',
-//     MOBILE_TABLE_DOC_ID: '20342033315492',
+//     FIRESTORE_PROJECT_ID: 'fir-app-dev1',
+//     MOBILE_TABLE_DOC_ID: '60936087747650',
 //     TABLE_VID: '84214220504259',
 //     SERVICE_ACCOUNT_KEY: 'FIRESTORE_SERVICE_ACCOUNT',
 //     BATCH_SIZE: 500,
@@ -41,17 +53,17 @@
 //     ENABLE_DELETE: false,
 // };
 
-const CONFIG = {
-    FIRESTORE_PROJECT_ID: 'fir-app-dev1',
-    MOBILE_TABLE_DOC_ID: '60936087747650',
-    TABLE_VID: '84214220504259',
-    SERVICE_ACCOUNT_KEY: 'FIRESTORE_SERVICE_ACCOUNT',
-    BATCH_SIZE: 500,
-    // ⚠️ SAFETY: default false = TIDAK PERNAH menghapus apapun (upsert only).
-    // Orphan (doc di Firestore yg gak ada di sheet) cuma dilaporin.
-    // Set true HANYA kalau yakin mau full-sync — itupun masih minta confirm.
-    ENABLE_DELETE: false,
-};
+// const CONFIG = {
+//     FIRESTORE_PROJECT_ID: 'fir-app-dev1',
+//     MOBILE_TABLE_DOC_ID: '60936087747650',
+//     TABLE_VID: '84214220504259',
+//     SERVICE_ACCOUNT_KEY: 'FIRESTORE_SERVICE_ACCOUNT',
+//     BATCH_SIZE: 500,
+//     // ⚠️ SAFETY: default false = TIDAK PERNAH menghapus apapun (upsert only).
+//     // Orphan (doc di Firestore yg gak ada di sheet) cuma dilaporin.
+//     // Set true HANYA kalau yakin mau full-sync — itupun masih minta confirm.
+//     ENABLE_DELETE: false,
+// };
 
 // Urutan = urutan push (master dulu, baru FK).
 const COLLECTIONS = [
@@ -81,6 +93,11 @@ function onOpen() {
         .addSeparator()
         .addItem('Push SEMUA (item → … → movement)', 'pushAll')
         .addItem('🔎 Pratinjau (log doang, GAK nulis Firestore)', 'previewAll')
+        .addSeparator()
+        .addItem('🎛️ Pasang dropdown + lock kolom auto', 'setupAdminUI')
+        .addToUi()
+        .addItem('🏭 Pratinjau GUDANG (GAK nulis)', 'previewGudang')
+        .addItem('🏭 Push GUDANG (stock_location + task)', 'pushGudangAll')
         .addSeparator()
         .addItem('🎛️ Pasang dropdown + lock kolom auto', 'setupAdminUI')
         .addToUi();
@@ -154,13 +171,20 @@ function readFlatTab(ss, sheetName) {
     if (!sheet) throw new Error(`Sheet "${sheetName}" tidak ada`);
     const values = sheet.getDataRange().getValues();
     if (values.length < 2) return [];
-    const header = values[0];
+    // Header = baris PERTAMA yg punya kode "(xx)" (auto-detect; layout lama row 1,
+    // layout client row 2 dgn row 1 kosong — dua-duanya jalan).
+    let hRow = -1;
+    for (let i = 0; i < Math.min(values.length, 5); i++) {
+        if (values[i].some(c => /\(([^)]+)\)/.test(String(c || '')))) { hRow = i; break; }
+    }
+    if (hRow < 0 || values.length < hRow + 2) return [];
+    const header = values[hRow];
     const code = header.map(h => {
         const m = String(h || '').match(/\(([^)]+)\)/);
         return m ? m[1].trim() : null;
     });
     const out = [];
-    for (let r = 1; r < values.length; r++) {
+    for (let r = hRow + 1; r < values.length; r++) {
         const row = values[r];
         const obj = {};
         let has = false;
@@ -180,13 +204,18 @@ function readFlatTab(ss, sheetName) {
 function readSetup(ss) {
     const sheet = ss.getSheetByName('Setup');
     if (!sheet) throw new Error('Sheet "Setup" tidak ada');
-    const r = sheet.getRange(2, 1, 1, 10);
-    const v = r.getValues()[0];
-    const d = r.getDisplayValues()[0]; // VID kolom (E/I) bisa ke-format DATE → getValues()=Invalid Date; pakai display string buat ID numerik.
+    // Data = baris tepat di bawah header (auto-detect header via "(vv)";
+    // layout lama: header row 1/data row 2; layout client: header row 2/data row 3).
+    const all = sheet.getDataRange().getValues();
+    let hRow = 0;
+    for (let i = 0; i < Math.min(all.length, 5); i++) {
+        if (all[i].some(c => String(c || '').indexOf('(vv)') >= 0)) { hRow = i; break; }
+    }
+    const v = sheet.getRange(hRow + 2, 1, 1, 10).getValues()[0];
     return {
         mobilPlat: v[0], tanggal: v[1], adminName: v[2],
-        driverName: v[3], driverVid: d[4], vv: v[5],
-        gudangName: v[6], gl: v[7], adminVid: d[8], tdt: v[9],
+        driverName: v[3], driverVid: v[4], vv: v[5],
+        gudangName: v[6], gl: v[7], adminVid: v[8], tdt: v[9],
     };
 }
 
@@ -217,21 +246,69 @@ function buildItems(ss) {
     return readFlatTab(ss, 'Master_Item').map(r => {
         const doc = { ii: str(r.ii), in: r.in, ic: r.ic, tc: parseArr(r.tc), un: r.un, ist: r.ist };
         if (str(r.wt)) doc.wt = str(r.wt);
+        if (str(r.hrg)) doc.hrg = num(r.hrg); // harga default walk-in POS (Number)
         return doc;
     });
 }
 
+// Layout client 2026-07-16: ID (gl/lv/kl) = FORMULA di sheet (ikut nomor baris, kolom di-hide),
+// Kode (kd) = input client. ATURAN FALLBACK: kd kosong → kd = ID. Kendaraan TANPA dv/dn
+// (binding driver kejadian pas opening di app, bukan di master). lst kosong → active.
 function buildStockLocations(ss) {
     const out = [];
     readFlatTab(ss, 'Master_Gudang').forEach(r =>
-        out.push({ lv: str(r.gl), lt: 'warehouse', ln: r.ln, al: r.al, lst: str(r.lst) || 'active' }));
-    readFlatTab(ss, 'Master_Mobil').forEach(r => {
-        const doc = { lv: str(r.lv), lt: 'vehicle', ln: r.ln, lst: str(r.lst) || 'active' };
-        if (str(r.dv)) doc.dv = str(r.dv); // binding mobil↔driver
+        out.push({ lv: str(r.gl), lt: 'warehouse', kd: str(r.kd) || str(r.gl), ln: r.ln, al: r.al, lst: str(r.lst) || 'active' }));
+    readFlatTab(ss, 'Master_Kendaraan').forEach(r => {
+        const doc = { lv: str(r.lv), lt: 'vehicle', kd: str(r.kd) || str(r.lv), ln: r.ln, lst: str(r.lst) || 'active' };
+        if (str(r.ty)) doc.ty = str(r.ty); // jenis kendaraan (Motor/Viar/Pickup/Truck)
         out.push(doc);
     });
-    readFlatTab(ss, 'Master_Customer').forEach(r =>
-        out.push({ lv: str(r.kl), lt: 'client', ln: r.kn, al: r.al, lst: str(r.lst) || 'active' }));
+    readFlatTab(ss, 'Master_Customer').forEach(r => {
+        const doc = { lv: str(r.kl), lt: 'client', kd: str(r.kd) || str(r.kl), ln: r.kn, al: r.al, lst: str(r.lst) || 'active' };
+        if (str(r.ty)) doc.ty = str(r.ty);     // jenis customer (HoReCa/Retail/…)
+        if (str(r.pic)) doc.pic = str(r.pic);   // contact person (nama)
+        if (str(r.hpic)) doc.hpic = str(r.hpic); // no. telpon contact person
+        out.push(doc);
+    });
+    // Supplier (registry buat picker + denorm nama — TANPA balance; movement supplier = external,
+    // fl/tl cuma sisi gudang). Tab OPSIONAL: sheet lama tanpa Master_Supplier tetep jalan.
+    try {
+        readFlatTab(ss, 'Master_Supplier').forEach(r =>
+            out.push({ lv: str(r.lv), lt: 'supplier', kd: str(r.kd) || str(r.lv), ln: r.ln, al: r.al, lst: str(r.lst) || 'active' }));
+    } catch (e) { }
+    // Guard: ID formula ikut nomor baris — baris ke-sort/hapus/insert tengah bikin ID geser.
+    const seen = {};
+    out.forEach(d => {
+        if (!d.lv) throw new Error('Ada baris tanpa ID — kolom ID (hidden) harus keisi formula');
+        if (seen[d.lv]) throw new Error(`ID duplikat: ${d.lv} — baris jangan di-sort/hapus/insert tengah`);
+        seen[d.lv] = true;
+    });
+    return out;
+}
+
+// Master Pegawai (layout atasan 2026-07-16): row 1 checker, row 2 header TANPA kode (xx),
+// data row 3+. Baca by LABEL: VID→wv, Nama→wn, Jabatan→role (di-lowercase: Driver→driver).
+// Kolom lain (NIP/Ponsel/Gmail/Site/CC) = buat pembuatan akun login, BUKAN buat push.
+function readPegawai(ss) {
+    const sheet = ss.getSheetByName('Master Pegawai') || ss.getSheetByName('Master_Driver');
+    if (!sheet) return [];
+    const values = sheet.getDataRange().getValues();
+    let hRow = -1;
+    for (let i = 0; i < Math.min(values.length, 5); i++) {
+        const labels = values[i].map(c => str(c).toLowerCase());
+        if (labels.indexOf('vid') >= 0 && labels.indexOf('nama') >= 0) { hRow = i; break; }
+        if (labels.some(l => l.indexOf('(wv)') >= 0)) { hRow = i; break; } // fallback layout lama Master_Driver
+    }
+    if (hRow < 0) return [];
+    const labels = values[hRow].map(c => str(c).toLowerCase());
+    const col = name => labels.findIndex(l => l.indexOf(name) >= 0);
+    const cV = col('vid'), cN = col('nama'), cJ = col('jabatan') >= 0 ? col('jabatan') : col('peran');
+    const out = [];
+    for (let r = hRow + 1; r < values.length; r++) {
+        const wv = str(values[r][cV]), wn = str(values[r][cN]);
+        if (!wv && !wn) continue;
+        out.push({ wv: wv, wn: wn, role: str(values[r][cJ]).toLowerCase() });
+    }
     return out;
 }
 
@@ -249,8 +326,9 @@ function buildItLine(b) {
 }
 
 function buildTasks(ss) {
-    const tugas = readFlatTab(ss, 'Tugas');
-    const barang = readFlatTab(ss, 'Barang');
+    // Tab Tugas/Barang OPSIONAL (seed masters-only sheet client gak punya) → push task = no-op.
+    let tugas = [], barang = [];
+    try { tugas = readFlatTab(ss, 'Tugas'); barang = readFlatTab(ss, 'Barang'); } catch (e) { return []; }
     const byTnm = {};
     barang.forEach(b => { const k = str(b.tnm); if (!k) return; (byTnm[k] = byTnm[k] || []).push(b); });
     return tugas.map(t => {
@@ -271,7 +349,10 @@ function buildTasks(ss) {
 // purchase (pb) TIDAK dimuat (datang dari customer). → [{ii,cd:'full',qt}]
 function computeManifestFull(ss) {
     const agg = {};
-    readFlatTab(ss, 'Barang').forEach(b => {
+    // Tab Barang OPSIONAL — gak ada (masters-only) → manifest kosong → seedload/ie[] skip.
+    let barang = [];
+    try { barang = readFlatTab(ss, 'Barang'); } catch (e) { }
+    barang.forEach(b => {
         const ii = str(b.ii); if (!ii) return;
         const tx = str(b.tx);
         let q = 0;
@@ -284,9 +365,12 @@ function computeManifestFull(ss) {
 }
 
 // vehicle_check OPEN (custody belum dihitung): manifest di ie[], ip[] kosong, cst=awaiting_custody.
+// Setup tab OPSIONAL (masters-only) → gak ada/kosong = no-op.
 function buildVehicleCheckOpen(ss) {
-    const s = readSetup(ss);
-    const loader = readFlatTab(ss, 'Master_Driver').filter(d => str(d.role) === 'loader')[0] || {};
+    let s = null;
+    try { s = readSetup(ss); } catch (e) { }
+    if (!s || !str(s.vv)) return [];
+    const loader = readPegawai(ss).filter(d => d.role === 'loader')[0] || {};
     const plate = str(s.mobilPlat).replace(/\s+/g, '');
     const cnm = `CHK-VEH-${plate}-${ymdWIB(s.tdt)}-OPEN`;
     return [{
@@ -312,32 +396,40 @@ function buildAssetCacheOpening(ss) {
 }
 
 // opening movements (real-case flow) = 2 fase, CF (OnMovementCreated) yang DERIVE asset_cache:
-//   1. STOK-AWAL GUDANG: ADJUSTMENT null→gudang per item (qty dari Master_Item `ga`). Biar gudang
-//      POSITIF — real case gudang ada stok dari supplier DULU sebelum muat. Tanpa ini gudang minus.
+//   1. STOK-AWAL GUDANG: ADJUSTMENT null→gudang per SEMUA item Master_Item — full dari `ga`,
+//      empty dari `ge`. Lengkap (bukan cuma item manifest) biar AssetStock/Lihat Stok gak bolong;
+//      real case gudang ada stok dari supplier DULU sebelum muat. Tanpa ini gudang minus.
 //   2. LOAD: INTERNAL gudang→mobil per item manifest (computeManifestFull = pd+ps+pr).
 // asset_cache TIDAK di-hand-seed lagi. Arah dari fl/tl (CF abaikan mt). Idempoten: doc-id deterministik;
 // re-seed = overwrite (CF onCreate TIDAK re-fire di overwrite → rebuild via HTTP ReconcileAssetCache kalau ubah qty).
 function buildMovementsOpening(ss) {
-    const s = readSetup(ss);
-    const loader = readFlatTab(ss, 'Master_Driver').filter(d => str(d.role) === 'loader')[0] || {};
+    // gl dari Master_Gudang baris pertama (Setup pensiun buat masters-only; load harian tetep butuh Setup).
+    const gud = readFlatTab(ss, 'Master_Gudang')[0] || {};
+    const gl = str(gud.gl);
+    if (!gl) throw new Error('Master_Gudang kosong — isi gudang dulu');
+    let s = null;
+    try { s = readSetup(ss); } catch (e) { } // OPSIONAL — cuma buat fase-2 load gudang→mobil
+    const loader = readPegawai(ss).filter(d => d.role === 'loader')[0] || {};
     const nowMs = Date.now();
     const ts = fmtTS(nowMs);
-    const gstok = gudangStockMap(ss);
-    const manifest = computeManifestFull(ss); // [{ii, cd:'full', qt}]
+    const manifest = (s && str(s.vv)) ? computeManifestFull(ss) : []; // tanpa Setup = tanpa load
     const out = [];
 
     // 1. Stok-awal gudang (supplier→gudang). fl kosong = stok masuk (CF: tl→+qt).
-    manifest.forEach(m => {
-        const qt = num(gstok[m.ii]);
-        if (qt <= 0) return; // gak ada stok-awal → skip (item ini bakal minus di gudang)
-        out.push({
-            mid: `seedstock-${str(s.gl)}-${m.ii}-${m.cd}`,
-            mt: 'ADJUSTMENT',
-            tl: str(s.gl), // ke gudang (fl di-omit)
-            ii: m.ii, cd: m.cd, qt: qt,
-            er: 'GUDANG',
-            d: 'stok awal gudang (seed)',
-            t: nowMs, ts: ts,
+    //    SEMUA baris Master_Item: full=`ga`, empty=`ge` (qty 0/kosong → skip).
+    readFlatTab(ss, 'Master_Item').forEach(r => {
+        const ii = str(r.ii); if (!ii) return;
+        [['full', num(r.ga)], ['empty', num(r.ge)]].forEach(([cd, qt]) => {
+            if (qt <= 0) return;
+            out.push({
+                mid: `seedstock-${gl}-${ii}-${cd}`,
+                mt: 'ADJUSTMENT',
+                tl: gl, // ke gudang (fl di-omit)
+                ii: ii, cd: cd, qt: qt,
+                er: 'GUDANG',
+                d: 'stok awal gudang (seed)',
+                t: nowMs, ts: ts,
+            });
         });
     });
 
@@ -345,7 +437,7 @@ function buildMovementsOpening(ss) {
     manifest.forEach(m => out.push({
         mid: `seedload-${str(s.vv)}-${m.ii}-${m.cd}`,
         mt: 'INTERNAL',
-        fl: str(s.gl),   // gudang asal
+        fl: gl,          // gudang asal
         tl: str(s.vv),   // mobil tujuan
         ii: m.ii, cd: m.cd, qt: m.qt,
         er: 'GUDANG',
@@ -354,17 +446,29 @@ function buildMovementsOpening(ss) {
         t: nowMs, ts: ts,
     }));
 
-    return out;
-}
-
-// stok awal gudang per item dari Master_Item kolom `ga` (Stok Gudang) → {ii: qty}.
-function gudangStockMap(ss) {
-    const map = {};
-    readFlatTab(ss, 'Master_Item').forEach(r => {
-        const ii = str(r.ii); if (!ii) return;
-        map[ii] = num(r.ga);
+    // 3. Genesis outstanding customer (saldo awal hutang galon/tabung) — tab Genesis_Outstanding.
+    //    Tab OPSIONAL (gak ada / kosong = skip). tl=customer (fl omit → CF +qt di customer,
+    //    lt=client via denorm) → nongol di CUSTOMER_OUTSTANDING_LIST. `days` = umur hutang
+    //    (t di-backdate) biar aging danger/warn realistis.
+    let genesis = [];
+    try { genesis = readFlatTab(ss, 'Genesis_Outstanding'); } catch (e) { }
+    genesis.forEach(r => {
+        const kl = str(r.kl), ii = str(r.ii), qt = num(r.qt);
+        if (!kl || !ii || qt <= 0) return;
+        const cd = str(r.cd) || 'full';
+        const t = nowMs - num(r.days) * 86400000;
+        out.push({
+            mid: `seedout-${kl}-${ii}-${cd}`,
+            mt: 'ADJUSTMENT',
+            tl: kl, // ke customer (fl di-omit)
+            ii: ii, cd: cd, qt: qt,
+            er: 'GENESIS',
+            d: 'saldo awal outstanding (seed)',
+            t: t, ts: fmtTS(t),
+        });
     });
-    return map;
+
+    return out;
 }
 
 // epoch ms → "DD Mon YYYY HH:MM" WIB. Format yg dibaca CF `internal/period.FromTS` buat
@@ -630,27 +734,53 @@ function getAccessToken() {
 // ============================================================ ADMIN UI — dropdown + lock kolom auto
 // Sumber dropdown = master sheet. Lock = warning di kolom ⟵auto (formula) biar gaptek gak nimpa.
 function setupAdminUI() {
+    // Layout sheet CLIENT: row 1 kosong, header row 2, data row 3+.
+    // Tab Tugas/Barang (copy dari dict book) tetep layout lama: header row 1, data row 2.
     const ss = SpreadsheetApp.getActiveSpreadsheet();
 
-    // --- dropdown (pilih by NAMA) ---
-    dvFromRange(ss, 'Setup', 'A2:A2', 'Master_Mobil', 'B2:B100');     // Mobil (plat)
-    dvFromRange(ss, 'Setup', 'C2:C2', 'Master_Driver', 'B2:B100');    // Admin (nama)
-    dvFromRange(ss, 'Tugas', 'A2:A200', 'Master_Customer', 'B2:B100'); // Customer
-    dvFromList(ss, 'Tugas', 'B2:B200', ['Antar', 'Ambil']);           // Jenis
-    dvFromRange(ss, 'Barang', 'A2:A200', 'Tugas', 'A2:A200');         // Tugas (pilih customer hari ini)
-    dvFromRange(ss, 'Barang', 'B2:B200', 'Master_Item', 'B2:B100');   // Item
+    // --- dropdown enum (nilai baku) ---
+    dvFromList(ss, 'Master Pegawai', 'C3:C200', ['active', 'inactive']);             // Status
+    dvFromList(ss, 'Master Pegawai', 'H3:H200', ['driver', 'loader', 'admin']);      // Jabatan
+    dvFromList(ss, 'Master_Item', 'D3:D200', ['returnable', 'consumable']);          // Jenis
+    dvFromList(ss, 'Master_Item', 'E3:E200', ['[full, empty]', '[full]']);           // Kondisi
+    dvFromList(ss, 'Master_Item', 'G3:G200', ['active', 'inactive']);                // Status
+    dvFromList(ss, 'Master_Item', 'H3:H200', ['ro', 'refill']);                      // Jenis Air (boleh kosong)
+    dvFromList(ss, 'Master_Kendaraan', 'E3:E200', ['Motor', 'Viar', 'Pickup', 'Truck']); // Jenis
+    dvFromList(ss, 'Master_Kendaraan', 'F3:F200', ['active', 'inactive']);
+    dvFromList(ss, 'Master_Gudang', 'F3:F200', ['active', 'inactive']);
+    dvFromList(ss, 'Master_Customer', 'F3:F200', ['Korporat', 'HoReCa', 'Retail', 'Rumah']); // Jenis
+    dvFromList(ss, 'Master_Supplier', 'F3:F200', ['active', 'inactive']);
+
+    // --- Genesis + tab harian (dipake NANTI; gak ada / belum dipake = auto-skip) ---
+    dvFromRange(ss, 'Genesis_Outstanding', 'A3:A200', 'Master_Customer', 'D3:D100'); // Customer (nama)
+    dvFromRange(ss, 'Genesis_Outstanding', 'C3:C200', 'Master_Item', 'C3:C100');     // Barang (nama)
+    dvFromList(ss, 'Genesis_Outstanding', 'F3:F200', ['full', 'empty']);             // Kondisi
+    dvFromRange(ss, 'Setup', 'A3:A3', 'Master_Kendaraan', 'D3:D100');  // Mobil (plat)
+    dvFromRange(ss, 'Tugas', 'A2:A200', 'Master_Customer', 'D3:D100'); // Customer (nama)
+    dvFromList(ss, 'Tugas', 'B2:B200', ['Antar', 'Ambil']);            // Jenis
+    dvFromRange(ss, 'Barang', 'A2:A200', 'Tugas', 'A2:A200');          // Tugas (customer hari ini)
+    dvFromRange(ss, 'Barang', 'B2:B200', 'Master_Item', 'C3:C100');    // Item (nama)
     dvFromList(ss, 'Barang', 'C2:C200', ['Antar', 'Jual', 'Beli', 'Tukar']); // Transaksi
-    dvFromRange(ss, 'Master_Mobil', 'C2:C200', 'Master_Driver', 'B2:B100');  // Driver tetap
-    dvFromRange(ss, 'Master_Mobil', 'E2:E200', 'Master_Gudang', 'B2:B100');  // Gudang home
 
-    // --- abu + lock kolom auto (formula) ---
-    greyLock(ss, 'Setup', 'D1:J100');
-    greyLock(ss, 'Tugas', 'C1:M200');
-    greyLock(ss, 'Barang', 'F1:O200');
-    greyLock(ss, 'Master_Mobil', 'D1:D200');
-    greyLock(ss, 'Master_Mobil', 'F1:F200');
+    // --- HIDE kolom ID (formula, sistem) — client cuma liat Kode ---
+    hideCol(ss, 'Master_Gudang', 2);
+    hideCol(ss, 'Master_Kendaraan', 2);
+    hideCol(ss, 'Master_Customer', 2);
+    hideCol(ss, 'Master_Supplier', 2);
 
-    SpreadsheetApp.getUi().alert('✅ Dropdown + lock kolom auto terpasang.\n\nKolom abu = otomatis (jangan diisi). Kolom putih = input admin.');
+    // --- lock kolom auto (warning-only; background TETEP putih, user pref 2026-07-16) ---
+    greyLock(ss, 'Genesis_Outstanding', 'B3:B200');
+    greyLock(ss, 'Genesis_Outstanding', 'D3:D200');
+    greyLock(ss, 'Setup', 'D3:J100');
+    greyLock(ss, 'Tugas', 'C2:M200');
+    greyLock(ss, 'Barang', 'F2:O200');
+
+    SpreadsheetApp.getUi().alert('✅ Dropdown + lock kolom auto terpasang.\n\nKolom "⟵auto" keisi sendiri (muncul peringatan kalo diedit). Kolom lain = input.');
+}
+
+function hideCol(ss, sheetName, colIndex) {
+    const sh = ss.getSheetByName(sheetName);
+    if (sh) sh.hideColumns(colIndex);
 }
 
 function dvFromRange(ss, dstSheet, dstA1, srcSheet, srcA1) {
@@ -675,7 +805,7 @@ function greyLock(ss, sheetName, a1) {
     const sh = ss.getSheetByName(sheetName);
     if (!sh) return;
     const rng = sh.getRange(a1);
-    rng.setBackground('#efefef');
+    rng.setBackground('#ffffff'); // putih (user pref) — penanda cukup warning protection + header "⟵auto"
     // idempoten: buang proteksi lama dgn desc sama di sheet ini
     sh.getProtections(SpreadsheetApp.ProtectionType.RANGE).forEach(p => {
         if (p.getDescription() === GREYLOCK_DESC && p.getRange().getA1Notation() === rng.getA1Notation()) p.remove();

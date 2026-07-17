@@ -238,6 +238,32 @@ P4 live: `Customer: {kn} — {al}` + `Kendaraan: {vv}` **mentah**; TAPI `taskMan
 **Sheet MAXED:** manifest+button JALAN = config bener. Sisa P4 = draft-carry + card render (dev). TXT stub `{kn}`/`{vv}` di-OFF (F=FALSE 1185/1187, literal).
 **ATURAN REUSABLE:** display nilai dinamis = widget **QUERY / draft-bound**, JANGAN `{token}` di teks TXT.
 
+### ⚠ LIVE-TEST 2026-07-03 — bukti sisi WRITE (konsekuensi draft-carry gap di §231)
+Prediksi §237 ("WRITE butuh draft-carry") **KEJADIAN**. Task doc live `AvoqX6sDOLTCccCQfS7g` (flow new-customer → create-task):
+
+| field | ketulis | harusnya |
+|---|---|---|
+| `kn` | `""` | nama customer (denorm) |
+| `al` | `""` | alamat (denorm) |
+| `gl` | `""` | warehouse (OPEN §11, sama) |
+| `kl` | `"F62c903bbcdd00"` | ⚠ = **Indomaret BSD (seed)** padahal flow-nya customer BARU → **verify: kl ke-carry STALE?** (cek doc stock_location customer baru — kebentuk gak, lv-nya apa) |
+| `tdt` | `"1783011600000"` (**String**) | Number (kanon) — read udah tolerant (`dsl-eq-type-tolerance`), tapi write mestinya canonical |
+| `vv`/`tnm`/`search`/`tst`/`t` | ✓ bener | — |
+
+**Efek user-visible:** task list nampilin **`tnm`** (fallback) bukan nama customer + alamat kosong — pembanding: task seeder (`BG5ubvEvdpXQ…`) `kn:"Honda Bintaro"` + `al` keisi, render normal.
+**Fix tetap = §237 draft-carry** (kn/al/vv dari draft pas submit) + 2 tambahan: (a) verify carry `kl` gak stale, (b) `tdt` tulis Number.
+
+### ⚠ LIVE-TEST 2026-07-06 — `gl:""` juga MATIIN reject-unload (korban ke-3)
+Tolak task (buatan admin) → task ilang dari list TAPI custody count (Cleo) GAK berkurang. Root cause di CF `task_reject_trigger.go` `OnTaskRejected`:
+```go
+if vv == "" || gl == "" {
+    log.Printf("WARN task %s missing vv/gl ...; skipping", ...)
+    return nil // skip TOTAL: no unload movement, no ie[] recompute
+}
+```
+`gl` = tujuan unload (`tl`) — tanpa itu CF gak bisa balikin stok ke gudang, jadi skip. Seed ngisi `gl` → reject jalan; task admin `gl:""` → CF diem. `tdt` String BUKAN masalah di CF (asInt64 tolerant client-side).
+**Fix utama tetap = tulis `gl` pas create (§237/§11).** Opsional hardening CF: fallback `gl` dari opening `vehicle_check.gl` (udah keisi via `{warehouseId}`) kalo `task.gl` kosong — nyelametin task lama yang terlanjur `gl:""`.
+
 ### Submit payload (task baru — grounded)
 ```
 task (doc baru, key tnm):

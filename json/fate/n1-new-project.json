@@ -1,0 +1,16 @@
+{
+  "_doc": "N1 · OPS create project. TXF×6 + SELECTABLE_BTN multi (model pool dari //user ro◼model, capture vid) → 1 project doc, mv=array di posisi. CF onProjectCreate pecah jadi N assign. GATE: butuh Flutter multi + array-serialize sebelum publish op1Screen (config-ahead-of-renderer). Spec: fate-flutter-multiselect-dev-spec.md",
+  "title": "Fate",
+  "hideBottomBar": true,
+  "children": [
+    {"type":"TXT","size":18,"data":"Project baru"},
+    {"type":"TXF","variant":"text","label":"Brand","hint":"mis. Aveda Skincare","position":1,"line":1,"border":true},
+    {"type":"TXF","variant":"text","label":"Judul project","hint":"mis. Campaign Shoot","position":2,"line":1,"border":true},
+    {"type":"TXF","variant":"text","label":"Venue","hint":"mis. Studio Kolektif, Kemang","position":3,"line":1,"border":true},
+    {"type":"TXF","variant":"date","icon":57521,"label":"Tanggal","currentValue":"","hint":"Pilih tanggal","size":14,"position":4,"format":"yyyy-MM-dd"},
+    {"type":"TXF","variant":"time","icon":57516,"label":"Mulai","currentValue":"","hint":"09:00","size":14,"position":5},
+    {"type":"TXF","variant":"time","icon":57516,"label":"Selesai","currentValue":"","hint":"17:00","size":14,"position":6},
+    {"type":"SELECTABLE_BTN","variant":"grid","multi":true,"title":"ASSIGN MODEL","maxGrid":2,"height":50,"position":7,"bgSelected":"green","source":"{fateTenant}//user⭘search◼ro◼model","labelField":"n","valueField":"vid","text":"Pilih model · yang dipilih harus dia yang kerja"},
+    {"type":"RBT","alignment":"spaceevenly","children":[{"text":"Buat & kirim ke model","action":"savesend","route":"fateKokpit","delay":3,"flag":"project-create","addToEvent":"{fateTenant}//project⭘r◼43200⭘tablevid◼{fateTableVid}⭘ty◼project⭘t◼◀2|T7|epoch▶⭘ts◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶⭘br◼◁1▷⭘ti◼◁2▷⭘ve◼◁3▷⭘d8◼◁4▷⭘s1◼◁5▷⭘e1◼◁6▷⭘av◼{agencyVid}⭘an◼{agencyName}⭘cat◼◀2|T7|epoch▶⭘mv◼◁7▷◆{fateTenant}//event⭘r◼43200⭘tablevid◼{fateTableVid}⭘ty◼project-create⭘t◼◀2|T7|epoch▶⭘ts◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶⭘cv◼{agencyVid}⭘cn◼{agencyName}⭘d◼◁7▷","chain":{"type":"DO_DIALOG","title":"Project dibuat","children":[{"type":"TXT","data":"Terkirim ke model"},{"type":"RBT","alignment":"center","children":[{"text":"Ok","route":"fateKokpit"}]}]}}]}
+  ]
+}
