@@ -18,6 +18,8 @@ import FateOpsGallery from './web/Fate_ops_gallery.jsx'
 import FateModelGallery from './web/Fate_model_gallery.jsx'
 import FateOpsApp from './web/Fate_ops_app.jsx'
 import FateModelApp from './web/Fate_model_app_revisi.jsx'
+import AutsorzSupervisorApp from './AutsorzSupervisorApp.jsx'
+import SalesFreelanceV1 from './SalesFreelanceV1.jsx'
 
 // Single entry point. Pick a gallery from the top bar instead of editing main.jsx.
 // Add a new gallery: import it, then add one { id, label, Comp } row to the right category.
@@ -61,8 +63,10 @@ const CATEGORIES = [
     group: 'Sales',
     color: '#db2777',
     items: [
+      { id: 'autsorz-supervisor', label: 'Autsorz Supervisor', Comp: AutsorzSupervisorApp },
       { id: 'sales-supervisor', label: 'Sales Supervisor', Comp: SalesSupervisor },
       { id: 'sales-worker', label: 'Sales Worker App', Comp: SalesWorkerApp },
+      { id: 'sales-freelance-v1', label: 'Sales Freelance V1', Comp: SalesFreelanceV1 },
     ],
   },
   {

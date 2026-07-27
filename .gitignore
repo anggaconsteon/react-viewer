@@ -29,3 +29,7 @@ dist-ssr
 
 # Cloud Function sources — contain GAS deployment IDs (AKfyc…), never commit
 scripts/function-source*/
+
+# GAS source dumps — may contain live spreadsheet ids / TOTP secret, never commit
+scripts/master4-vx0001c/
+/scripts
