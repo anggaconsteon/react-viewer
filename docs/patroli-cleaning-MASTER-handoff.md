@@ -42,46 +42,60 @@ Alur navigasi: kartu cost center → panel "Patroli & Cleaning" → `patroliClea
 ## 2. Widget JSON final per layar
 
 ### 2.1 list cost center — `LIST_MULTIPLE_PANEL_CARD`
+
+⚠️ **Field-set final (feedback dev 2026-06-04, reusable):** `ledgerCode`=pemilih strategy agregasi (ada strategy→hitung token; gak ada→generic, panel ambil `<charcode>` doc). RENAME `computeMode`→`ledgerCode`, `staleMs`→`thresholdMs`, `tapContext`→`routeParam`. DROP `toDo` (mubazir). **`search`/`conditions` TETAP** = WHERE Firebase (server, doc mana di-fetch); `searchFields` = TAMBAHAN = search box (client, field yg dicocokin pas ngetik). Dua hal beda, jangan ketuker. Detail: `docs/cost-center-card-dev-spec.md` §2 + `docs/# LIST_MULTIPLE_PANEL_CARD — Rekomendasi.md`.
+
 ```json
 {
   "type": "LIST_MULTIPLE_PANEL_CARD",
-  "ledgerCode": "site",
-  "vidtable": "{tablevid}",
-  "table": "$test/{tenantVid}//site",
+  "ledgerCode": "patrolCleaning",
+  "vidtable": "20342033315492",
+  "table": "84214220504259//site",
   "search": "",
-  "toDo": "",
+  "conditions": "",
+  "searchFields": "an◆sn",
+  "thresholdMs": "43200000",
+  "routeParam": "av◼ccVid",
+  "showIcon": "TRUE",
+  "showProgress": "FALSE",
   "text": "◆<an>◆<sn>◆Cari cost center◆Ketik nama cost center◆Data tidak ditemukan",
   "status": "{ws}",
-  "showIcon": "FALSE",
-  "showProgress": "FALSE",
   "panels": [
-    {"icon": "users", "text": "Kehadiran◆{hadir}/<nm> hadir◆{issues}", "status": "{ps}", "route": "checkinSiteDetail"},
-    {"icon": "clipboard-check", "text": "Patroli & Cleaning◆{llCount} titik◆{staleCount} titik jeda lama · terlama {longestGap} jam", "status": "{qs}", "route": "patroliCleaningPerSite"}
+    {"icon": "users", "text": "Kehadiran◆{hadir}/<nm> hadir◆{issues}", "status": "{ps}", "okText": "Beres", "route": "checkinSiteDetail"},
+    {"icon": "clipboard-check", "text": "Patroli & Cleaning◆{llCount} titik◆{staleCount} titik jeda lama · terlama {longestGap} jam", "status": "{qs}", "okText": "Aman", "route": "patroliCleaningPerSite"}
   ]
 }
 ```
+- **Generic mode** (reuse domain lain): `ledgerCode` tanpa strategy (mis. `asset`) → gak agregasi; panel `status`/`text` ambil `<charcode>` doc / literal. `routeParam` ganti per domain (`av◼assetVid` dst).
 1 widget = search → ringkasan status → grup status (accordion danger→warn→ok) → kartu (header + strip `{ws}` + 2 panel nav). Sumber: collection `site`, satu doc = satu cost center (`<an>`=cost center name, `<sn>`=site name, `<nm>`, `<av>`/`<sv>`, `<st>`, dan array `ll`=array of objects {ln,li,la,lo,ra}). Pegawai (panel Kehadiran) = collection `workforce` TERPISAH, join via `<av>`.
 
 ### 2.2 list site detail — `LIST_STATISTIC_CARD`
+
+⚠️ **Field-set final (feedback dev 2026-06-04, reusable):** pola = ambil 1 doc match (`search`/`conditions`) → render `itemsField` (array-of-object di doc) jadi kartu. RENAME `computeMode`→`ledgerCode` (pemilih strategy, set `patrolPoint`), `staleMs`→`thresholdMs`, `tapContext`→`routeParam`, `searchField`→`searchFields`. BARU: `itemsField`. `search`/`conditions` TETAP (WHERE server). Detail: `docs/patrol-cleaning-detail-dev-spec.md` + `docs/list-statistic-card-dynamic.md`.
+
 ```json
 {
   "type": "LIST_STATISTIC_CARD",
-  "ledgerCode": "event-patrol",
-  "vidtable": "{tablevid}",
-  "table": "$test/{tenantVid}//site",
+  "ledgerCode": "patrolPoint",
+  "vidtable": "20342033315492",
+  "table": "84214220504259//site",
+  "itemsField": "ll",
   "search": "av◼{ccVid}",
   "conditions": "[[◀av▶◼{ccVid}]]",
+  "searchFields": "ln",
+  "thresholdMs": "43200000",
+  "routeParam": "li◼pointId◆ln◼point◆ln◼pointName◆sv◼site",
   "text": "Cari titik◆Ketik nama titik◆Data tidak ditemukan",
   "period": "24 jam◼86400000★7 hari◼604800000★30 hari◼2592000000",
   "periodDefault": "86400000",
   "stats": "{totalVisits}◆Total kunjungan★{noVisitCount}◆Titik tanpa kunjungan★{typedCount}◆Lokasi diketik",
-  "content": "<ln>◆{type}◆Terakhir {lastAgo} · {lastBy}◆{visits} kunjungan dalam {period}",
+  "content": "<ln>◆PATROLI◆Terakhir {lastAgo} · {lastBy}◆{visits} kunjungan dalam {period}",
   "status": "{ps}",
   "badge": "{evidence}",
-  "route": "patroliCleaningPointTimeline"
+  "route": "vertikaTeknoLokaciptaPatrolPointTimeline"
 }
 ```
-1 widget = tab periode + 3 box statistik + search + kartu titik (1 kartu = 1 route). Data source = SATU doc `site` (filter `<av>`==`{ccVid}` inject), expand array `ll[]` jadi titik (titik 0-kunjungan harus dari `ll`). Visit = event ledger, join event `lq` == `ll[].li` (fallback `ln`==`ll[].ln` exact match).
+1 widget = tab periode + 3 box statistik + search + kartu titik (1 kartu = 1 route). Data source = SATU doc `site` (filter `<av>`==`{ccVid}` inject), expand `itemsField` (`ll[]`) jadi titik (titik 0-kunjungan harus dari `ll`). ⚠️ **WHERE event = `ln` + `ty`** (bukan `lq`/`li`); `lq` cuma buat `{evidence}`. `{type}` RESOLVED → literal di `content` (`◆PATROLI◆`). **Generic mode:** `ledgerCode` tanpa strategy → `stats`/`content`/`status`/`badge` ambil `<charcode>` item langsung (contoh domain `building`/`rooms` di spec §2.1).
 
 ### 2.3 timeline — `TIMELINE` variant `periodic`
 ```json

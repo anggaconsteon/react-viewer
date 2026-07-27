@@ -1,0 +1,9 @@
+{
+  "_doc": "H1 · MODEL home. ROUTE_PROGRESS_HEADER identityOnly (Halo {n}) + DRIVER_STOP_CARD list assign milik model (search vid◼{modelVid}), navState=st, tap→AssignDetail. REUSE. GAP: DRIVER_STOP_CARD grouping (berikutnya/gagal/selesai) di-relabel ke phase Fate — closed=selesai, sisanya aktif; sort by phase priority client-side.",
+  "title": "Fate",
+  "hideBottomBar": false,
+  "children": [
+    {"type":"ROUTE_PROGRESS_HEADER","variant":"identityOnly","vidtable":"{fateTableVid}","table":"{fateTenant}//user","search":"vid◼{modelVid}","logoutRoute":"fateLogin","nameField":"n","text":"Project Kamu◆project◆selesai◆Keluar◆Belum ada project"},
+    {"type":"DRIVER_STOP_CARD","variant":"preview","vidtable":"{fateTableVid}","table":"{fateTenant}//assign","search":"vid◼{modelVid}","navState":"st","route":"fateAssignDetail","taskIdField":"pv","nameField":"ti","addressField":"br","icon":"[ICON]","iconLocked":"[ICON_LOCKED]","text":"Berikutnya◆Menunggu Brand◆Selesai◆Pilih project buat lihat detail & lapor◆Buka◆Sedang berjalan◆Selesai◆Menunggu konfirmasi brand◆project◆{closed} dari {total} project◆lanjut:◆semua kelar◆{total} project"}
+  ]
+}

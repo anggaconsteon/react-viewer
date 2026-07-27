@@ -1,0 +1,89 @@
+{
+    "title": "Vertika Tekno Lokacipta",
+    "hideBottomBar": true,
+    "children": [
+        {
+            "type": "WORKSPACE_HEADER",
+            "vidtable": "20342033315492",
+            "table": "84214220504259//stock_location",
+            "search": "lv◼{activeVehicle}",
+            "idField": "lv",
+            "titleField": "ln",
+            "addressField": "",
+            "backRoute": "vertikaTeknoLokaciptaWarehouseFeed",
+            "text": "Pengecekan Penutupan◆Hitung Fisik Turun"
+        },
+        {
+            "type": "closing_context_rail",
+            "vidtable": "20342033315492",
+            "table": "84214220504259//asset_cache",
+            "search": "lv◼{activeVehicle}",
+            "checkTable": "84214220504259//stock_location",
+            "checkSearch": "lv◼{activeVehicle}",
+            "driverField": "dn",
+            "joinTable": "84214220504259//item",
+            "joinKey": "ii",
+            "catField": "ic"
+        },
+        {
+            "type": "NOTICE_BAR",
+            "variant": "info",
+            "icon": "",
+            "text": "Hitung fisik yang turun dari kendaraan per item (penuh & kosong). Sistem cocokkan dengan saldo kendaraan; selisih → Supervisor."
+        },
+        {
+            "type": "TXT",
+            "size": 14,
+            "data": "Hitung fisik turun dari mobil:"
+        },
+        {
+            "type": "ITEM_EXECUTION_LIST",
+            "variant": "pivot",
+            "vidtable": "20342033315492",
+            "table": "84214220504259//asset_cache",
+            "search": "lv◼{activeVehicle}",
+            "groupKey": "ii",
+            "pivotField": "cd",
+            "slots": "full^Penuh~empty^Kosong",
+            "valueField": "qt",
+            "writeField": "ip",
+            "joinTable": "84214220504259//item",
+            "joinKey": "ii",
+            "labelField": "in",
+            "catField": "ic",
+            "text": "Hitung fisik turun dari mobil◆Ekspektasi◆✓ Sesuai◆Selisih · <delta>◆Returnable◆Consumable"
+        },
+        {
+            "type": "TXF",
+            "variant": "text",
+            "icon": 57527,
+            "label": "Catatan Penutupan",
+            "currentValue": "",
+            "hint": "Kondisi barang turun / catatan...",
+            "maxLength": 0,
+            "size": 14,
+            "position": 5,
+            "line": 3,
+            "border": true
+        },
+        {
+            "_note": "Widget native TETAP (handle ip[]/dp[]/rs/investigation/branch). DITAMBAH colokan savesend: action/gpsPosition/flag/addToEvent → abis native write, jalanin pipeline savesend → Event + GPS ketulis. Lihat docs/savesend-array-write-dev-spec.md.",
+            "type": "CUSTODY_COUNT_SUBMIT",
+            "mode": "closing",
+            "vidtable": "20342033315492",
+            "checkTable": "84214220504259//vehicle_check",
+            "workforceTable": "84214220504259//workforce",
+            "vidField": "vid",
+            "nameField": "n",
+            "investigationTable": "84214220504259//investigation",
+            "action": "savesend",
+            "gpsPosition": 2,
+            "flag": "warehouse-closing-check",
+            "addToEvent": "84214220504259//evidence⭘r◼4320⭘tablevid◼20342033315492⭘ety◼notes⭘ept◼check⭘erf◼{activeVehicle}⭘d◼◁5▷⭘cv◼{checkerVid}⭘cn◼{checkerName}⭘t◼◀2▶⭘ts◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶",
+            "matchRoute": "vertikaTeknoLokaciptaWarehouseClosingMatch",
+            "mismatchRoute": "vertikaTeknoLokaciptaWarehouseClosingMismatch",
+            "text": "Simpan Penutupan",
+            "updateEventRow": "84214220504259//stock_location⭘tablevid◼20342033315492⭘search◼lv★{activeVehicle}⭘dv◼⭘dn◼"
+        }
+    ]
+}

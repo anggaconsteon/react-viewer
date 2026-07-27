@@ -1,3203 +1,3941 @@
-import React, { useState, useMemo } from "react";
-import {
-  ChevronLeft, ChevronRight, MapPin, Camera, Satellite,
-  ShieldCheck, ShieldAlert, X, Check, LogOut, LogIn, CircleDot,
-  ChevronDown, Pencil, Info, History, Users, ClipboardCheck,
-  Hourglass, Lock, QrCode, Type, Search,
-  Inbox, Palmtree, Stethoscope, Clock3, Timer, CalendarOff, Repeat,
-  AlertOctagon, Siren, Wrench, Sparkles, HeartPulse, HelpCircle,
-  ArrowRight, Send, MessageSquare, FileText, ExternalLink,
-  Briefcase, Shield, MessageCircle,
-} from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 
-/* ============================================================
-   AUTSORZ — App Supervisor (gabungan)
-   Layar 1: daftar site, satu kartu/site dengan dua panel (kehadiran + patroli)
-   Layar 2: detail kehadiran sepanjang hari + panel koreksi clock (bagian 14, 15)
-   Layar 3: ringkasan patroli per titik (bagian 16)
-   Layar 4: timeline per titik (bagian 16)
-   Prinsip lintas layar:
-   - Yang bermasalah di atas, yang beres terjangkau di bawah
-   - Tingkat bukti konsisten: kuat (hijau) vs lemah (kuning) di setiap data
-   - Sistem tidak mengklaim lebih dari yang ia tahu (catatan kaki transparansi)
-   - Warna: hijau=beres/bukti kuat, kuning=perhatian/lemah/jeda, merah=perlu tindak
-   ============================================================ */
+// ═══════════════════════════════════════════════════════════════════════════
+// CONSTEON — DRIVER RUNTIME · INTEGRATED END-TO-END FLOW
+// ═══════════════════════════════════════════════════════════════════════════
+// Identity: Complete execution loop — feed → detail → workspace → submit → feed
+// Mental model: "What stops are left, which one do I tackle next?"
+//
+// Doctrine:
+//   - Feed = route, each card = stop
+//   - Driver-driven sequencing (NO auto-promote on submit, driver chooses)
+//   - Feed return guarantee — submit returns to feed with updated state
+//   - Max 2 levels: feed → detail → workspace (workspace = sheet over detail)
+//   - Customer signature replaces text-only ack checkbox
+//   - Submit creates DROP + PICKUP movement events
+//   - Partial / opportunistic / extra all valid outcomes
+// ═══════════════════════════════════════════════════════════════════════════
 
-const ALLOW_SHIFT_ASSUMPTION = true; // bagian 15: opsi tengah, konfigurasi per vendor
-const STALE_HOURS = 12;              // bagian 16: default jeda signifikan, bisa diatur tim
-const NOW_LABEL = "14:20";
+export const FontLoader = () => (
+  <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+    * { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    @keyframes pulse-soft { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+    .pulse-soft { animation: pulse-soft 2.4s ease-in-out infinite; }
+    @keyframes slide-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .slide-up { animation: slide-up 0.3s ease-out forwards; }
+    @keyframes sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .sheet-up { animation: sheet-up 0.25s ease-out forwards; }
+    @keyframes flash-success {
+      0% { background: #ecfdf5; }
+      100% { background: #ffffff; }
+    }
+    .flash-success { animation: flash-success 1.5s ease-out forwards; }
+    @keyframes pop { 0% { transform: scale(0.94); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    .pop { animation: pop 0.2s ease-out forwards; }
+    @keyframes scanline { 0% { top: 8%; } 50% { top: 88%; } 100% { top: 8%; } }
+    .scanline { animation: scanline 2.2s ease-in-out infinite; }
+    @keyframes shake { 0%,100% { transform: translateX(0); } 20%,60% { transform: translateX(-6px); } 40%,80% { transform: translateX(6px); } }
+    .shake { animation: shake 0.4s ease; }
+    .phone-shadow { box-shadow: 0 20px 60px rgba(0,0,0,0.25), 0 0 0 8px #0a0a0a, 0 0 0 9px #2a2a2a; }
+    .tap-feedback:active { transform: scale(0.97); }
+    .scroll-thin::-webkit-scrollbar { display: none; }
+  `}</style>
+);
 
-// =================== PALET (konsisten antar layar) ===================
+// ─── DESIGN TOKENS ─────────────────────────────────────────────────────────
 const C = {
-  ink: "#1C1F26", mute: "#6B7280", soft: "#8A93A6",
-  // status
-  ok: "#0E7C66", okBg: "#E3F4EF",
-  warn: "#B7791F", warnBg: "#FBF1DC",
-  danger: "#C0392B", dangerBg: "#FBE9E7",
-  // jenis
-  superv: "#7A3FA0", supervBg: "#F3EAF9",   // ditetapkan supervisor
-  blue: "#2C5FAA", blueBg: "#E6EEF9",
-  // permukaan
-  cardBd: "#ECEEF2", line: "#EEF0F4", chip: "#F1F4F9",
+  bg: "#f5f6f8",
+  surface: "#ffffff",
+  surfaceAlt: "#fafbfc",
+  border: "#e8eaed",
+  borderStrong: "#d4d7dc",
+
+  text: "#0f172a",
+  textMid: "#475569",
+  textDim: "#94a3b8",
+
+  amber50: "#fffbeb",
+  amber100: "#fef3c7",
+  amber400: "#f59e0b",
+  amber500: "#d97706",
+  amber700: "#b45309",
+
+  driverAccent: "#4f46e5",
+  driverAccentBg: "#eef2ff",
+  driverAccentDark: "#3730a3",
+
+  violet50: "#f5f3ff",
+  violet100: "#ede9fe",
+  violet400: "#a78bfa",
+  violet700: "#6d28d9",
+
+  emerald50: "#ecfdf5",
+  emerald100: "#d1fae5",
+  emerald400: "#34d399",
+  emerald500: "#10b981",
+  emerald700: "#047857",
+
+  infoBlue: "#3b82f6",
+  infoBlueBg: "#eff6ff",
+
+  slate50: "#f8fafc",
+  slate100: "#f1f5f9",
+  slate200: "#e2e8f0",
+  slate300: "#cbd5e1",
+  slate400: "#94a3b8",
+  slate600: "#475569",
+  slate700: "#334155",
 };
 
-// =================== DUMMY DATA ===================
-const SITES = [
+// ─── INITIAL MOCK DATA ─────────────────────────────────────────────────────
+// Driver state: 1 completed + 3 to do
+export const INITIAL_TASKS = [
   {
-    id: "bp-legok", name: "BP Legok", client: "BP",
-    presence: { present: 8, need: 10, issues: ["2 belum scan", "1 lupa clock-out"], status: "danger" },
-    patrol: { totalPoints: 12, staleCount: 2, longestGapHours: 23, status: "warn" },
-  },
-  {
-    id: "goto-tangerang", name: "GoTo Tangerang", client: "GoTo",
-    presence: { present: 12, need: 12, issues: [], status: "ok" },
-    patrol: { totalPoints: 8, staleCount: 1, longestGapHours: 14, status: "warn" },
-  },
-  {
-    id: "bintaro", name: "Bintaro Xchange", client: "Bintaro Xchange",
-    presence: { present: 5, need: 8, issues: ["3 belum scan"], status: "danger" },
-    patrol: { totalPoints: 6, staleCount: 0, longestGapHours: 4, status: "ok" },
-  },
-  {
-    id: "bp-bsd", name: "BP BSD", client: "BP",
-    presence: { present: 9, need: 9, issues: ["1 bukti lemah"], status: "warn" },
-    patrol: { totalPoints: 10, staleCount: 0, longestGapHours: 6, status: "ok" },
-  },
-  {
-    id: "bp-gading", name: "BP Gading Serpong", client: "BP",
-    presence: { present: 10, need: 10, issues: [], status: "ok" },
-    patrol: { totalPoints: 9, staleCount: 0, longestGapHours: 5, status: "ok" },
-  },
-  {
-    id: "goto-jakarta", name: "GoTo Jakarta Tower", client: "GoTo",
-    presence: { present: 14, need: 16, issues: ["2 belum scan"], status: "danger" },
-    patrol: { totalPoints: 11, staleCount: 0, longestGapHours: 8, status: "ok" },
-  },
-  {
-    id: "mall-surabaya", name: "Mall Surabaya", client: "Mall Group",
-    presence: { present: 7, need: 8, issues: ["1 lupa clock-out"], status: "warn" },
-    patrol: { totalPoints: 14, staleCount: 1, longestGapHours: 15, status: "warn" },
-  },
-  {
-    id: "pabrik-cikarang", name: "Pabrik Cikarang A", client: "BP",
-    presence: { present: 6, need: 6, issues: [], status: "ok" },
-    patrol: { totalPoints: 7, staleCount: 0, longestGapHours: 4, status: "ok" },
-  },
-  {
-    id: "kantor-sudirman", name: "Kantor Sudirman", client: "GoTo",
-    presence: { present: 4, need: 4, issues: [], status: "ok" },
-    patrol: { totalPoints: 5, staleCount: 0, longestGapHours: 3, status: "ok" },
-  },
-];
-
-const SHIFTS = [
-  {
-    id: "pagi", name: "Shift Pagi", time: "06:00–14:00", phase: "past", present: 9, need: 10,
-    rows: [
-      { id: 1, name: "Budi Santoso", in: "05:58", out: null, issue: "no_out", evidence: "strong" },
-      { id: 2, name: "Sari Wulandari", in: "06:02", out: "14:01", issue: null, evidence: "strong" },
-      { id: 3, name: "Joko Anwar", in: "06:00", out: "14:05", issue: null, evidence: "weak" },
+    id: "T-050",
+    customer: "Mandiri Tower",
+    address: "Jl. Jend. Sudirman Kav. 54-55",
+    distance: "0 km · current",
+    stopNumber: 1,
+    state: "assigned",
+    items: [
+      { id: "gas_12", name: "Gas 12kg", type: "returnable", planDrop: 4, actualDrop: 0, planPickup: 0, actualPickup: 0 },
+      { id: "aqua_galon", name: "Aqua Galon", type: "returnable", planDrop: 2, actualDrop: 0, planPickup: 0, actualPickup: 0 },
     ],
   },
   {
-    id: "siang", name: "Shift Siang", time: "14:00–22:00", phase: "live", present: 7, need: 10,
-    rows: [
-      { id: 4, name: "Dewi Lestari", in: "13:55", out: null, issue: null, evidence: "strong" },
-      { id: 5, name: "Agus Pratama", in: "14:03", out: null, issue: null, evidence: "weak" },
-      { id: 6, name: "Rian Hidayat", in: null, out: null, issue: "no_in", evidence: null },
-      { id: 7, name: "Maya Putri", in: "14:00", out: null, issue: null, evidence: "strong" },
+    id: "T-051",
+    customer: "Honda Bintaro",
+    address: "Jl. Bintaro Utama 23, Tangerang",
+    distance: "8.4 km",
+    stopNumber: 2,
+    state: "assigned",
+    items: [
+      { id: "gas_12", name: "Gas 12kg", type: "returnable", planDrop: 3, actualDrop: 0, planPickup: 3, actualPickup: 0 },
+      { id: "gas_3", name: "Gas 3kg", type: "returnable", planDrop: 3, actualDrop: 0, planPickup: 3, actualPickup: 0 },
+      { id: "aqua_600", name: "Aqua 600ml (Dus)", type: "consumable", planDrop: 4, actualDrop: 0, planPickup: 0, actualPickup: 0 },
     ],
   },
-  { id: "malam", name: "Shift Malam", time: "22:00–06:00", phase: "upcoming", present: 0, need: 8, rows: [] },
+  {
+    id: "T-052",
+    customer: "BCA Cabang Bintaro",
+    address: "Jl. Bintaro Sektor 7, Tangerang",
+    distance: "1.2 km",
+    stopNumber: 3,
+    state: "assigned",
+    items: [
+      { id: "gas_12", name: "Gas 12kg", type: "returnable", planDrop: 3, actualDrop: 0, planPickup: 0, actualPickup: 0 },
+      { id: "aqua_galon", name: "Aqua Galon", type: "returnable", planDrop: 6, actualDrop: 0, planPickup: 0, actualPickup: 0 },
+    ],
+  },
+  {
+    id: "T-053",
+    customer: "Toko Sumber Rejeki",
+    address: "Jl. Bintaro Permai Blok C2",
+    distance: "3.8 km",
+    stopNumber: 4,
+    state: "assigned",
+    taskType: "pickup_return",
+    items: [
+      { id: "gas_3", name: "Gas 3kg", type: "returnable", planDrop: 0, actualDrop: 0, planPickup: 3, actualPickup: 0 },
+    ],
+  },
 ];
 
-// patroli/cleaning per site
-const POINTS_BY_SITE = {
-  "bp-legok": [
-    { id: "p1", name: "Pos Utama", type: "patroli", lastHoursAgo: 0.5, visits24h: 6, lastBy: "Budi", evidence: "strong" },
-    { id: "p2", name: "Gudang Bahan", type: "patroli", lastHoursAgo: 23, visits24h: 1, lastBy: "Agus", evidence: "weak" },
-    { id: "p3", name: "Toilet Lt 1", type: "cleaning", lastHoursAgo: 2, visits24h: 3, lastBy: "Citra", evidence: "strong" },
-    { id: "p4", name: "Genset", type: "patroli", lastHoursAgo: 18, visits24h: 1, lastBy: "Andi", evidence: "weak" },
-    { id: "p5", name: "Loading Dock", type: "patroli", lastHoursAgo: 1, visits24h: 5, lastBy: "Budi", evidence: "strong" },
-    { id: "p6", name: "Mushola", type: "cleaning", lastHoursAgo: 8, visits24h: 2, lastBy: "Sari", evidence: "strong" },
-  ],
-};
+export const DRIVER = { name: "Budi Santoso", id: "DRV-001", role: "Driver" };  // executor (resolved dari scan kartu)
+const VEHICLE = { id: "V-007", plate: "B 1234 XY" };
+const DEMO_PIN = "2468";
+// Pemilik HP di skenario demo — HP ini punya Andi (lagi login). Budi mau minjam.
+export const DEVICE_OWNER = { name: "Andi Wijaya", id: "DRV-002", role: "Driver" };
 
-// timeline kunjungan satu titik (contoh: Gudang Bahan)
-const VISITS = {
-  "p2": [
-    { id: 1, when: "13:42 hari ini", by: "Agus", evidence: "weak", method: "type", note: "Patroli rutin" },
-    { id: 2, when: "Kemarin 14:55", by: "Budi", evidence: "strong", method: "qr", note: "Cek pintu samping" },
-    { id: 3, when: "Kemarin 09:10", by: "Sari", evidence: "strong", method: "qr", note: "" },
-    { id: 4, when: "2 hari lalu", by: "Andi", evidence: "weak", method: "type", note: "QR scanner error" },
-  ],
-};
-
-// ============================================================
-//  KOMPONEN UMUM (dipakai lintas layar — KONSISTENSI)
-// ============================================================
-function EvidenceBadge({ level, small }) {
-  if (level === "strong")
-    return (
-      <span style={badgeStyle(C.ok, C.okBg, small)}>
-        <ShieldCheck size={small ? 11 : 13} /> Bukti kuat
-      </span>
-    );
-  if (level === "weak")
-    return (
-      <span style={badgeStyle(C.warn, C.warnBg, small)}>
-        <ShieldAlert size={small ? 11 : 13} /> GPS saja
-      </span>
-    );
-  return null;
-}
-function badgeStyle(color, bg, small) {
-  return {
-    display: "inline-flex", alignItems: "center", gap: 4,
-    fontSize: small ? 10.5 : 11.5, fontWeight: 700, color, background: bg,
-    padding: small ? "2px 7px" : "3px 9px", borderRadius: 20, whiteSpace: "nowrap",
+// ─── ATOMS ─────────────────────────────────────────────────────────────────
+const Chip = ({ children, variant = "neutral" }) => {
+  const variants = {
+    neutral: { bg: C.slate100, fg: C.slate700 },
+    amber: { bg: C.amber100, fg: C.amber700 },
+    indigo: { bg: C.driverAccentBg, fg: C.driverAccent },
+    emerald: { bg: C.emerald100, fg: C.emerald700 },
+    violet: { bg: C.violet50, fg: C.violet700 },
+    slate: { bg: C.slate100, fg: C.slate600 },
+    blue: { bg: C.infoBlueBg, fg: C.infoBlue },
   };
-}
-function SetBySupervisorTag() {
-  return (
-    <span style={{ ...badgeStyle(C.superv, C.supervBg, true), border: "1px dashed #C9A6E0" }}>
-      <Pencil size={11} /> Ditetapkan supervisor
-    </span>
-  );
-}
-function AssumptionTag() {
-  return (
-    <span style={{ ...badgeStyle(C.warn, C.warnBg, true), border: "1px dashed #E3C77A" }}>
-      <Info size={11} /> Asumsi, bukan bukti
-    </span>
-  );
-}
-function StatusPill({ tone, children }) {
-  const map = {
-    ok: [C.ok, C.okBg], warn: [C.warn, C.warnBg], danger: [C.danger, C.dangerBg],
-  }[tone] || [C.mute, C.chip];
+  const v = variants[variant];
   return (
     <span style={{
-      display: "inline-flex", alignItems: "center", gap: 5,
-      fontSize: 11.5, fontWeight: 700, color: map[0], background: map[1],
-      padding: "4px 9px", borderRadius: 20, whiteSpace: "nowrap",
+      display: "inline-flex", alignItems: "center", gap: 4,
+      padding: "2px 8px", borderRadius: 4,
+      background: v.bg, color: v.fg,
+      fontSize: 10, fontWeight: 600,
+      textTransform: "uppercase", letterSpacing: "0.04em",
+      whiteSpace: "nowrap",
     }}>{children}</span>
   );
-}
-function TransparencyNote({ icon: Icon = Info, children }) {
-  return (
-    <div style={{
-      display: "flex", gap: 8, padding: "11px 13px", background: "#F6F7F9",
-      borderRadius: 11, fontSize: 11.5, color: C.soft, lineHeight: 1.5,
-      border: "1px dashed #DDE1E8",
-    }}>
-      <Icon size={15} style={{ flexShrink: 0, marginTop: 1 }} />
-      <span>{children}</span>
-    </div>
-  );
-}
-function FormatHoursAgo(h) {
-  if (h < 1) return `${Math.round(h * 60)} menit lalu`;
-  if (h < 24) return `${Math.round(h)} jam lalu`;
-  return `${Math.round(h / 24)} hari lalu`;
-}
+};
 
-// ============================================================
-//  LAYAR 1 — daftar site, dikelompokkan per tingkat keparahan
-//  Pertanyaan pagi hari "mana yang penting?" dijawab group;
-//  pertanyaan "bawa saya ke X" dijawab search di header.
-// ============================================================
-function worstStatus(s) {
-  const sev = { ok: 0, warn: 1, danger: 2 };
-  return Math.max(sev[s.presence.status] || 0, sev[s.patrol.status] || 0);
-}
-function ScreenSites({ onOpenPresence, onOpenPatrol }) {
-  const [query, setQuery] = useState("");
-  const [openGroups, setOpenGroups] = useState({ danger: true, warn: true, ok: true });
-
-  // urutkan di dalam tiap group: kombinasi keparahan dua panel (sama seperti dulu)
-  const score = (s) => {
-    const sev = { ok: 0, warn: 1, danger: 2 };
-    return (sev[s.presence.status] || 0) * 2 + (sev[s.patrol.status] || 0);
+const StateChip = ({ state }) => {
+  const map = {
+    assigned: { variant: "slate", label: "Menunggu" },
+    in_execution: { variant: "indigo", label: "Berjalan" },
+    completed: { variant: "emerald", label: "Selesai" },
+    failed: { variant: "amber", label: "Gagal" },
+    blocked: { variant: "amber", label: "Blocked" },
   };
-  const matchesQuery = (s) => {
-    if (!query.trim()) return true;
-    const q = query.toLowerCase();
-    return s.name.toLowerCase().includes(q) || s.client.toLowerCase().includes(q);
-  };
-  const grouped = useMemo(() => {
-    const buckets = { danger: [], warn: [], ok: [] };
-    SITES.filter(matchesQuery).forEach((s) => {
-      const w = worstStatus(s);
-      buckets[w === 2 ? "danger" : w === 1 ? "warn" : "ok"].push(s);
-    });
-    Object.values(buckets).forEach((arr) => arr.sort((a, b) => score(b) - score(a)));
-    return buckets;
-  }, [query]);
+  const m = map[state];
+  return <Chip variant={m.variant}>{m.label}</Chip>;
+};
 
-  const totalShown = grouped.danger.length + grouped.warn.length + grouped.ok.length;
+// ═══════════════════════════════════════════════════════════════════════════
+// SIGNATURE PAD
+// ═══════════════════════════════════════════════════════════════════════════
+const SignaturePad = ({ value, onChange }) => {
+  const canvasRef = useRef(null);
+  const [drawing, setDrawing] = useState(false);
+  const [hasSignature, setHasSignature] = useState(!!value);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = C.text;
+    ctx.lineWidth = 2.5;
+  }, []);
+
+  const getPos = (e) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const evt = e.touches ? e.touches[0] : e;
+    return {
+      x: evt.clientX - rect.left,
+      y: evt.clientY - rect.top,
+    };
+  };
+
+  const start = (e) => {
+    e.preventDefault();
+    setDrawing(true);
+    const ctx = canvasRef.current.getContext("2d");
+    const pos = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+  };
+
+  const draw = (e) => {
+    if (!drawing) return;
+    e.preventDefault();
+    const ctx = canvasRef.current.getContext("2d");
+    const pos = getPos(e);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+    if (!hasSignature) {
+      setHasSignature(true);
+      onChange(true);
+    }
+  };
+
+  const end = () => setDrawing(false);
+
+  const clear = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    setHasSignature(false);
+    onChange(false);
+  };
 
   return (
     <div>
-      {/* Search bar */}
       <div style={{
-        display: "flex", alignItems: "center", gap: 9, background: "#fff",
-        border: `1.5px solid ${C.cardBd}`, borderRadius: 12, padding: "10px 13px", marginBottom: 14,
+        position: "relative",
+        background: C.surfaceAlt,
+        border: `1.5px ${hasSignature ? "solid" : "dashed"} ${hasSignature ? C.emerald400 : C.borderStrong}`,
+        borderRadius: 10,
+        overflow: "hidden",
+        transition: "border 0.15s ease",
       }}>
-        <Search size={17} color={C.soft} />
-        <input value={query} onChange={(e) => setQuery(e.target.value)}
-          placeholder="Cari site atau klien…"
+        <canvas
+          ref={canvasRef}
+          onMouseDown={start}
+          onMouseMove={draw}
+          onMouseUp={end}
+          onMouseLeave={end}
+          onTouchStart={start}
+          onTouchMove={draw}
+          onTouchEnd={end}
           style={{
-            flex: 1, border: "none", outline: "none", fontSize: 14,
-            fontFamily: "inherit", color: C.ink, background: "transparent"
-          }} />
-        {query && (
-          <button onClick={() => setQuery("")}
-            style={{ border: "none", background: "none", cursor: "pointer", color: C.soft, display: "flex", padding: 0 }}>
-            <X size={16} />
-          </button>
-        )}
-      </div>
-
-      {/* Ringkasan agregat — pertanyaan pagi hari dijawab di satu baris */}
-      {!query && (
-        <p style={{ fontSize: 13, color: C.mute, margin: "0 0 14px", lineHeight: 1.5 }}>
-          <strong style={{ color: C.danger }}>{grouped.danger.length} perlu tindak</strong>
-          {" · "}
-          <strong style={{ color: C.warn }}>{grouped.warn.length} perhatian</strong>
-          {" · "}
-          <strong style={{ color: C.ok }}>{grouped.ok.length} aman</strong>
-        </p>
-      )}
-      {query && (
-        <p style={{ fontSize: 13, color: C.mute, margin: "0 0 14px" }}>
-          {totalShown} hasil untuk "{query}"
-        </p>
-      )}
-
-      {totalShown === 0 && (
-        <div style={{ textAlign: "center", padding: "30px 10px", color: C.soft, fontSize: 13.5 }}>
-          Tidak ada site yang cocok.
-        </div>
-      )}
-
-      {/* Group: Perlu tindak */}
-      <SiteGroup tone="danger" label="Perlu tindak" count={grouped.danger.length}
-        open={openGroups.danger} onToggle={() => setOpenGroups((g) => ({ ...g, danger: !g.danger }))}>
-        {grouped.danger.map((s) => (
-          <SiteCard key={s.id} site={s}
-            onPresence={() => onOpenPresence(s.id)} onPatrol={() => onOpenPatrol(s.id)} />
-        ))}
-      </SiteGroup>
-
-      {/* Group: Perhatian */}
-      <SiteGroup tone="warn" label="Perhatian" count={grouped.warn.length}
-        open={openGroups.warn} onToggle={() => setOpenGroups((g) => ({ ...g, warn: !g.warn }))}>
-        {grouped.warn.map((s) => (
-          <SiteCard key={s.id} site={s}
-            onPresence={() => onOpenPresence(s.id)} onPatrol={() => onOpenPatrol(s.id)} />
-        ))}
-      </SiteGroup>
-
-      {/* Group: Aman */}
-      <SiteGroup tone="ok" label="Aman" count={grouped.ok.length}
-        open={openGroups.ok} onToggle={() => setOpenGroups((g) => ({ ...g, ok: !g.ok }))}>
-        {grouped.ok.map((s) => (
-          <SiteCard key={s.id} site={s}
-            onPresence={() => onOpenPresence(s.id)} onPatrol={() => onOpenPatrol(s.id)} />
-        ))}
-      </SiteGroup>
-    </div>
-  );
-}
-
-function SiteGroup({ tone, label, count, open, onToggle, children }) {
-  const color = { danger: C.danger, warn: C.warn, ok: C.ok }[tone];
-  const bg = { danger: C.dangerBg, warn: C.warnBg, ok: C.okBg }[tone];
-  if (count === 0) return null;
-  return (
-    <div style={{ marginBottom: 14 }}>
-      <button onClick={onToggle}
-        style={{
-          width: "100%", display: "flex", alignItems: "center", gap: 10,
-          padding: "10px 13px", background: bg, border: `1px solid ${color}33`,
-          borderRadius: 12, cursor: "pointer", fontFamily: "inherit", marginBottom: 10
-        }}>
-        <span style={{ width: 8, height: 8, borderRadius: "50%", background: color }} />
-        <span style={{ flex: 1, textAlign: "left", fontSize: 13, fontWeight: 800, color, textTransform: "uppercase", letterSpacing: 0.6 }}>
-          {label}
-        </span>
-        <span style={{ fontSize: 13, fontWeight: 800, color }}>{count}</span>
-        <ChevronDown size={17} color={color}
-          style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .15s" }} />
-      </button>
-      {open && <div>{children}</div>}
-    </div>
-  );
-}
-
-function SiteCard({ site, onPresence, onPatrol }) {
-  const worse = ["danger", "warn", "ok"].find((t) =>
-    site.presence.status === t || site.patrol.status === t
-  );
-  const stripColor = { danger: C.danger, warn: C.warn, ok: C.ok }[worse];
-
-  return (
-    <div style={{
-      display: "flex", background: "#fff", borderRadius: 16, marginBottom: 13,
-      border: `1.5px solid ${C.cardBd}`, overflow: "hidden",
-      boxShadow: "0 1px 3px rgba(20,30,55,0.05)",
-    }}>
-      <div style={{ width: 6, background: stripColor, flexShrink: 0 }} />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        {/* header site */}
-        <div style={{ padding: "12px 14px 8px" }}>
-          <div style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>{site.name}</div>
-          <div style={{ fontSize: 11.5, color: C.soft, marginTop: 1 }}>{site.client}</div>
-        </div>
-        {/* dua panel */}
-        <SiteSubPanel
-          icon={Users} label="Kehadiran"
-          headline={`${site.presence.present}/${site.presence.need} hadir`}
-          subtone={site.presence.status}
-          details={site.presence.issues.length === 0 ? "Semua beres" : site.presence.issues.join(" · ")}
-          onClick={onPresence}
+            display: "block",
+            width: "100%",
+            height: 140,
+            cursor: "crosshair",
+            touchAction: "none",
+          }}
         />
-        <div style={{ height: 1, background: C.line, margin: "0 14px" }} />
-        <SiteSubPanel
-          icon={ClipboardCheck} label="Patroli & Cleaning"
-          headline={`${site.patrol.totalPoints} titik`}
-          subtone={site.patrol.status}
-          details={
-            site.patrol.staleCount > 0
-              ? `${site.patrol.staleCount} titik jeda lama · terlama ${site.patrol.longestGapHours} jam`
-              : "Tidak ada jeda signifikan"
-          }
-          onClick={onPatrol}
-        />
-      </div>
-    </div>
-  );
-}
-
-function SiteSubPanel({ icon: Icon, label, headline, subtone, details, onClick }) {
-  return (
-    <button onClick={onClick} style={{
-      width: "100%", display: "flex", alignItems: "center", gap: 12,
-      padding: "12px 14px", background: "none", border: "none", cursor: "pointer",
-      fontFamily: "inherit", textAlign: "left",
-    }}>
-      <span style={{
-        width: 36, height: 36, borderRadius: 10, background: C.chip,
-        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-      }}>
-        <Icon size={18} color={C.ink} strokeWidth={2.1} />
-      </span>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: C.soft, textTransform: "uppercase", letterSpacing: 0.6 }}>{label}</span>
-          {subtone === "danger" && <StatusPill tone="danger">Perlu tindak</StatusPill>}
-          {subtone === "warn" && <StatusPill tone="warn">Perhatian</StatusPill>}
-          {subtone === "ok" && <StatusPill tone="ok">Beres</StatusPill>}
-        </div>
-        <div style={{ fontSize: 14.5, fontWeight: 700, color: C.ink, marginTop: 3 }}>{headline}</div>
-        <div style={{ fontSize: 12.5, color: C.mute, marginTop: 2, lineHeight: 1.4 }}>{details}</div>
-      </div>
-      <ChevronRight size={18} color="#C4C8D0" />
-    </button>
-  );
-}
-
-// ============================================================
-//  LAYAR 2 — detail kehadiran sepanjang hari + koreksi clock
-// ============================================================
-function ScreenPresence({ siteId, onOpenPatrolThisSite, onOpenWorkerHistory }) {
-  const [shifts, setShifts] = useState(SHIFTS);
-  const [correcting, setCorrecting] = useState(null);
-
-  function saveCorrection(data) {
-    setShifts((prev) => prev.map((sh) => ({
-      ...sh,
-      rows: sh.rows.map((r) => {
-        if (r.id !== data.id) return r;
-        const u = { ...r };
-        if (data.correctedOut) {
-          u.correctedOut = data.correctedOut;
-          u.assumption = !!data.assumption;
-          u.issue = null;
-          u.trail = `Clock-out ${data.correctedOut} ditetapkan supervisor · ${NOW_LABEL} hari ini${data.reason ? ` · "${data.reason}"` : ""}`;
-        }
-        if (data.absentReason) {
-          u.issue = null;
-          u.trail = `Ditandai "${data.absentReason}" oleh supervisor · ${NOW_LABEL} hari ini`;
-          if (data.correctedIn) u.in = data.correctedIn;
-        }
-        return u;
-      }),
-    })));
-    setCorrecting(null);
-  }
-
-  return (
-    <>
-      <div style={{ marginBottom: 14, display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-        <div style={{ fontSize: 13, color: C.soft }}>Sekarang {NOW_LABEL} · seluruh hari</div>
-        <button onClick={onOpenPatrolThisSite}
-          style={{ ...crossLinkBtn, color: C.blue, background: C.blueBg }}>
-          Lihat patroli site ini <ChevronRight size={14} />
-        </button>
-      </div>
-      {shifts.map((sh) => (
-        <ShiftBlock key={sh.id} shift={sh}
-          onCorrect={(row) => setCorrecting({ row, shift: sh })}
-          onOpenWorkerHistory={onOpenWorkerHistory} />
-      ))}
-      <TransparencyNote>
-        Shift berlangsung tampil penuh; shift lewat ringkas tapi tetap bisa dibuka & dikoreksi.
-        Jam yang ditetapkan supervisor selalu ditandai beda dari scan.
-      </TransparencyNote>
-
-      {correcting && (
-        <CorrectionSheet row={correcting.row} shift={correcting.shift}
-          onClose={() => setCorrecting(null)} onSave={saveCorrection} />
-      )}
-    </>
-  );
-}
-const crossLinkBtn = {
-  display: "inline-flex", alignItems: "center", gap: 4,
-  fontSize: 11.5, fontWeight: 700, padding: "5px 10px", borderRadius: 9,
-  border: "none", cursor: "pointer", fontFamily: "inherit",
-};
-
-function ShiftBlock({ shift, onCorrect, onOpenWorkerHistory }) {
-  const [open, setOpen] = useState(shift.phase === "live");
-  const isLive = shift.phase === "live";
-  const tag = shift.phase === "past" ? "Selesai" : shift.phase === "live" ? "Berlangsung" : "Belum mulai";
-  const tagColor = isLive ? C.ok : "#9CA3AF";
-
-  return (
-    <div style={{
-      border: isLive ? `2px solid ${C.ok}` : `1.5px solid ${C.cardBd}`,
-      borderRadius: 16, marginBottom: 13, overflow: "hidden",
-      background: isLive ? "#fff" : "#FCFCFD",
-      boxShadow: isLive ? "0 3px 12px rgba(14,124,102,0.12)" : "none",
-    }}>
-      <button onClick={() => setOpen((o) => !o)}
-        style={{
-          width: "100%", display: "flex", alignItems: "center", gap: 11, padding: "13px 15px",
-          background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", textAlign: "left"
-        }}>
-        {isLive && <CircleDot size={16} color={C.ok} />}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 15.5, fontWeight: 700, color: isLive ? C.ink : C.mute }}>{shift.name}</span>
-            <span style={{ fontSize: 11.5, fontWeight: 700, color: tagColor }}>· {tag}</span>
+        {!hasSignature && (
+          <div style={{
+            position: "absolute",
+            top: 0, left: 0, right: 0, bottom: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            pointerEvents: "none",
+            color: C.textDim,
+            fontSize: 13,
+          }}>
+            ✍️ Tap & tarik untuk tanda tangan customer
           </div>
-          <div style={{ fontSize: 12.5, color: C.soft, marginTop: 2 }}>
-            {shift.time} · hadir {shift.present}/{shift.need}
-          </div>
-        </div>
-        {shift.rows.some((r) => r.issue) && (
-          <StatusPill tone="danger">{shift.rows.filter((r) => r.issue).length} perlu tindak</StatusPill>
         )}
-        <ChevronDown size={18} color="#C4C8D0"
-          style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .15s" }} />
-      </button>
-      {open && (
-        <div style={{ padding: "0 13px 13px" }}>
-          {shift.rows.length === 0 ? (
-            <div style={{ fontSize: 13, color: C.soft, padding: "8px 4px", textAlign: "center" }}>
-              Belum ada data — shift belum mulai.
-            </div>
-          ) : (
-            [...shift.rows]
-              .sort((a, b) => (b.issue ? 1 : 0) - (a.issue ? 1 : 0))   // bermasalah di atas
-              .map((row) => <WorkerRow key={row.id} row={row} onCorrect={onCorrect} onOpenWorkerHistory={onOpenWorkerHistory} />)
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function WorkerRow({ row, onCorrect, onOpenWorkerHistory }) {
-  const [open, setOpen] = useState(false);
-  const needsAction = row.issue === "no_out" || row.issue === "no_in";
-  const outDisplay = row.correctedOut || row.out || "—";
-  // Pemetaan nama → workerId untuk Jalur B (dari konteks operasional ke riwayat)
-  const workerId = WORKERS.find((w) => w.name === row.name)?.id;
-
-  return (
-    <div style={{
-      border: `1.5px solid ${needsAction ? "#F0D9A8" : C.line}`,
-      background: needsAction ? "#FFFCF5" : "#fff",
-      borderRadius: 13, marginBottom: 9, overflow: "hidden",
-    }}>
-      <button onClick={() => setOpen((o) => !o)}
-        style={{
-          width: "100%", display: "flex", alignItems: "center", gap: 11, padding: "12px 13px",
-          background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", textAlign: "left"
-        }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 14.5, fontWeight: 700, color: C.ink }}>{row.name}</span>
-            {row.evidence && <EvidenceBadge level={row.evidence} small />}
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 5, fontSize: 13, color: C.mute, flexWrap: "wrap" }}>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-              <LogIn size={13} color={C.ok} /> {row.in || "—"}
-            </span>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-              <LogOut size={13} color={row.correctedOut ? C.superv : C.danger} /> {outDisplay}
-            </span>
-            {row.correctedOut && (row.assumption ? <AssumptionTag /> : <SetBySupervisorTag />)}
-          </div>
-        </div>
-        {row.issue === "no_out" && !row.correctedOut && <StatusPill tone="danger">Belum clock-out</StatusPill>}
-        {row.issue === "no_in" && <StatusPill tone="warn">Belum scan</StatusPill>}
-        <ChevronDown size={18} color="#C4C8D0"
-          style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .15s", flexShrink: 0 }} />
-      </button>
-      {open && (
-        <div style={{ padding: "0 13px 13px", borderTop: `1px solid ${C.line}` }}>
-          <div style={{ display: "flex", gap: 16, padding: "11px 0", fontSize: 12.5, color: C.soft }}>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
-              <Camera size={14} color={row.evidence === "strong" ? C.ok : "#C4C8D0"} /> Foto
-            </span>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
-              <Satellite size={14} color={C.ok} /> GPS
-            </span>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
-              <MapPin size={14} color={C.ok} /> Dalam radius
-            </span>
-          </div>
-          {row.issue === "no_out" && (
-            <button onClick={() => onCorrect(row)} style={primaryBtn(C.superv)}>
-              <Pencil size={16} /> Tetapkan jam clock-out
-            </button>
-          )}
-          {row.issue === "no_in" && (
-            <button onClick={() => onCorrect(row)} style={primaryBtn(C.warn)}>
-              <Pencil size={16} /> Beri alasan / koreksi
-            </button>
-          )}
-          {!row.issue && (
-            <button onClick={() => onCorrect(row)}
-              style={{ ...primaryBtn(C.mute), background: "#fff", color: C.mute, border: "1.5px solid #D9DCE3" }}>
-              <Pencil size={16} /> Koreksi jam (opsional)
-            </button>
-          )}
-          {row.trail && (
-            <div style={{
-              marginTop: 10, fontSize: 11.5, color: C.superv, background: C.supervBg,
-              borderRadius: 9, padding: "8px 11px", display: "flex", gap: 7, lineHeight: 1.45,
-            }}>
-              <History size={14} style={{ flexShrink: 0, marginTop: 1 }} />
-              <span>{row.trail}</span>
-            </div>
-          )}
-          {workerId && onOpenWorkerHistory && (
-            <button onClick={() => onOpenWorkerHistory(workerId)}
-              style={{
-                marginTop: 10, padding: "8px 12px", borderRadius: 9, border: "1.5px solid #D9DCE3",
-                background: "#fff", color: C.blue, fontSize: 12, fontWeight: 700,
-                cursor: "pointer", fontFamily: "inherit", display: "inline-flex", alignItems: "center", gap: 5
-              }}>
-              <History size={13} /> Lihat riwayat {row.name.split(" ")[0]}
-            </button>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-function primaryBtn(color) {
-  return {
-    width: "100%", marginTop: 4, padding: "11px", borderRadius: 11, border: "none",
-    background: color, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer",
-    display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "inherit",
-  };
-}
-
-// ============================================================
-//  PANEL KOREKSI (bottom sheet) — bagian 15
-// ============================================================
-function CorrectionSheet({ row, shift, onClose, onSave }) {
-  const isNoOut = row.issue === "no_out";
-  const isNoIn = row.issue === "no_in";
-  const shiftEnd = shift.time.split("–")[1];
-  const [mode, setMode] = useState("manual");
-  const [time, setTime] = useState("");
-  const [reason, setReason] = useState("");
-  const [absentReason, setAbsentReason] = useState("");
-  const headTitle = isNoOut ? "Tetapkan jam clock-out" : isNoIn ? "Worker belum scan" : "Koreksi jam";
-
-  return (
-    <div style={{ position: "absolute", inset: 0, zIndex: 30, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-      <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(20,25,40,0.45)" }} />
-      <div style={{
-        position: "relative", background: "#fff", borderRadius: "24px 24px 0 0",
-        padding: "20px 18px 22px", maxHeight: "85%", overflowY: "auto",
-        boxShadow: "0 -10px 40px rgba(0,0,0,0.2)"
-      }}>
-        <div style={{ width: 40, height: 4, background: "#E0E3EA", borderRadius: 4, margin: "0 auto 18px" }} />
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-          <h3 style={{ fontSize: 18, fontWeight: 800, color: C.ink, margin: 0 }}>{headTitle}</h3>
-          <button onClick={onClose} style={{ border: "none", background: "none", cursor: "pointer", color: C.soft, display: "flex" }}>
-            <X size={22} />
-          </button>
-        </div>
-        <p style={{ fontSize: 13.5, color: C.mute, margin: "0 0 18px" }}>
-          {row.name} · {shift.name} ({shift.time})
-        </p>
-        <div style={{ background: "#F6F7F9", borderRadius: 12, padding: "12px 14px", marginBottom: 18 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: C.soft, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>
-            Fakta terkunci (dari scan)
-          </div>
-          <div style={{ display: "flex", gap: 20, fontSize: 14 }}>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, color: C.ink, fontWeight: 600 }}>
-              <LogIn size={15} color={C.ok} /> Masuk {row.in || "tidak scan"}
-            </span>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, color: C.danger, fontWeight: 600 }}>
-              <LogOut size={15} /> Keluar {row.out || "hilang"}
-            </span>
-          </div>
-        </div>
-
-        {isNoOut && (
-          <>
-            <p style={{ fontSize: 12.5, color: C.superv, background: C.supervBg, borderRadius: 10, padding: "10px 12px", margin: "0 0 18px", lineHeight: 1.5 }}>
-              Jam keluar tidak terbukti scan. Yang Anda tetapkan akan ditandai
-              <strong> "ditetapkan supervisor"</strong> — bukan bukti scan, dan tampil beda ke klien.
-            </p>
-            {ALLOW_SHIFT_ASSUMPTION && (
-              <div style={{ display: "flex", gap: 9, marginBottom: 16 }}>
-                {[["manual", "Tetapkan manual", "Jam dari pengetahuan Anda"],
-                ["assumption", `Pakai jam shift (${shiftEnd})`, "Ditandai 'asumsi'"]].map(([v, lbl, desc]) => (
-                  <button key={v} onClick={() => { setMode(v); if (v === "assumption") setTime(shiftEnd); }}
-                    style={{
-                      flex: 1, padding: "12px 11px", borderRadius: 12, cursor: "pointer", textAlign: "left", fontFamily: "inherit",
-                      border: mode === v ? `1.5px solid ${C.superv}` : "1.5px solid #D9DCE3",
-                      background: mode === v ? C.supervBg : "#fff"
-                    }}>
-                    <div style={{ fontSize: 13.5, fontWeight: 700, color: mode === v ? C.superv : "#374151" }}>{lbl}</div>
-                    <div style={{ fontSize: 11, color: C.soft, marginTop: 3, lineHeight: 1.35 }}>{desc}</div>
-                  </button>
-                ))}
-              </div>
-            )}
-            <label style={lblStyle}>Jam clock-out</label>
-            <input type="time" value={time} disabled={mode === "assumption"}
-              onChange={(e) => setTime(e.target.value)}
-              style={{ ...inpStyle, background: mode === "assumption" ? "#F6F7F9" : "#fff", marginBottom: 6 }} />
-            {mode === "assumption" && <div style={{ marginBottom: 14 }}><AssumptionTag /></div>}
-            {mode === "manual" && <div style={{ height: 8 }} />}
-            <label style={lblStyle}>Keterangan (untuk jejak)</label>
-            <textarea rows={2} value={reason} onChange={(e) => setReason(e.target.value)}
-              placeholder="Mis. dikonfirmasi via telepon, lupa scan keluar…"
-              style={{ ...inpStyle, resize: "vertical", marginBottom: 18 }} />
-            <button disabled={!time}
-              onClick={() => onSave({ id: row.id, correctedOut: time, assumption: mode === "assumption", reason })}
-              style={{ ...primaryBtn(C.superv), background: time ? C.superv : "#C9A6E0", cursor: time ? "pointer" : "not-allowed" }}>
-              <Check size={17} /> Simpan & catat jejak
-            </button>
-          </>
-        )}
-
-        {isNoIn && (
-          <>
-            <p style={{ fontSize: 12.5, color: "#8A6D2F", background: C.warnBg, borderRadius: 10, padding: "10px 12px", margin: "0 0 18px", lineHeight: 1.5 }}>
-              Worker tidak scan masuk. Beri alasan ketidakhadiran, atau tetapkan clock-in bila hadir tapi lupa scan.
-            </p>
-            <label style={lblStyle}>Alasan</label>
-            <select value={absentReason} onChange={(e) => setAbsentReason(e.target.value)} style={{ ...inpStyle, marginBottom: 14 }}>
-              <option value="">Pilih…</option>
-              <option>Sakit</option><option>Izin</option><option>Off</option>
-              <option>Hadir tapi lupa scan masuk</option><option>Bolos</option>
-            </select>
-            {absentReason === "Hadir tapi lupa scan masuk" && (
-              <>
-                <label style={lblStyle}>Jam masuk (ditetapkan)</label>
-                <input type="time" value={time} onChange={(e) => setTime(e.target.value)} style={{ ...inpStyle, marginBottom: 6 }} />
-                <div style={{ marginBottom: 14 }}><SetBySupervisorTag /></div>
-              </>
-            )}
-            <label style={lblStyle}>Keterangan</label>
-            <textarea rows={2} value={reason} onChange={(e) => setReason(e.target.value)}
-              style={{ ...inpStyle, resize: "vertical", marginBottom: 18 }} />
-            <button disabled={!absentReason}
-              onClick={() => onSave({ id: row.id, absentReason, correctedIn: time, reason })}
-              style={{ ...primaryBtn(C.warn), background: absentReason ? C.warn : "#E3C77A", cursor: absentReason ? "pointer" : "not-allowed" }}>
-              <Check size={17} /> Simpan & catat jejak
-            </button>
-          </>
-        )}
-
-        {!row.issue && (
-          <>
-            <label style={lblStyle}>Jam clock-out (koreksi)</label>
-            <input type="time" value={time} onChange={(e) => setTime(e.target.value)} style={{ ...inpStyle, marginBottom: 6 }} />
-            <div style={{ marginBottom: 14 }}><SetBySupervisorTag /></div>
-            <label style={lblStyle}>Keterangan</label>
-            <textarea rows={2} value={reason} onChange={(e) => setReason(e.target.value)}
-              style={{ ...inpStyle, resize: "vertical", marginBottom: 18 }} />
-            <button disabled={!time} onClick={() => onSave({ id: row.id, correctedOut: time, reason })}
-              style={{ ...primaryBtn(C.superv), background: time ? C.superv : "#C9A6E0", cursor: time ? "pointer" : "not-allowed" }}>
-              <Check size={17} /> Simpan & catat jejak
-            </button>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-const lblStyle = { display: "block", fontSize: 12.5, fontWeight: 700, color: "#41506E", marginBottom: 7 };
-const inpStyle = {
-  width: "100%", boxSizing: "border-box", padding: "12px 13px", fontSize: 15,
-  border: "1.5px solid #D9DCE3", borderRadius: 11, outline: "none", fontFamily: "inherit", color: C.ink,
-};
-
-// ============================================================
-//  LAYAR 3 — ringkasan patroli per titik (bagian 16)
-// ============================================================
-const PERIODS = [
-  { id: "today", label: "Hari ini" },
-  { id: "24h", label: "24 jam" },
-  { id: "week", label: "Minggu ini" },
-];
-function ScreenPatrol({ siteId, onOpenPoint }) {
-  const [period, setPeriod] = useState("24h");
-  const points = POINTS_BY_SITE[siteId] || POINTS_BY_SITE["bp-legok"]; // demo fallback
-
-  // ringkasan (bagian 16: tiga angka di atas)
-  const totalVisits = points.reduce((a, p) => a + p.visits24h, 0);
-  const withoutVisit = points.filter((p) => p.visits24h === 0).length;
-  const typedLocation = 0; // contoh; di produk hitung dari data kunjungan
-
-  // urut: paling lama tidak disentuh DI ATAS (bagian 16 — BUKAN belum/sudah)
-  const sorted = [...points].sort((a, b) => b.lastHoursAgo - a.lastHoursAgo);
-
-  return (
-    <>
-      {/* pemilih periode */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 14, background: C.chip, borderRadius: 12, padding: 4 }}>
-        {PERIODS.map((p) => (
-          <button key={p.id} onClick={() => setPeriod(p.id)}
+        {hasSignature && (
+          <button
+            onClick={clear}
+            className="tap-feedback"
             style={{
-              flex: 1, padding: "8px 10px", borderRadius: 9, border: "none", cursor: "pointer",
-              fontSize: 13, fontWeight: 700, fontFamily: "inherit",
-              background: period === p.id ? "#fff" : "transparent",
-              color: period === p.id ? C.ink : C.mute,
-              boxShadow: period === p.id ? "0 1px 2px rgba(0,0,0,0.06)" : "none"
-            }}>
-            {p.label}
+              position: "absolute",
+              top: 8, right: 8,
+              padding: "4px 10px",
+              background: C.surface,
+              border: `1px solid ${C.border}`,
+              borderRadius: 5,
+              fontSize: 11,
+              fontWeight: 600,
+              color: C.textMid,
+              cursor: "pointer",
+            }}
+          >
+            Hapus
           </button>
-        ))}
+        )}
       </div>
-
-      {/* tiga angka ringkasan */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 14 }}>
-        <SummaryNum value={totalVisits} label="Total kunjungan" />
-        <SummaryNum value={withoutVisit} label="Titik tanpa kunjungan" tone={withoutVisit > 0 ? "warn" : "ok"} />
-        <SummaryNum value={typedLocation} label="Lokasi diketik" tone={typedLocation > 0 ? "warn" : "ok"} />
+      <div style={{
+        marginTop: 6, fontSize: 11,
+        color: hasSignature ? C.emerald700 : C.textMid,
+        display: "flex", alignItems: "center", gap: 4,
+      }}>
+        {hasSignature ? "✓ Tanda tangan tersimpan · customer confirmed" : "Opsional · jika customer berkenan tanda tangan"}
       </div>
-
-      {/* daftar titik */}
-      {sorted.map((p) => (
-        <PointRow key={p.id} point={p} onClick={() => onOpenPoint(p.id)} />
-      ))}
-
-      <TransparencyNote icon={Info}>
-        Sistem menyajikan fakta. Cukup atau tidaknya dinilai dari perjanjian. Tidak ada klaim "belum dipatroli" atau "cukup/kurang".
-      </TransparencyNote>
-    </>
-  );
-}
-function SummaryNum({ value, label, tone = "neutral" }) {
-  const color = tone === "warn" ? C.warn : tone === "ok" ? C.ok : C.ink;
-  const bg = tone === "warn" ? C.warnBg : tone === "ok" ? C.okBg : "#fff";
-  return (
-    <div style={{ background: bg, border: `1.5px solid ${C.cardBd}`, borderRadius: 12, padding: "10px 11px" }}>
-      <div style={{ fontSize: 22, fontWeight: 800, color, lineHeight: 1.1 }}>{value}</div>
-      <div style={{ fontSize: 10.5, color: C.mute, marginTop: 3, lineHeight: 1.3 }}>{label}</div>
     </div>
   );
-}
-function PointRow({ point, onClick }) {
-  const stale = point.lastHoursAgo >= STALE_HOURS;
+};
+
+// ─── EXECUTION STEPPER ─────────────────────────────────────────────────────
+const ExecutionStepper = ({ value, onChange, planned, kind }) => {
+  const isDrop = kind === "drop";
+  const accent = isDrop ? C.driverAccent : C.violet700;
+  const accentBg = isDrop ? C.driverAccentBg : C.violet50;
+  const accentBorder = isDrop ? C.driverAccent + "22" : C.violet100;
+  const directionSymbol = isDrop ? "↓" : "↑";
+  const directionLabel = isDrop ? "Drop" : "Pickup";
+
+  const isComplete = value === planned;
+  const isPartial = value > 0 && value < planned;
+  const isZero = value === 0;
+  const isSurplus = value > planned;
+  const isOpportunistic = planned === 0 && value > 0;
+
+  const valueColor = isZero ? C.textDim
+    : isComplete ? C.emerald700
+      : isPartial ? C.amber700
+        : isSurplus || isOpportunistic ? C.infoBlue : C.text;
+
   return (
-    <button onClick={onClick}
-      style={{
-        width: "100%", display: "flex", alignItems: "center", gap: 12,
-        padding: "12px 13px", background: "#fff",
-        border: `1.5px solid ${stale ? "#F0D9A8" : C.cardBd}`,
-        borderLeft: stale ? `5px solid ${C.warn}` : `1.5px solid ${C.cardBd}`,
-        borderRadius: 13, marginBottom: 9, cursor: "pointer", fontFamily: "inherit", textAlign: "left"
-      }}>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 14.5, fontWeight: 700, color: C.ink }}>{point.name}</span>
-          <span style={{ fontSize: 10.5, fontWeight: 700, color: C.soft, textTransform: "uppercase", letterSpacing: 0.5 }}>
-            · {point.type}
+    <div style={{
+      flex: 1,
+      background: isComplete ? C.emerald50
+        : isPartial ? C.amber50
+          : isSurplus || isOpportunistic ? C.infoBlueBg
+            : accentBg,
+      border: `1.5px solid ${isComplete ? C.emerald400
+        : isPartial ? C.amber400
+          : isSurplus || isOpportunistic ? C.infoBlue + "44"
+            : accentBorder
+        }`,
+      borderRadius: 10,
+      padding: "10px 10px 8px",
+      transition: "all 0.15s ease",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <span style={{ color: accent, fontSize: 14, fontWeight: 700 }}>{directionSymbol}</span>
+          <span style={{ fontSize: 10, color: C.textMid, textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 700 }}>
+            {directionLabel}
           </span>
         </div>
-        <div style={{ fontSize: 12.5, color: stale ? C.warn : C.mute, marginTop: 3, fontWeight: stale ? 600 : 400 }}>
-          Terakhir {FormatHoursAgo(point.lastHoursAgo)} · {point.lastBy}
-        </div>
-        <div style={{ fontSize: 11.5, color: C.soft, marginTop: 2 }}>
-          {point.visits24h} kunjungan dalam 24 jam
-        </div>
+        <span style={{ fontSize: 11, color: C.textDim }}>
+          plan <span className="mono" style={{ color: C.text, fontWeight: 600 }}>{planned}</span>
+        </span>
       </div>
-      <EvidenceBadge level={point.evidence} small />
-      <ChevronRight size={18} color="#C4C8D0" />
-    </button>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <button
+          onClick={() => onChange(Math.max(0, value - 1))}
+          disabled={value === 0}
+          className="tap-feedback"
+          style={{
+            width: 44, height: 44, borderRadius: 8,
+            background: C.surface, border: `1px solid ${C.border}`,
+            fontSize: 20, fontWeight: 600,
+            color: value === 0 ? C.textDim : C.text,
+            cursor: value === 0 ? "not-allowed" : "pointer",
+            flexShrink: 0,
+          }}
+        >−</button>
+
+        <div style={{ flex: 1, textAlign: "center", padding: "4px 0" }}>
+          <div className="mono" style={{ fontSize: 28, fontWeight: 700, color: valueColor, lineHeight: 1 }}>
+            {value}
+          </div>
+          {isPartial && (
+            <div style={{ fontSize: 10, color: C.amber700, fontWeight: 600, marginTop: 2, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+              Partial · {planned - value} kurang
+            </div>
+          )}
+          {isComplete && value > 0 && (
+            <div style={{ fontSize: 10, color: C.emerald700, fontWeight: 600, marginTop: 2, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+              ✓ Sesuai
+            </div>
+          )}
+          {isOpportunistic && (
+            <div style={{ fontSize: 10, color: C.infoBlue, fontWeight: 600, marginTop: 2, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+              Opportunistic · {value}
+            </div>
+          )}
+          {isSurplus && !isOpportunistic && (
+            <div style={{ fontSize: 10, color: C.infoBlue, fontWeight: 600, marginTop: 2, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+              +{value - planned} extra
+            </div>
+          )}
+        </div>
+
+        <button
+          onClick={() => onChange(value + 1)}
+          className="tap-feedback"
+          style={{
+            width: 44, height: 44, borderRadius: 8,
+            background: C.surface, border: `1px solid ${C.border}`,
+            fontSize: 20, fontWeight: 600,
+            color: C.text,
+            cursor: "pointer",
+            flexShrink: 0,
+          }}
+        >+</button>
+      </div>
+    </div>
   );
-}
+};
 
-// ============================================================
-//  LAYAR 4 — timeline per titik (bagian 16)
-// ============================================================
-const RANGES = [
-  { id: "24h", label: "24 jam" },
-  { id: "7d", label: "7 hari" },
-  { id: "30d", label: "30 hari" },
-];
-function ScreenTimeline({ pointId }) {
-  const [range, setRange] = useState("7d");
-  const point = Object.values(POINTS_BY_SITE).flat().find((p) => p.id === pointId)
-    || { name: "Gudang Bahan", type: "patroli" };
-  const visits = VISITS[pointId] || VISITS["p2"];
-
-  // Hitung jeda antar kunjungan utk ditampilkan eksplisit bila signifikan.
-  // Tanpa jam absolut, kita pakai pseudo-gap dari urutan (demo).
-  const withGaps = useMemo(() => {
-    const out = [];
-    const gapHours = [0, 23, 5, 30]; // demo: jeda antar item (item[0] tak ada jeda di atas)
-    visits.forEach((v, i) => {
-      if (i > 0 && gapHours[i] >= STALE_HOURS) {
-        out.push({ kind: "gap", id: "g" + i, hours: gapHours[i] });
-      }
-      out.push({ kind: "visit", ...v });
-    });
-    return out;
-  }, [visits]);
+// ─── ITEM EXECUTION ROW ────────────────────────────────────────────────────
+const ItemExecutionRow = ({ item, dropValue, pickupValue, onChangeDrop, onChangePickup }) => {
+  const isConsumable = item.type === "consumable";
+  const isReturnable = item.type === "returnable";
+  const hasDrop = item.planDrop > 0;
+  const showPickupStepper = isReturnable;
 
   return (
-    <>
-      <div style={{ marginBottom: 10 }}>
-        <div style={{ fontSize: 19, fontWeight: 800, color: C.ink }}>{point.name}</div>
-        <div style={{ fontSize: 12.5, color: C.soft, marginTop: 2, textTransform: "capitalize" }}>
-          {point.type} · {visits.length} kunjungan periode ini
+    <div style={{
+      background: C.surface,
+      border: `1px solid ${C.border}`,
+      borderRadius: 12,
+      padding: "12px 12px 14px",
+      marginBottom: 10,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, paddingLeft: 2 }}>
+        <span style={{ fontSize: 14, fontWeight: 700, color: C.text }}>{item.name}</span>
+        {isConsumable && (
+          <span style={{
+            padding: "1px 5px", borderRadius: 3,
+            background: C.slate100, color: C.slate600,
+            fontSize: 9, fontWeight: 600,
+            textTransform: "uppercase", letterSpacing: "0.04em",
+          }}>Consumable</span>
+        )}
+        {isReturnable && (
+          <span style={{
+            padding: "1px 5px", borderRadius: 3,
+            background: C.driverAccentBg, color: C.driverAccent,
+            fontSize: 9, fontWeight: 600,
+            textTransform: "uppercase", letterSpacing: "0.04em",
+          }}>Returnable</span>
+        )}
+      </div>
+
+      <div style={{ display: "flex", gap: 10 }}>
+        {hasDrop && (
+          <ExecutionStepper
+            kind="drop"
+            value={dropValue}
+            planned={item.planDrop}
+            onChange={onChangeDrop}
+          />
+        )}
+        {showPickupStepper && (
+          <ExecutionStepper
+            kind="pickup"
+            value={pickupValue}
+            planned={item.planPickup}
+            onChange={onChangePickup}
+          />
+        )}
+      </div>
+
+      {isReturnable && item.planPickup === 0 && pickupValue === 0 && (
+        <div style={{
+          marginTop: 8,
+          padding: "6px 10px",
+          background: C.infoBlueBg,
+          borderRadius: 6,
+          fontSize: 10,
+          color: C.infoBlue,
+          fontStyle: "italic",
+        }}>
+          💡 Customer juga punya tabung lama buat dibalikin? Tap [+] di pickup.
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TASK CARD (for Feed)
+// ═══════════════════════════════════════════════════════════════════════════
+const TaskCard = ({ task, onTap, highlight }) => {
+  const isCompleted = task.state === "completed";
+  const isFailed = task.state === "failed";
+  const isAssigned = task.state === "assigned";
+  const isPickupOnly = task.taskType === "pickup_return";
+
+  const totalDrop = task.items.reduce((s, i) => s + i.planDrop, 0);
+  const totalPickup = task.items.reduce((s, i) => s + i.planPickup, 0);
+  const actualDrop = task.items.reduce((s, i) => s + (i.actualDrop || 0), 0);
+  const actualPickup = task.items.reduce((s, i) => s + (i.actualPickup || 0), 0);
+
+  const borderLeft = highlight ? `3px solid ${C.driverAccent}` : "3px solid transparent";
+  const bg = isCompleted ? C.surface : isFailed ? C.amber50 : C.surface;
+  const opacity = isCompleted || isFailed ? 0.75 : 1;
+
+  return (
+    <div
+      onClick={() => onTap(task)}
+      className={`tap-feedback slide-up ${highlight ? "flash-success" : ""}`}
+      style={{
+        background: bg,
+        opacity,
+        border: `1px solid ${C.border}`,
+        borderLeft,
+        borderLeftWidth: 3,
+        borderRadius: 12,
+        padding: "14px 14px",
+        marginBottom: 10,
+        cursor: "pointer",
+        transition: "transform 0.1s ease",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+        <div style={{
+          width: 32, height: 32, borderRadius: 8,
+          background: isCompleted ? C.emerald100 : isFailed ? C.amber100 : C.slate100,
+          color: isCompleted ? C.emerald700 : isFailed ? C.amber700 : C.textMid,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 14, fontWeight: 700,
+          flexShrink: 0,
+          transition: "all 0.15s ease",
+        }}>
+          {isCompleted ? "✓" : isFailed ? "!" : task.stopNumber}
+        </div>
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 1 }}>
+            <span className="mono" style={{ fontSize: 11, color: C.textDim, fontWeight: 500 }}>
+              {task.id}
+            </span>
+            {isPickupOnly && <Chip variant="violet">Pickup Only</Chip>}
+          </div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {task.customer}
+          </div>
+        </div>
+
+        <StateChip state={task.state} />
+      </div>
+
+      <div style={{ paddingLeft: 42, marginBottom: 10 }}>
+        <div style={{ fontSize: 12, color: C.textMid, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {task.address}
+        </div>
+        <div style={{ fontSize: 11, color: C.textDim, marginTop: 2 }}>
+          📍 {task.distance}
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 6, marginBottom: 16, background: C.chip, borderRadius: 12, padding: 4 }}>
-        {RANGES.map((r) => (
-          <button key={r.id} onClick={() => setRange(r.id)}
-            style={{
-              flex: 1, padding: "8px 10px", borderRadius: 9, border: "none", cursor: "pointer",
-              fontSize: 13, fontWeight: 700, fontFamily: "inherit",
-              background: range === r.id ? "#fff" : "transparent",
-              color: range === r.id ? C.ink : C.mute,
-              boxShadow: range === r.id ? "0 1px 2px rgba(0,0,0,0.06)" : "none"
-            }}>
-            {r.label}
-          </button>
-        ))}
+      <div style={{
+        display: "flex", flexWrap: "wrap", gap: 6,
+        paddingLeft: 42,
+        marginBottom: isAssigned ? 12 : 0,
+      }}>
+        {totalDrop > 0 && (
+          <div style={{
+            display: "flex", alignItems: "center", gap: 5,
+            padding: "4px 10px", borderRadius: 6,
+            background: isCompleted ? C.emerald50 : C.driverAccentBg,
+            border: `1px solid ${isCompleted ? C.emerald100 : C.driverAccent + "22"}`,
+          }}>
+            <span style={{ color: isCompleted ? C.emerald700 : C.driverAccent, fontSize: 13, fontWeight: 700 }}>↓</span>
+            <span className="mono" style={{ fontSize: 13, fontWeight: 700, color: C.text }}>
+              {isCompleted ? actualDrop : totalDrop}
+            </span>
+            <span style={{ fontSize: 11, color: C.textMid }}>drop</span>
+          </div>
+        )}
+        {totalPickup > 0 && (
+          <div style={{
+            display: "flex", alignItems: "center", gap: 5,
+            padding: "4px 10px", borderRadius: 6,
+            background: isCompleted ? C.emerald50 : C.violet50,
+            border: `1px solid ${isCompleted ? C.emerald100 : C.violet100}`,
+          }}>
+            <span style={{ color: isCompleted ? C.emerald700 : C.violet700, fontSize: 13, fontWeight: 700 }}>↑</span>
+            <span className="mono" style={{ fontSize: 13, fontWeight: 700, color: C.text }}>
+              {isCompleted ? actualPickup : totalPickup}
+            </span>
+            <span style={{ fontSize: 11, color: C.textMid }}>pickup</span>
+          </div>
+        )}
+        <div style={{ flex: 1 }} />
       </div>
 
-      {/* timeline */}
-      <div style={{ position: "relative", paddingLeft: 22, marginBottom: 16 }}>
-        {/* garis vertikal */}
-        <div style={{ position: "absolute", left: 8, top: 8, bottom: 8, width: 2, background: "#E6E8EE" }} />
-        {withGaps.map((item) => {
-          if (item.kind === "gap") {
+      {isAssigned && (
+        <div style={{
+          marginLeft: 42,
+          background: C.driverAccent,
+          color: "#fff",
+          padding: "10px 14px",
+          borderRadius: 8,
+          fontSize: 13,
+          fontWeight: 700,
+          textAlign: "center",
+          textTransform: "uppercase",
+          letterSpacing: "0.04em",
+        }}>
+          Mulai Eksekusi
+        </div>
+      )}
+
+      {isCompleted && task.completedAt && (
+        <div style={{
+          marginLeft: 42,
+          display: "flex", alignItems: "center", gap: 6,
+          fontSize: 11, color: C.emerald700,
+        }}>
+          <span>✓ Selesai {task.completedAt}</span>
+          {task.customerConfirmed && (
+            <>
+              <span style={{ color: C.textDim }}>·</span>
+              <span>Customer confirmed</span>
+            </>
+          )}
+        </div>
+      )}
+
+      {isFailed && (
+        <div style={{
+          marginLeft: 42,
+          fontSize: 11, color: C.amber700, fontWeight: 500,
+        }}>
+          ! Dilaporkan gagal — menunggu admin reschedule
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── ROUTE PROGRESS HEADER ─────────────────────────────────────────────────
+const RouteProgressHeader = ({ tasks, onBack }) => {
+  const completed = tasks.filter(t => t.state === "completed").length;
+  const failed = tasks.filter(t => t.state === "failed").length;
+  const total = tasks.length;
+  const progress = ((completed + failed) / total) * 100;
+
+  const totalDrop = tasks.reduce((s, t) => s + t.items.reduce((si, i) => si + i.planDrop, 0), 0);
+  const totalPickup = tasks.reduce((s, t) => s + t.items.reduce((si, i) => si + i.planPickup, 0), 0);
+  const actualDrop = tasks.reduce((s, t) => s + t.items.reduce((si, i) => si + (i.actualDrop || 0), 0), 0);
+  const actualPickup = tasks.reduce((s, t) => s + t.items.reduce((si, i) => si + (i.actualPickup || 0), 0), 0);
+
+  return (
+    <div style={{
+      background: C.surface,
+      padding: "14px 16px 16px",
+      borderBottom: `1px solid ${C.border}`,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+        <button onClick={onBack} title="Kembali ke Home" className="tap-feedback" style={{
+          width: 34, height: 34, borderRadius: 8, flexShrink: 0,
+          background: "transparent", border: "none", fontSize: 18, color: C.text, cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>←</button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: C.text, lineHeight: 1.2 }}>
+            Rute Hari Ini
+          </div>
+          <div className="mono" style={{ fontSize: 11, color: C.textMid, lineHeight: 1.2 }}>
+            {DRIVER.name} · {VEHICLE.plate}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+          <div style={{ fontSize: 11, color: C.textDim, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 }}>
+            Rute Hari Ini
+          </div>
+          <div className="mono" style={{ fontSize: 13, fontWeight: 700, color: C.text }}>
+            {completed} / {total} stop
+            {failed > 0 && <span style={{ color: C.amber700, marginLeft: 6 }}>· {failed} gagal</span>}
+          </div>
+        </div>
+        <div style={{
+          height: 6, background: C.slate100, borderRadius: 3, overflow: "hidden", position: "relative",
+        }}>
+          <div style={{
+            height: "100%",
+            width: `${progress}%`,
+            background: `linear-gradient(90deg, ${C.driverAccent}, ${C.driverAccentDark})`,
+            transition: "width 0.4s ease",
+          }} />
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: 8 }}>
+        <div style={{
+          flex: 1, padding: "8px 10px",
+          background: C.driverAccentBg,
+          border: `1px solid ${C.driverAccent}22`,
+          borderRadius: 7,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
+            <span style={{ color: C.driverAccent, fontSize: 12, fontWeight: 700 }}>↓</span>
+            <span style={{ fontSize: 10, color: C.textMid, textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 600 }}>
+              Drop
+            </span>
+          </div>
+          <div className="mono" style={{ fontSize: 15, fontWeight: 700, color: C.text }}>
+            {actualDrop} <span style={{ color: C.textDim, fontWeight: 500, fontSize: 12 }}>/ {totalDrop}</span>
+          </div>
+        </div>
+        <div style={{
+          flex: 1, padding: "8px 10px",
+          background: C.violet50,
+          border: `1px solid ${C.violet100}`,
+          borderRadius: 7,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
+            <span style={{ color: C.violet700, fontSize: 12, fontWeight: 700 }}>↑</span>
+            <span style={{ fontSize: 10, color: C.textMid, textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 600 }}>
+              Pickup
+            </span>
+          </div>
+          <div className="mono" style={{ fontSize: 15, fontWeight: 700, color: C.text }}>
+            {actualPickup} <span style={{ color: C.textDim, fontWeight: 500, fontSize: 12 }}>/ {totalPickup}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SCREEN: TASK FEED
+// ═══════════════════════════════════════════════════════════════════════════
+export const TaskFeedScreen = ({ tasks, onSelectTask, recentlyCompletedId, onBack }) => {
+  const assigned = tasks.filter(t => t.state === "assigned");
+  const completed = tasks.filter(t => t.state === "completed");
+  const failed = tasks.filter(t => t.state === "failed");
+  const remaining = assigned.length + failed.filter(f => false).length;  // (failed handled separately)
+  const allDone = assigned.length === 0;
+
+  return (
+    <div style={{ height: "100%", display: "flex", flexDirection: "column", background: C.bg }}>
+      <RouteProgressHeader tasks={tasks} onBack={onBack} />
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "16px 14px 100px" }} className="scroll-thin">
+
+        {assigned.length > 0 && (
+          <>
+            <div style={{
+              fontSize: 11, color: C.textMid,
+              textTransform: "uppercase", letterSpacing: "0.06em",
+              fontWeight: 700, marginBottom: 4, paddingLeft: 4,
+            }}>
+              Stop Berikutnya · {assigned.length}
+            </div>
+            <div style={{ fontSize: 11, color: C.textDim, marginBottom: 10, paddingLeft: 4, fontStyle: "italic" }}>
+              Pilih sesuai kondisi lapangan
+            </div>
+            {assigned.map(t => (
+              <TaskCard key={t.id} task={t} onTap={onSelectTask} />
+            ))}
+          </>
+        )}
+
+        {failed.length > 0 && (
+          <>
+            <div style={{
+              fontSize: 11, color: C.amber700,
+              textTransform: "uppercase", letterSpacing: "0.06em",
+              fontWeight: 700, marginTop: 16, marginBottom: 8, paddingLeft: 4,
+            }}>
+              Dilaporkan Gagal · {failed.length}
+            </div>
+            {failed.map(t => (
+              <TaskCard key={t.id} task={t} onTap={onSelectTask} />
+            ))}
+          </>
+        )}
+
+        {completed.length > 0 && (
+          <>
+            <div style={{
+              fontSize: 11, color: C.textDim,
+              textTransform: "uppercase", letterSpacing: "0.06em",
+              fontWeight: 700, marginTop: 16, marginBottom: 8, paddingLeft: 4,
+            }}>
+              Sudah Selesai · {completed.length}
+            </div>
+            {completed.map(t => (
+              <TaskCard
+                key={t.id}
+                task={t}
+                onTap={onSelectTask}
+                highlight={t.id === recentlyCompletedId}
+              />
+            ))}
+          </>
+        )}
+
+        {allDone && (
+          <div style={{
+            marginTop: 20,
+            background: C.emerald50,
+            border: `1px solid ${C.emerald100}`,
+            borderRadius: 12,
+            padding: "20px",
+            textAlign: "center",
+          }} className="slide-up">
+            <div style={{ fontSize: 32, marginBottom: 8 }}>🎉</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: C.emerald700, marginBottom: 4 }}>
+              Semua Stop Selesai
+            </div>
+            <div style={{ fontSize: 12, color: C.textMid, lineHeight: 1.5 }}>
+              Lo bisa kembali ke gudang untuk closing check.
+            </div>
+          </div>
+        )}
+      </div>
+
+      {allDone && (
+        <div style={{
+          background: C.surface,
+          borderTop: `1px solid ${C.border}`,
+          padding: "12px 14px",
+          flexShrink: 0,
+          boxShadow: "0 -4px 12px rgba(0,0,0,0.04)",
+        }}>
+          <button
+            className="tap-feedback"
+            style={{
+              width: "100%",
+              background: C.driverAccent,
+              color: "#fff",
+              border: "none",
+              padding: "16px",
+              borderRadius: 10,
+              fontSize: 15,
+              fontWeight: 700,
+              cursor: "pointer",
+              textTransform: "uppercase",
+              letterSpacing: "0.04em",
+            }}
+          >
+            Kembali ke Gudang
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SCREEN: DELIVERY EXECUTION WORKSPACE
+// ═══════════════════════════════════════════════════════════════════════════
+export const DeliveryExecutionWorkspace = ({ task, onBack, onSubmit }) => {
+  const [actuals, setActuals] = useState(
+    task.items.reduce((acc, item) => ({
+      ...acc,
+      [item.id]: { drop: item.planDrop, pickup: item.planPickup },
+    }), {})
+  );
+  const [hasSignature, setHasSignature] = useState(false);
+  const [showSubmitSheet, setShowSubmitSheet] = useState(false);
+  const [showEvidenceSheet, setShowEvidenceSheet] = useState(false);
+  const [showFailedSheet, setShowFailedSheet] = useState(false);
+  const [hasNote, setHasNote] = useState(false);
+  const [hasPhoto, setHasPhoto] = useState(false);
+
+  const totalDrop = Object.values(actuals).reduce((s, a) => s + a.drop, 0);
+  const totalPickup = Object.values(actuals).reduce((s, a) => s + a.pickup, 0);
+  const plannedDrop = task.items.reduce((s, i) => s + i.planDrop, 0);
+  const plannedPickup = task.items.reduce((s, i) => s + i.planPickup, 0);
+
+  const hasPartial = task.items.some(i =>
+    (actuals[i.id].drop < i.planDrop && actuals[i.id].drop > 0) ||
+    (actuals[i.id].pickup < i.planPickup && actuals[i.id].pickup > 0)
+  );
+  const hasZero = task.items.some(i =>
+    (i.planDrop > 0 && actuals[i.id].drop === 0) ||
+    (i.planPickup > 0 && actuals[i.id].pickup === 0)
+  );
+  const hasOpportunistic = task.items.some(i =>
+    i.planPickup === 0 && actuals[i.id].pickup > 0
+  );
+  const hasExtra = task.items.some(i =>
+    i.planPickup > 0 && actuals[i.id].pickup > i.planPickup
+  );
+
+  const canConfirm = totalDrop > 0 || totalPickup > 0;
+
+  const updateActual = (itemId, kind, value) => {
+    setActuals(prev => ({
+      ...prev,
+      [itemId]: { ...prev[itemId], [kind]: value },
+    }));
+  };
+
+  const handleConfirmSubmit = () => {
+    setShowSubmitSheet(false);
+    onSubmit({
+      actuals,
+      hasSignature,
+      hasNote,
+      hasPhoto,
+      outcome: hasPartial ? "partial" : "success",
+    });
+  };
+
+  const handleFailedSubmit = () => {
+    setShowFailedSheet(false);
+    onSubmit({ actuals: null, outcome: "failed" });
+  };
+
+  return (
+    <div style={{ height: "100%", display: "flex", flexDirection: "column", background: C.bg }}>
+
+      <div style={{
+        background: C.surface,
+        borderBottom: `1px solid ${C.border}`,
+        padding: "12px 14px",
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        flexShrink: 0,
+      }}>
+        <button
+          onClick={onBack}
+          className="tap-feedback"
+          style={{
+            width: 36, height: 36, borderRadius: 8,
+            background: "transparent", border: "none",
+            fontSize: 18, color: C.text, cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >←</button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span className="mono" style={{ fontSize: 11, color: C.textDim, fontWeight: 500 }}>
+              {task.id}
+            </span>
+            <span style={{ fontSize: 11, color: C.textDim }}>·</span>
+            <span style={{ fontSize: 11, color: C.textDim }}>Stop {task.stopNumber}</span>
+          </div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {task.customer}
+          </div>
+        </div>
+        <Chip variant="indigo">Berjalan</Chip>
+      </div>
+
+      <div style={{
+        background: C.driverAccentBg,
+        borderBottom: `1px solid ${C.border}`,
+        padding: "10px 14px",
+        flexShrink: 0,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: C.driverAccentDark }}>
+          <span>📍</span>
+          <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {task.address}
+          </span>
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "14px 14px 100px" }} className="scroll-thin">
+
+        <div style={{ marginBottom: 12, fontSize: 11, color: C.textDim, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 }}>
+          Catat aktual · default = rencana, sesuaikan kalau beda
+        </div>
+
+        {task.items.map(item => (
+          <ItemExecutionRow
+            key={item.id}
+            item={item}
+            dropValue={actuals[item.id].drop}
+            pickupValue={actuals[item.id].pickup}
+            onChangeDrop={(v) => updateActual(item.id, "drop", v)}
+            onChangePickup={(v) => updateActual(item.id, "pickup", v)}
+          />
+        ))}
+
+        {/* SIGNATURE PAD */}
+        <div style={{ marginTop: 18, marginBottom: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 8 }}>
+            Tanda Tangan Customer
+            <span style={{ color: C.textDim, marginLeft: 6, fontWeight: 500 }}>(opsional)</span>
+          </div>
+          <SignaturePad value={hasSignature} onChange={setHasSignature} />
+        </div>
+
+        {/* Evidence row */}
+        <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
+          <button
+            onClick={() => setShowEvidenceSheet(true)}
+            className="tap-feedback"
+            style={{
+              flex: 1,
+              background: hasNote ? C.driverAccentBg : C.surface,
+              border: `1px solid ${hasNote ? C.driverAccent + "44" : C.border}`,
+              borderRadius: 10,
+              padding: "10px 12px",
+              cursor: "pointer",
+              fontSize: 13, fontWeight: 600,
+              color: hasNote ? C.driverAccent : C.text,
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            }}
+          >
+            <span>📝</span>
+            <span>{hasNote ? "Catatan ditambah" : "Tambah Catatan"}</span>
+          </button>
+          <button
+            onClick={() => setHasPhoto(!hasPhoto)}
+            className="tap-feedback"
+            style={{
+              flex: 1,
+              background: hasPhoto ? C.driverAccentBg : C.surface,
+              border: `1px solid ${hasPhoto ? C.driverAccent + "44" : C.border}`,
+              borderRadius: 10,
+              padding: "10px 12px",
+              cursor: "pointer",
+              fontSize: 13, fontWeight: 600,
+              color: hasPhoto ? C.driverAccent : C.text,
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            }}
+          >
+            <span>📷</span>
+            <span>{hasPhoto ? "Foto · 1" : "Ambil Foto"}</span>
+          </button>
+        </div>
+
+        {hasPartial && (
+          <div style={{
+            marginTop: 14,
+            background: C.amber50,
+            border: `1px solid ${C.amber100}`,
+            borderLeft: `3px solid ${C.amber400}`,
+            borderRadius: 8,
+            padding: "10px 12px",
+            fontSize: 12,
+            color: C.amber700,
+            lineHeight: 1.5,
+          }}>
+            <strong>Partial execution.</strong> Beberapa item kurang dari rencana. Submit valid — sisanya akan jadi follow-up untuk admin.
+          </div>
+        )}
+
+        {(hasOpportunistic || hasExtra) && (
+          <div style={{
+            marginTop: 14,
+            background: C.infoBlueBg,
+            border: `1px solid ${C.infoBlue}22`,
+            borderLeft: `3px solid ${C.infoBlue}`,
+            borderRadius: 8,
+            padding: "10px 12px",
+            fontSize: 12,
+            color: C.text,
+            lineHeight: 1.5,
+          }}>
+            <strong style={{ color: C.infoBlue }}>
+              {hasOpportunistic && hasExtra ? "Opportunistic + extra pickup" :
+                hasOpportunistic ? "Opportunistic pickup" : "Extra pickup"}
+            </strong>{" "}
+            tercatat. Customer balikin tabung lebih banyak. Outstanding berkurang lebih banyak — informational signal untuk admin.
+          </div>
+        )}
+
+        {hasZero && !hasPartial && (
+          <div style={{
+            marginTop: 14,
+            background: C.amber50,
+            border: `1px solid ${C.amber100}`,
+            borderLeft: `3px solid ${C.amber400}`,
+            borderRadius: 8,
+            padding: "10px 12px",
+            fontSize: 12,
+            color: C.amber700,
+            lineHeight: 1.5,
+          }}>
+            <strong>Ada item yang 0.</strong> Yakin tidak ada yang dikirim/diambil untuk item itu?
+          </div>
+        )}
+
+        <button
+          onClick={() => setShowFailedSheet(true)}
+          className="tap-feedback"
+          style={{
+            marginTop: 14,
+            width: "100%",
+            background: "transparent",
+            border: `1px dashed ${C.borderStrong}`,
+            borderRadius: 8,
+            padding: "10px 12px",
+            fontSize: 12,
+            color: C.textMid,
+            cursor: "pointer",
+            fontWeight: 500,
+          }}
+        >
+          Tidak bisa dieksekusi · Lapor sebagai gagal
+        </button>
+      </div>
+
+      <div style={{
+        background: C.surface,
+        borderTop: `1px solid ${C.border}`,
+        padding: "12px 14px",
+        flexShrink: 0,
+        boxShadow: "0 -4px 12px rgba(0,0,0,0.04)",
+      }}>
+        <button
+          onClick={() => canConfirm && setShowSubmitSheet(true)}
+          disabled={!canConfirm}
+          className="tap-feedback"
+          style={{
+            width: "100%",
+            background: !canConfirm ? C.slate200
+              : hasPartial ? C.amber400
+                : C.driverAccent,
+            color: !canConfirm ? C.textDim : "#fff",
+            border: "none",
+            padding: "16px",
+            borderRadius: 10,
+            fontSize: 15,
+            fontWeight: 700,
+            cursor: canConfirm ? "pointer" : "not-allowed",
+            textTransform: "uppercase",
+            letterSpacing: "0.04em",
+          }}
+        >
+          {!canConfirm ? "Catat Minimal 1 Item Dulu"
+            : hasPartial ? "Konfirmasi · Partial Execution"
+              : "Konfirmasi Pengiriman"}
+        </button>
+      </div>
+
+      {showSubmitSheet && (
+        <SubmitConfirmSheet
+          task={task}
+          actuals={actuals}
+          hasSignature={hasSignature}
+          hasPartial={hasPartial}
+          hasOpportunistic={hasOpportunistic}
+          hasExtra={hasExtra}
+          hasNote={hasNote}
+          hasPhoto={hasPhoto}
+          totalDrop={totalDrop}
+          totalPickup={totalPickup}
+          plannedDrop={plannedDrop}
+          plannedPickup={plannedPickup}
+          onConfirm={handleConfirmSubmit}
+          onCancel={() => setShowSubmitSheet(false)}
+        />
+      )}
+
+      {showEvidenceSheet && (
+        <EvidenceNoteSheet
+          onCancel={() => setShowEvidenceSheet(false)}
+          onSave={() => { setHasNote(true); setShowEvidenceSheet(false); }}
+        />
+      )}
+
+      {showFailedSheet && (
+        <FailedDeliverySheet
+          task={task}
+          onCancel={() => setShowFailedSheet(false)}
+          onSubmit={handleFailedSubmit}
+        />
+      )}
+    </div>
+  );
+};
+
+// ─── SUBMIT CONFIRMATION SHEET ─────────────────────────────────────────────
+const SubmitConfirmSheet = ({ task, actuals, hasSignature, hasPartial, hasOpportunistic, hasExtra, hasNote, hasPhoto, totalDrop, totalPickup, plannedDrop, plannedPickup, onConfirm, onCancel }) => (
+  <>
+    <div onClick={onCancel} style={{ position: "absolute", inset: 0, background: "rgba(15, 23, 42, 0.5)", zIndex: 10 }} />
+    <div className="sheet-up" style={{
+      position: "absolute",
+      bottom: 0, left: 0, right: 0,
+      background: C.surface,
+      borderTopLeftRadius: 16,
+      borderTopRightRadius: 16,
+      zIndex: 11,
+      maxHeight: "85%",
+      display: "flex",
+      flexDirection: "column",
+    }}>
+      <div style={{ display: "flex", justifyContent: "center", paddingTop: 8 }}>
+        <div style={{ width: 40, height: 4, background: C.slate200, borderRadius: 2 }} />
+      </div>
+
+      <div style={{ padding: "12px 18px 8px" }}>
+        <div style={{ fontSize: 11, color: C.textMid, textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 600, marginBottom: 4 }}>
+          Konfirmasi Pengiriman
+        </div>
+        <div style={{ fontSize: 17, fontWeight: 700, color: C.text }}>
+          {task.customer}
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "8px 18px 16px" }} className="scroll-thin">
+        <div style={{
+          background: C.surfaceAlt,
+          border: `1px solid ${C.border}`,
+          borderRadius: 8,
+          padding: "10px 12px",
+          marginBottom: 12,
+        }}>
+          {task.items.map((item, idx) => {
+            const actDrop = actuals[item.id].drop;
+            const actPickup = actuals[item.id].pickup;
+            const dropPartial = actDrop < item.planDrop && actDrop > 0;
+            const pickupPartial = actPickup < item.planPickup && actPickup > 0;
+            const pickupOpportunistic = item.planPickup === 0 && actPickup > 0;
+            const pickupExtra = item.planPickup > 0 && actPickup > item.planPickup;
+            const isReturnable = item.type === "returnable";
+            const showPickupRow = isReturnable && (item.planPickup > 0 || actPickup > 0);
+
             return (
-              <div key={item.id} style={{ position: "relative", margin: "6px 0 6px -22px", paddingLeft: 22 }}>
-                <div style={{
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                  fontSize: 11.5, fontWeight: 700, color: C.warn, background: C.warnBg,
-                  padding: "5px 11px", borderRadius: 20, border: `1px dashed ${C.warn}`
-                }}>
-                  <Hourglass size={12} /> Jeda {item.hours} jam
+              <div key={item.id} style={{
+                padding: "8px 0",
+                borderBottom: idx === task.items.length - 1 ? "none" : `1px solid ${C.border}`,
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                  <span style={{ fontSize: 13, color: C.text, fontWeight: 600 }}>{item.name}</span>
+                  {item.type === "consumable" && (
+                    <span style={{
+                      padding: "1px 5px", borderRadius: 3,
+                      background: C.slate100, color: C.slate600,
+                      fontSize: 9, fontWeight: 600,
+                      textTransform: "uppercase", letterSpacing: "0.04em",
+                    }}>C</span>
+                  )}
+                </div>
+                <div style={{ display: "flex", gap: 12, fontSize: 12, flexWrap: "wrap" }}>
+                  {item.planDrop > 0 && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                      <span style={{ color: C.driverAccent, fontWeight: 700 }}>↓</span>
+                      <span className="mono" style={{
+                        color: dropPartial ? C.amber700 : actDrop === 0 ? C.amber700 : C.text,
+                        fontWeight: 700
+                      }}>{actDrop}</span>
+                      <span style={{ color: C.textDim, fontSize: 11 }}>/ {item.planDrop}</span>
+                      {dropPartial && <Chip variant="amber">Partial</Chip>}
+                      {actDrop === 0 && item.planDrop > 0 && <Chip variant="amber">0</Chip>}
+                    </div>
+                  )}
+                  {showPickupRow && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                      <span style={{ color: C.violet700, fontWeight: 700 }}>↑</span>
+                      <span className="mono" style={{
+                        color: pickupPartial ? C.amber700
+                          : actPickup === 0 && item.planPickup > 0 ? C.amber700
+                            : pickupOpportunistic || pickupExtra ? C.infoBlue
+                              : C.text,
+                        fontWeight: 700
+                      }}>{actPickup}</span>
+                      <span style={{ color: C.textDim, fontSize: 11 }}>/ {item.planPickup}</span>
+                      {pickupPartial && <Chip variant="amber">Partial</Chip>}
+                      {actPickup === 0 && item.planPickup > 0 && <Chip variant="amber">0</Chip>}
+                      {pickupOpportunistic && <Chip variant="blue">Opportunistic</Chip>}
+                      {pickupExtra && <Chip variant="blue">+{actPickup - item.planPickup} extra</Chip>}
+                    </div>
+                  )}
                 </div>
               </div>
             );
-          }
-          const dotColor = item.evidence === "strong" ? C.ok : C.warn;
-          return (
-            <div key={item.id} style={{ position: "relative", marginBottom: 14 }}>
-              <div style={{
-                position: "absolute", left: -22, top: 6,
-                width: 18, height: 18, borderRadius: "50%", background: "#fff",
-                border: `3px solid ${dotColor}`, boxSizing: "border-box"
-              }} />
-              <div style={{ background: "#fff", border: `1.5px solid ${C.cardBd}`, borderRadius: 12, padding: "11px 13px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                  <span style={{ fontSize: 13.5, fontWeight: 700, color: C.ink }}>{item.when}</span>
-                  <EvidenceBadge level={item.evidence} small />
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 5, fontSize: 12.5, color: C.mute, flexWrap: "wrap" }}>
-                  <span>oleh {item.by}</span>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                    {item.method === "qr" ? <QrCode size={12} /> : <Type size={12} />}
-                    {item.method === "qr" ? "Scan QR + foto" : "Lokasi diketik + foto"}
-                  </span>
-                </div>
-                {item.note && (
-                  <div style={{ fontSize: 12.5, color: C.mute, marginTop: 6, fontStyle: "italic" }}>"{item.note}"</div>
-                )}
+          })}
+        </div>
+
+        {/* Totals */}
+        <div style={{
+          background: C.surface,
+          border: `1px solid ${C.border}`,
+          borderRadius: 8,
+          padding: "10px 12px",
+          marginBottom: 12,
+          display: "flex",
+          gap: 14,
+          fontSize: 12,
+        }}>
+          {plannedDrop > 0 && (
+            <div>
+              <div style={{ color: C.textMid, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 600, marginBottom: 2 }}>
+                Total Drop
+              </div>
+              <div className="mono" style={{ fontSize: 15, fontWeight: 700, color: C.driverAccent }}>
+                {totalDrop} <span style={{ color: C.textDim, fontWeight: 500, fontSize: 12 }}>/ {plannedDrop}</span>
               </div>
             </div>
-          );
-        })}
+          )}
+          {(plannedPickup > 0 || totalPickup > 0) && (
+            <div>
+              <div style={{ color: C.textMid, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 600, marginBottom: 2 }}>
+                Total Pickup
+              </div>
+              <div className="mono" style={{ fontSize: 15, fontWeight: 700, color: C.violet700 }}>
+                {totalPickup} <span style={{ color: C.textDim, fontWeight: 500, fontSize: 12 }}>/ {plannedPickup}</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Outcome */}
+        {hasPartial ? (
+          <div style={{
+            background: C.amber50, border: `1px solid ${C.amber100}`, borderLeft: `3px solid ${C.amber400}`,
+            borderRadius: 8, padding: "12px 14px", fontSize: 13, color: C.amber700, lineHeight: 1.5, marginBottom: 12,
+          }}>
+            <strong>Partial execution akan dicatat.</strong> Sisa item yang kurang akan trigger follow-up coordination dengan admin.
+          </div>
+        ) : (hasOpportunistic || hasExtra) ? (
+          <div style={{
+            background: C.infoBlueBg, border: `1px solid ${C.infoBlue}22`, borderLeft: `3px solid ${C.infoBlue}`,
+            borderRadius: 8, padding: "12px 14px", fontSize: 13, color: C.text, lineHeight: 1.5, marginBottom: 12,
+          }}>
+            <strong style={{ color: C.infoBlue }}>Clean + opportunistic pickup.</strong> Drop sesuai plan. Customer balikin lebih banyak — outstanding berkurang lebih banyak.
+          </div>
+        ) : (
+          <div style={{
+            background: C.emerald50, border: `1px solid ${C.emerald100}`, borderLeft: `3px solid ${C.emerald400}`,
+            borderRadius: 8, padding: "12px 14px", fontSize: 13, color: C.emerald700, lineHeight: 1.5, marginBottom: 12,
+          }}>
+            <strong>Clean execution.</strong> Semua item sesuai rencana. Movement DROP/PICKUP akan dicatat.
+          </div>
+        )}
+
+        {/* Evidence summary */}
+        <div style={{
+          background: C.surfaceAlt,
+          border: `1px solid ${C.border}`,
+          borderRadius: 8,
+          padding: "10px 12px",
+          fontSize: 12,
+          display: "flex",
+          gap: 16,
+          color: C.textMid,
+          flexWrap: "wrap",
+        }}>
+          <span style={{ color: hasSignature ? C.emerald700 : C.textDim }}>
+            {hasSignature ? "✓" : "○"} Tanda tangan
+          </span>
+          <span style={{ color: hasNote ? C.emerald700 : C.textDim }}>
+            {hasNote ? "✓" : "○"} Catatan
+          </span>
+          <span style={{ color: hasPhoto ? C.emerald700 : C.textDim }}>
+            {hasPhoto ? "✓" : "○"} Foto
+          </span>
+        </div>
       </div>
 
-      <TransparencyNote icon={Lock}>
-        Catatan tak bisa diubah. Setiap kunjungan terkunci sejak dibuat. Sistem tidak menyajikan
-        "rata-rata" atau "frekuensi normal" — itu bisa dibaca sebagai standar.
-      </TransparencyNote>
+      <div style={{ padding: "12px 18px 18px", borderTop: `1px solid ${C.border}`, display: "flex", flexDirection: "column", gap: 8 }}>
+        <button
+          onClick={onConfirm}
+          className="tap-feedback"
+          style={{
+            background: hasPartial ? C.amber400 : C.driverAccent,
+            color: "#fff", border: "none",
+            padding: "16px", borderRadius: 10,
+            fontSize: 15, fontWeight: 700,
+            cursor: "pointer",
+            textTransform: "uppercase",
+            letterSpacing: "0.04em",
+          }}
+        >
+          Konfirmasi & Catat Movement
+        </button>
+        <button
+          onClick={onCancel}
+          className="tap-feedback"
+          style={{
+            background: C.surface, color: C.text,
+            border: `1px solid ${C.border}`,
+            padding: "13px", borderRadius: 10,
+            fontSize: 14, fontWeight: 500,
+            cursor: "pointer",
+          }}
+        >
+          Cek Lagi
+        </button>
+      </div>
+    </div>
+  </>
+);
+
+// ─── EVIDENCE NOTE SHEET ───────────────────────────────────────────────────
+const EvidenceNoteSheet = ({ onCancel, onSave }) => {
+  const [note, setNote] = useState("");
+  return (
+    <>
+      <div onClick={onCancel} style={{ position: "absolute", inset: 0, background: "rgba(15, 23, 42, 0.5)", zIndex: 10 }} />
+      <div className="sheet-up" style={{
+        position: "absolute",
+        bottom: 0, left: 0, right: 0,
+        background: C.surface,
+        borderTopLeftRadius: 16,
+        borderTopRightRadius: 16,
+        zIndex: 11,
+        maxHeight: "70%",
+        display: "flex",
+        flexDirection: "column",
+      }}>
+        <div style={{ display: "flex", justifyContent: "center", paddingTop: 8 }}>
+          <div style={{ width: 40, height: 4, background: C.slate200, borderRadius: 2 }} />
+        </div>
+        <div style={{ padding: "12px 18px 8px" }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: C.text }}>Catatan Lapangan</div>
+          <div style={{ fontSize: 12, color: C.textMid, marginTop: 2 }}>
+            Apa yang lo lihat atau alami di stop ini?
+          </div>
+        </div>
+        <div style={{ padding: "8px 18px 14px" }}>
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Misal: Customer minta drop di pintu samping..."
+            autoFocus
+            style={{
+              width: "100%",
+              minHeight: 120,
+              padding: "12px",
+              border: `1px solid ${C.border}`,
+              borderRadius: 8,
+              fontSize: 14,
+              fontFamily: "inherit",
+              resize: "vertical",
+              background: C.surface,
+            }}
+          />
+        </div>
+        <div style={{ padding: "8px 18px 18px", borderTop: `1px solid ${C.border}`, display: "flex", gap: 8 }}>
+          <button onClick={onCancel} className="tap-feedback" style={{
+            flex: 1, background: C.surface, color: C.text, border: `1px solid ${C.border}`,
+            padding: "13px", borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: "pointer",
+          }}>Batal</button>
+          <button onClick={onSave} disabled={note.trim().length === 0} className="tap-feedback" style={{
+            flex: 1,
+            background: note.trim().length === 0 ? C.slate200 : C.driverAccent,
+            color: note.trim().length === 0 ? C.textDim : "#fff",
+            border: "none",
+            padding: "13px", borderRadius: 10, fontSize: 14, fontWeight: 700,
+            cursor: note.trim().length === 0 ? "not-allowed" : "pointer",
+          }}>Simpan</button>
+        </div>
+      </div>
     </>
   );
-}
-
-// ============================================================
-//  DATA DUMMY untuk approval (bagian 10–11)
-// ============================================================
-const REQ_TYPES = {
-  cuti: { label: "Cuti", icon: Palmtree, color: C.ok, tint: C.okBg },
-  sakit: { label: "Sakit", icon: Stethoscope, color: C.danger, tint: C.dangerBg },
-  izin: { label: "Izin", icon: Clock3, color: C.warn, tint: C.warnBg },
-  lembur: { label: "Lembur", icon: Timer, color: C.blue, tint: C.blueBg },
-  off: { label: "Off/Libur", icon: CalendarOff, color: C.superv, tint: C.supervBg },
-  tukar: { label: "Tukar Shift", icon: Repeat, color: "#0F766E", tint: "#DEF2EF" },
-};
-const VENDOR_RULES = {
-  cuti: ["Supervisor Site", "Admin HR"], sakit: ["Supervisor Site"],
-  izin: ["Supervisor Site"], lembur: ["Supervisor Site", "Admin HR"],
-  off: ["Supervisor Site"], tukar: ["Supervisor Site"],
-};
-const INITIAL_REQUESTS = [
-  { id: 1, applicant: "Budi Santoso", typeId: "cuti", summary: "12–14 Jun · Acara keluarga", currentLevel: 0 },
-  { id: 2, applicant: "Sari Wulandari", typeId: "sakit", summary: "10 Jun · Demam (surat dokter)", currentLevel: 0 },
-  { id: 3, applicant: "Dewi Lestari", typeId: "izin", summary: "11 Jun · Setengah hari", currentLevel: 0 },
-  { id: 4, applicant: "Rian Hidayat", typeId: "tukar", summary: "13 Jun · Tukar timbal balik dengan Agus", currentLevel: 0, mate: "Agus Pratama", mateConfirmed: true },
-];
-
-// ============================================================
-//  INCIDENT — DATA & KONFIGURASI (bagian 22)
-//  Keparahan & kategori dirancang sebagai DAFTAR config-able
-//  (bukan enum hardcoded), sejajar daftar level approval (bagian 11)
-//  dan kamus label per vendor (bagian 9). Sekarang cuma warna+urutan;
-//  nanti tiap level bisa digantungi trigger (notifikasi, dll).
-// ============================================================
-const SEVERITY_LEVELS = [
-  { id: "critical", label: "Kritis", rank: 3, color: C.danger, bg: C.dangerBg },
-  { id: "medium", label: "Sedang", rank: 2, color: C.warn, bg: C.warnBg },
-  { id: "low", label: "Ringan", rank: 1, color: C.ok, bg: C.okBg },
-];
-const sevById = (id) => SEVERITY_LEVELS.find((s) => s.id === id);
-
-const INCIDENT_CATEGORIES = [
-  { id: "security", label: "Keamanan", icon: Siren },
-  { id: "damage", label: "Kerusakan fasilitas", icon: Wrench },
-  { id: "hygiene", label: "Kebersihan", icon: Sparkles },
-  { id: "accident", label: "Kecelakaan", icon: HeartPulse },
-  { id: "other", label: "Lainnya", icon: HelpCircle },
-];
-const catById = (id) => INCIDENT_CATEGORIES.find((c) => c.id === id);
-
-// Lifecycle: dilaporkan → ditangani (rantai operan) → selesai-vendor → jendela klien → tertutup
-// Penanda cara-tutup di state 'closed' dibedakan via closureKind, BUKAN state berbeda.
-//   closureKind 'vendor_resolved' = vendor benar2 menyelesaikan
-//   closureKind 'escalated_external' = dioper ke maintenance/pihak lain, vendor selesai dari mejanya
-// Setelah selesai-vendor masuk jendela klien (windowDaysLeft); auto-close jujur sesuai apa yg terjadi.
-//   autoCloseLabel: null | 'client_silent' | 'client_confirmed'
-const VENDOR_AUTO_CLOSE_DAYS = 7;   // konfigurasi vendor (default 7)
-
-const INITIAL_INCIDENTS = [
-  {
-    id: 1, reportedBy: "Sari Wulandari", site: "BP Legok", category: "security",
-    severity: "critical", reportedAt: "Hari ini 10:45",
-    summary: "Orang tidak dikenal masuk lewat pintu samping",
-    state: "in_progress",
-    chain: [
-      { from: "Sari Wulandari", to: "Supervisor Site", at: "10:45", note: "Lapor + foto" },
-      { from: "Supervisor Site", to: "Diri sendiri", at: "10:50", note: "Diperiksa, sedang dicari CCTV" },
-    ],
-  },
-  {
-    id: 2, reportedBy: "Agus Pratama", site: "BP Legok", category: "damage",
-    severity: "medium", reportedAt: "Hari ini 09:12",
-    summary: "Lampu lobby utama mati 2 titik",
-    state: "in_progress",
-    chain: [
-      { from: "Agus Pratama", to: "Supervisor Site", at: "09:12", note: "Lapor + foto" },
-    ],
-  },
-  {
-    id: 3, reportedBy: "Dewi Lestari", site: "Bintaro Xchange", category: "hygiene",
-    severity: "low", reportedAt: "Kemarin 14:20",
-    summary: "Tumpahan minuman besar di lobby",
-    state: "vendor_closed",
-    closureKind: "vendor_resolved",
-    closedAt: "Kemarin 14:55", closedBy: "Dewi Lestari",
-    windowDaysLeft: 6,
-    chain: [
-      { from: "Dewi Lestari", to: "Supervisor Site", at: "Kemarin 14:20", note: "Lapor" },
-      { from: "Supervisor Site", to: "Dewi Lestari", at: "Kemarin 14:25", note: "Tangani langsung" },
-    ],
-  },
-  {
-    id: 4, reportedBy: "Rian Hidayat", site: "GoTo Tangerang", category: "damage",
-    severity: "medium", reportedAt: "2 hari lalu",
-    summary: "AC ruang server mati",
-    state: "in_progress",
-    clientCommentPending: true,  // klien komentar balik setelah vendor menutup
-    chain: [
-      { from: "Rian Hidayat", to: "Supervisor Site", at: "2 hari lalu 14:00", note: "Lapor + foto" },
-      { from: "Supervisor Site", to: "Maintenance gedung (WA)", at: "2 hari lalu 16:30", note: "Eskalasi" },
-      {
-        from: "Pak Hendro (PIC GoTo)", to: "Supervisor Site", at: "Hari ini 08:30",
-        note: "Komentar/keberatan: \"AC masih mati pagi ini, server panas\" · foto terlampir"
-      },
-    ],
-  },
-  {
-    id: 5, reportedBy: "Budi Santoso", site: "BP BSD", category: "hygiene",
-    severity: "low", reportedAt: "1 minggu lalu",
-    summary: "Toilet lantai 2 mampet",
-    state: "closed",
-    closureKind: "vendor_resolved",
-    autoCloseLabel: "client_silent",
-    closedAt: "6 hari lalu", windowDaysLeft: 0,
-    chain: [
-      { from: "Budi Santoso", to: "Supervisor Site", at: "1 minggu lalu", note: "Lapor" },
-      { from: "Supervisor Site", to: "Budi Santoso", at: "1 minggu lalu", note: "Tangani" },
-    ],
-  },
-];
-
-// ============================================================
-//  COMPLAINT — KONFIGURASI & DATA (bagian 23, sisi supervisor)
-//  Cermin lifecycle incident, tapi DIANGKAT KLIEN (bukan worker).
-//  Kategori dibagi per DIVISI VENDOR (cermin sisi klien) — tiap
-//  complaint menyimpan `routedTo` (tujuan routing) supaya nanti
-//  saat model role matang, list bisa difilter per divisi.
-//  Untuk sekarang: supervisor generik melihat semua, tapi badge
-//  divisi tujuan tampil jelas di tiap kartu.
-//
-//  inputSource: 'client_direct' (klien lapor via app)
-//             | 'supervisor_recorded' (supervisor catat dari telepon)
-// ============================================================
-const COMPLAINT_CATEGORIES = [
-  { id: "security", label: "Keamanan", icon: Shield, routedTo: "Supervisor Keamanan" },
-  { id: "cleaning", label: "Cleaning", icon: Sparkles, routedTo: "Supervisor Cleaning" },
-  { id: "maintenance", label: "Maintenance", icon: Wrench, routedTo: "Supervisor Maintenance" },
-  { id: "management", label: "Manajemen", icon: Briefcase, routedTo: "Manajemen Jab" },
-  { id: "other", label: "Lainnya", icon: HelpCircle, routedTo: "Manajemen Jab" },
-];
-const complaintCatById = (id) => COMPLAINT_CATEGORIES.find((c) => c.id === id);
-
-const INITIAL_COMPLAINTS = [
-  {
-    id: "cmp-1", site: "BP Legok", category: "security", severity: "medium",
-    routedTo: "Supervisor Keamanan", inputSource: "client_direct",
-    raisedBy: "Pak Hendro (PIC BP)", raisedAt: "Hari ini 09:30",
-    summary: "Security shift malam kemarin tidur di pos jaga",
-    state: "in_progress",
-    clientCommentPending: false,
-    chain: [
-      { from: "Pak Hendro (PIC BP)", to: "Supervisor Keamanan", at: "09:30", note: "Komplain + foto bukti" },
-    ],
-  },
-  {
-    id: "cmp-2", site: "BP BSD", category: "cleaning", severity: "low",
-    routedTo: "Supervisor Cleaning", inputSource: "client_direct",
-    raisedBy: "Pak Hendro (PIC BP)", raisedAt: "Kemarin 14:00",
-    summary: "Area lobby tidak dibersihkan rutin pagi ini",
-    state: "in_progress",
-    clientCommentPending: true,   // klien sudah komentar balik, MENUNGGU respons
-    chain: [
-      { from: "Pak Hendro (PIC BP)", to: "Supervisor Cleaning", at: "Kemarin 14:00", note: "Komplain" },
-      { from: "Supervisor Cleaning", to: "Dewi Lestari", at: "Kemarin 15:00", note: "Tolong cek & koreksi" },
-      { from: "Dewi Lestari", to: "Selesai", at: "Kemarin 16:00", note: "Sudah dibersihkan ulang" },
-      {
-        from: "Pak Hendro (PIC BP)", to: "Supervisor Cleaning", at: "Hari ini 08:00",
-        note: "Komentar/keberatan: \"Pagi ini masih sama, belum konsisten\" · foto terlampir"
-      },
-    ],
-  },
-  {
-    id: "cmp-3", site: "BP Gading Serpong", category: "management", severity: "medium",
-    routedTo: "Manajemen Jab", inputSource: "supervisor_recorded",
-    raisedBy: "Pak Hendro (PIC BP)", raisedAt: "3 hari lalu",
-    recordedNote: "Dicatat supervisor atas keluhan klien via telepon, 3 hari lalu jam 10:15",
-    summary: "Laporan bulanan Mei belum diterima via email",
-    state: "vendor_closed", closureKind: "vendor_resolved",
-    closedAt: "2 hari lalu", windowDaysLeft: 5,
-    clientCommentPending: false,
-    chain: [
-      { from: "Manajemen Jab", to: "Catatan", at: "3 hari lalu", note: "Dicatat dari telepon klien" },
-      { from: "Manajemen Jab", to: "Selesai", at: "2 hari lalu", note: "Laporan dikirim ulang ke email klien" },
-    ],
-  },
-  {
-    id: "cmp-4", site: "BP Legok", category: "security", severity: "low",
-    routedTo: "Supervisor Keamanan", inputSource: "client_direct",
-    raisedBy: "Pak Hendro (PIC BP)", raisedAt: "1 minggu lalu",
-    summary: "Patroli malam minggu kemarin terlewat 1 titik",
-    state: "closed", closureKind: "vendor_resolved",
-    autoCloseLabel: "client_confirmed", closedAt: "5 hari lalu",
-    clientCommentPending: false,
-    chain: [
-      { from: "Pak Hendro (PIC BP)", to: "Supervisor Keamanan", at: "1 minggu lalu", note: "Komplain" },
-      { from: "Supervisor Keamanan", to: "Selesai", at: "6 hari lalu", note: "Briefing ulang tim shift malam" },
-    ],
-  },
-];
-
-
-// ============================================================
-//  DATA DUMMY untuk worker history (dimensi per-orang)
-// ============================================================
-const WORKERS = [
-  {
-    id: "w-budi", name: "Budi Santoso", primarySite: "BP Legok", role: "Security",
-    anomalyCount: 3, presentDays: 22, totalDays: 26, status: "warn"
-  },
-  {
-    id: "w-sari", name: "Sari Wulandari", primarySite: "BP Legok", role: "Security",
-    anomalyCount: 0, presentDays: 24, totalDays: 26, status: "ok"
-  },
-  {
-    id: "w-dewi", name: "Dewi Lestari", primarySite: "Bintaro Xchange", role: "Cleaning",
-    anomalyCount: 1, presentDays: 23, totalDays: 26, status: "ok"
-  },
-  {
-    id: "w-agus", name: "Agus Pratama", primarySite: "BP Legok", role: "Security",
-    anomalyCount: 5, presentDays: 20, totalDays: 26, status: "danger"
-  },
-  {
-    id: "w-rian", name: "Rian Hidayat", primarySite: "GoTo Tangerang", role: "Security",
-    anomalyCount: 0, presentDays: 25, totalDays: 26, status: "ok"
-  },
-  {
-    id: "w-maya", name: "Maya Putri", primarySite: "BP BSD", role: "Cleaning",
-    anomalyCount: 1, presentDays: 24, totalDays: 26, status: "ok"
-  },
-  {
-    id: "w-joko", name: "Joko Anwar", primarySite: "Mall Surabaya", role: "Security",
-    anomalyCount: 2, presentDays: 23, totalDays: 26, status: "warn"
-  },
-  {
-    id: "w-citra", name: "Citra Dewi", primarySite: "BP Legok", role: "Cleaning",
-    anomalyCount: 0, presentDays: 26, totalDays: 26, status: "ok"
-  },
-];
-
-// Histori 14 hari terakhir untuk satu worker contoh (Budi). Untuk worker lain
-// di produk: data datang dari backend; di sini kita pakai pola yang sama.
-const WORKER_HISTORY = {
-  "w-budi": [
-    { date: "10 Jun (Sen)", site: "BP Legok", shift: "Pagi 06–14", in: "05:58", out: null, status: "anomaly", anomaly: "lupa_out", correctedOut: null, evidence: "strong" },
-    { date: "9 Jun (Min)", site: null, shift: null, in: null, out: null, status: "off", evidence: null },
-    { date: "8 Jun (Sab)", site: "BP BSD", shift: "Pagi 06–14", in: "05:55", out: "14:02", status: "present", evidence: "strong" },
-    { date: "7 Jun (Jum)", site: "BP Legok", shift: "Pagi 06–14", in: "06:01", out: "14:00", status: "present", evidence: "strong" },
-    { date: "6 Jun (Kam)", site: "BP Legok", shift: "Pagi 06–14", in: "06:00", out: "14:03", status: "present", evidence: "weak" },
-    { date: "5 Jun (Rab)", site: "BP Legok", shift: "Pagi 06–14", in: "05:58", out: "14:30", status: "corrected", correctedOut: "14:30", evidence: "strong", note: "lupa scan, dikonfirmasi via telp" },
-    { date: "4 Jun (Sel)", site: "BP Legok", shift: null, in: null, out: null, status: "leave", leaveType: "Sakit" },
-    { date: "3 Jun (Sen)", site: "BP Legok", shift: null, in: null, out: null, status: "leave", leaveType: "Sakit" },
-    { date: "2 Jun (Min)", site: null, shift: null, in: null, out: null, status: "off", evidence: null },
-    { date: "1 Jun (Sab)", site: "BP Legok", shift: "Pagi 06–14", in: "06:00", out: "14:01", status: "present", evidence: "strong" },
-    { date: "31 Mei (Jum)", site: "BP Legok", shift: "Pagi 06–14", in: "06:02", out: null, status: "anomaly", anomaly: "lupa_out", correctedOut: "14:00", correctedAssumption: true, evidence: "strong" },
-    { date: "30 Mei (Kam)", site: "BP Legok", shift: "Pagi 06–14", in: "06:00", out: "13:58", status: "present", evidence: "strong" },
-  ],
 };
 
-// Aktivitas detail untuk satu hari (Layar timeline per-hari).
-// Demo: 10 Jun untuk Budi — hari dengan anomali lupa clock-out.
-const WORKER_DAY = {
-  "w-budi__10 Jun (Sen)": {
-    site: "BP Legok", shift: "Pagi 06:00–14:00",
-    events: [
-      { time: "05:58", kind: "clock_in", by: "scan", evidence: "strong", note: "Scan QR + foto + GPS dalam radius" },
-      { time: "08:14", kind: "patrol", location: "Pos Utama", evidence: "strong", note: "Scan QR + foto" },
-      { time: "10:42", kind: "patrol", location: "Loading Dock", evidence: "strong", note: "Scan QR + foto" },
-      { time: "12:01", kind: "patrol", location: "Genset", evidence: "weak", note: "Lokasi diketik + foto" },
-      { time: "14:00", kind: "clock_out_missing", note: "Tidak ada scan keluar. Anomali terdeteksi sistem." },
-    ],
-  },
-};
+// ─── FAILED DELIVERY SHEET ─────────────────────────────────────────────────
+const FailedDeliverySheet = ({ task, onCancel, onSubmit }) => {
+  const [reason, setReason] = useState(null);
+  const [note, setNote] = useState("");
 
-// ============================================================
-function ScreenHome({ approvals, incidents, complaints, onGo }) {
-  // Hitung ringkasan dari data nyata di app
-  const pendingApprovals = approvals.filter((r) => {
-    if (r.typeId === "tukar" && r.mateConfirmed === false) return false; // belum bisa diputus
-    return true;
-  }).length;
-  const pendingMateConfirm = approvals.filter((r) => r.typeId === "tukar" && r.mateConfirmed === false).length;
+  const reasons = [
+    { id: "customer_closed", label: "Customer Tutup", desc: "Lokasi tutup / tidak ada orang" },
+    { id: "access_denied", label: "Akses Ditolak", desc: "Tidak diizinkan masuk lokasi" },
+    { id: "customer_refused", label: "Customer Tolak", desc: "Customer menolak menerima" },
+    { id: "capacity_full", label: "Kapasitas Penuh", desc: "Customer tidak punya tempat" },
+  ];
 
-  const sitesNeedAction = SITES.filter((s) => s.presence.status === "danger").length;
-  const sitesAttention = SITES.filter((s) => s.presence.status === "warn").length;
-  const presenceIssues = SITES.reduce((a, s) => a + s.presence.issues.length, 0);
-
-  const patrolStale = SITES.reduce((a, s) => a + s.patrol.staleCount, 0);
-  const longestGap = Math.max(...SITES.map((s) => s.patrol.longestGapHours));
-  const workersWithAnomaly = WORKERS.filter((w) => w.anomalyCount > 0).length;
-
-  // Incident agregat — pisahkan yang masih perlu perhatian vendor vs yang
-  // sudah lepas (di jendela klien atau closed). Itu dua kategori berbeda
-  // di mata supervisor.
-  const incidentsInProgress = incidents.filter((i) => i.state === "in_progress").length;
-  const incidentsCritical = incidents.filter((i) =>
-    i.state === "in_progress" && i.severity === "critical").length;
-  const incidentsClientWindow = incidents.filter((i) => i.state === "vendor_closed").length;
-
-  // Complaint agregat — komentar klien pending paling mendesak
-  const complaintsPendingComment = complaints.filter((c) => c.clientCommentPending).length;
-  const complaintsInProgress = complaints.filter((c) => c.state === "in_progress").length;
-  const complaintsClientWindow = complaints.filter((c) => c.state === "vendor_closed").length;
-
-  // Greeting sederhana — tidak menebak nama, cukup tunjukkan konteks
   return (
-    <div>
-      <div style={{ marginBottom: 18 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: C.soft, textTransform: "uppercase", letterSpacing: 0.5 }}>
-          Selamat siang, Supervisor
-        </div>
-        <h2 style={{ fontSize: 20, fontWeight: 800, color: C.ink, margin: "4px 0 0" }}>
-          Yang menunggu Anda
-        </h2>
-      </div>
-
-      {/* Kartu Approval */}
-      <HomeCard
-        icon={Inbox}
-        tone={pendingApprovals > 0 ? "danger" : "ok"}
-        label="Approval Request"
-        headline={pendingApprovals > 0 ? `${pendingApprovals} menunggu keputusan` : "Tidak ada yang menunggu"}
-        details={
-          pendingApprovals > 0
-            ? `Cuti, sakit, lembur dari worker${pendingMateConfirm > 0 ? ` · ${pendingMateConfirm} tukar shift menunggu konfirmasi rekan` : ""}`
-            : "Semua sudah diputuskan"
-        }
-        onClick={() => onGo("approvals")}
-      />
-
-      {/* Kartu Incident — sejajar dengan modul utama lain */}
-      <HomeCard
-        icon={AlertOctagon}
-        tone={incidentsCritical > 0 ? "danger" : incidentsInProgress > 0 ? "warn" : "ok"}
-        label="Incident"
-        headline={
-          incidentsCritical > 0
-            ? `${incidentsCritical} kritis menunggu tindak`
-            : incidentsInProgress > 0
-              ? `${incidentsInProgress} sedang ditangani`
-              : "Tidak ada incident aktif"
-        }
-        details={
-          incidentsClientWindow > 0
-            ? `${incidentsInProgress} aktif · ${incidentsClientWindow} di jendela klien`
-            : incidentsInProgress > 0
-              ? `${incidentsInProgress} aktif di vendor`
-              : "Klien tidak melihat masalah baru"
-        }
-        onClick={() => onGo("incidents")}
-      />
-
-      {/* Kartu Complaint — komplain dari klien */}
-      <HomeCard
-        icon={MessageCircle}
-        tone={complaintsPendingComment > 0 ? "danger" : complaintsInProgress > 0 ? "warn" : "ok"}
-        label="Komplain Klien"
-        headline={
-          complaintsPendingComment > 0
-            ? `${complaintsPendingComment} komentar klien perlu respons`
-            : complaintsInProgress > 0
-              ? `${complaintsInProgress} sedang ditangani`
-              : "Tidak ada komplain aktif"
-        }
-        details={
-          complaintsPendingComment > 0
-            ? "Klien mengembalikan komplain — bola di Anda"
-            : complaintsClientWindow > 0
-              ? `${complaintsInProgress} aktif · ${complaintsClientWindow} di jendela klien`
-              : complaintsInProgress > 0
-                ? `${complaintsInProgress} aktif di vendor`
-                : "Tidak ada keberatan klien baru"
-        }
-        onClick={() => onGo("complaints")}
-      />
-
-      <HomeCard
-        icon={Users}
-        tone={sitesNeedAction > 0 ? "danger" : sitesAttention > 0 ? "warn" : "ok"}
-        label="Kehadiran Tim"
-        headline={
-          sitesNeedAction > 0 ? `${sitesNeedAction} site perlu tindak`
-            : sitesAttention > 0 ? `${sitesAttention} site perhatian`
-              : "Semua site beres"
-        }
-        details={
-          presenceIssues > 0
-            ? `${presenceIssues} hal perlu dibereskan: belum scan, lupa clock-out, bukti lemah`
-            : `${SITES.length} site dalam cakupan Anda`
-        }
-        onClick={() => onGo("sites")}
-      />
-
-      {/* Kartu Patroli & Cleaning */}
-      <HomeCard
-        icon={ClipboardCheck}
-        tone={patrolStale > 0 ? "warn" : "ok"}
-        label="Patroli & Cleaning"
-        headline={
-          patrolStale > 0
-            ? `${patrolStale} titik jeda lama`
-            : "Tidak ada jeda signifikan"
-        }
-        details={
-          patrolStale > 0
-            ? `Terlama ${longestGap} jam tidak disentuh · cek per site`
-            : `Semua titik disentuh dalam ${STALE_HOURS} jam terakhir`
-        }
-        onClick={() => onGo("sites")}
-      />
-
-      {/* Kartu Worker Saya — jalur A ke history per orang */}
-      <HomeCard
-        icon={History}
-        tone={workersWithAnomaly > 0 ? "warn" : "ok"}
-        label="Riwayat Worker"
-        headline={
-          workersWithAnomaly > 0
-            ? `${workersWithAnomaly} dari ${WORKERS.length} worker punya anomali`
-            : `${WORKERS.length} worker dalam cakupan`
-        }
-        details={
-          workersWithAnomaly > 0
-            ? "Lihat pola per orang: sering lupa scan, bukti lemah, dll"
-            : "Cari worker untuk lihat riwayat per orang"
-        }
-        onClick={() => onGo("workers")}
-      />
-
-      <TransparencyNote>
-        Ringkasan ini dihitung dari data nyata di app — bukan estimasi. Tap satu kartu untuk masuk ke detailnya.
-      </TransparencyNote>
-    </div>
-  );
-}
-
-function HomeCard({ icon: Icon, tone, label, headline, details, onClick }) {
-  const toneColor = { danger: C.danger, warn: C.warn, ok: C.ok }[tone];
-  const toneBg = { danger: C.dangerBg, warn: C.warnBg, ok: C.okBg }[tone];
-  return (
-    <button onClick={onClick}
-      style={{
-        width: "100%", display: "flex", alignItems: "stretch", gap: 0,
-        padding: 0, background: "#fff",
-        border: `1.5px solid ${C.cardBd}`, borderRadius: 16, marginBottom: 13,
-        cursor: "pointer", fontFamily: "inherit", textAlign: "left", overflow: "hidden",
-        boxShadow: "0 1px 3px rgba(20,30,55,0.05)"
+    <>
+      <div onClick={onCancel} style={{ position: "absolute", inset: 0, background: "rgba(15, 23, 42, 0.5)", zIndex: 10 }} />
+      <div className="sheet-up" style={{
+        position: "absolute",
+        bottom: 0, left: 0, right: 0,
+        background: C.surface,
+        borderTopLeftRadius: 16,
+        borderTopRightRadius: 16,
+        zIndex: 11,
+        maxHeight: "85%",
+        display: "flex",
+        flexDirection: "column",
       }}>
-      <div style={{ width: 6, background: toneColor, flexShrink: 0 }} />
-      <div style={{ flex: 1, padding: "14px 15px", display: "flex", alignItems: "center", gap: 13 }}>
-        <span style={{
-          width: 44, height: 44, borderRadius: 12, background: toneBg,
-          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
-        }}>
-          <Icon size={22} color={toneColor} strokeWidth={2.1} />
-        </span>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: C.soft, textTransform: "uppercase", letterSpacing: 0.6 }}>
-            {label}
-          </div>
-          <div style={{ fontSize: 15.5, fontWeight: 800, color: C.ink, marginTop: 3 }}>
-            {headline}
-          </div>
-          <div style={{ fontSize: 12.5, color: C.mute, marginTop: 3, lineHeight: 1.4 }}>
-            {details}
+        <div style={{ display: "flex", justifyContent: "center", paddingTop: 8 }}>
+          <div style={{ width: 40, height: 4, background: C.slate200, borderRadius: 2 }} />
+        </div>
+        <div style={{ padding: "12px 18px 8px" }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: C.text }}>Lapor Delivery Gagal</div>
+          <div style={{ fontSize: 12, color: C.textMid, marginTop: 2 }}>
+            {task.customer} · Stop {task.stopNumber}
           </div>
         </div>
-        <ChevronRight size={20} color="#C4C8D0" />
-      </div>
-    </button>
-  );
-}
 
-// ============================================================
-//  LAYAR APPROVAL — kotak masuk supervisor (versi ringkas
-//  bagian 10–11; aksi setuju/tolak + level berikutnya)
-// ============================================================
-function ScreenApprovals({ requests, onApprove, onReject }) {
-  if (requests.length === 0) {
-    return (
-      <div style={{ textAlign: "center", padding: "60px 20px", color: C.soft }}>
-        <Inbox size={42} style={{ marginBottom: 12 }} />
-        <div style={{ fontSize: 15, fontWeight: 700, color: C.mute }}>Tidak ada yang menunggu</div>
-        <div style={{ fontSize: 12.5, marginTop: 4 }}>Semua request sudah diputuskan.</div>
+        <div style={{ flex: 1, overflowY: "auto", padding: "8px 18px 14px" }} className="scroll-thin">
+          <div style={{ fontSize: 11, color: C.textDim, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700, marginBottom: 8 }}>
+            Pilih Alasan
+          </div>
+          {reasons.map(r => (
+            <button
+              key={r.id}
+              onClick={() => setReason(r.id)}
+              className="tap-feedback"
+              style={{
+                width: "100%",
+                background: reason === r.id ? C.amber50 : C.surface,
+                border: `1.5px solid ${reason === r.id ? C.amber400 : C.border}`,
+                borderRadius: 10,
+                padding: "12px 14px",
+                cursor: "pointer",
+                marginBottom: 8,
+                textAlign: "left",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 2 }}>
+                <span style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{r.label}</span>
+                {reason === r.id && <span style={{ color: C.amber700, fontSize: 14, fontWeight: 700 }}>✓</span>}
+              </div>
+              <div style={{ fontSize: 11, color: C.textMid }}>{r.desc}</div>
+            </button>
+          ))}
+
+          {reason && (
+            <div style={{ marginTop: 12 }} className="slide-up">
+              <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 6 }}>
+                Catatan Tambahan <span style={{ color: C.textDim, fontWeight: 500 }}>(opsional)</span>
+              </div>
+              <textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Detail tambahan untuk admin..."
+                style={{
+                  width: "100%",
+                  minHeight: 70,
+                  padding: "10px 12px",
+                  border: `1px solid ${C.border}`,
+                  borderRadius: 8,
+                  fontSize: 13,
+                  fontFamily: "inherit",
+                  resize: "vertical",
+                  background: C.surface,
+                }}
+              />
+              <div style={{
+                marginTop: 12,
+                background: C.infoBlueBg, border: `1px solid ${C.infoBlue}22`, borderLeft: `3px solid ${C.infoBlue}`,
+                borderRadius: 8, padding: "10px 12px", fontSize: 11, color: C.text, lineHeight: 1.5,
+              }}>
+                Setelah submit, admin akan dapat signal untuk reschedule atau create task lanjutan.
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div style={{ padding: "12px 18px 18px", borderTop: `1px solid ${C.border}`, display: "flex", gap: 8 }}>
+          <button onClick={onCancel} className="tap-feedback" style={{
+            flex: 1, background: C.surface, color: C.text, border: `1px solid ${C.border}`,
+            padding: "13px", borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: "pointer",
+          }}>Batal</button>
+          <button onClick={onSubmit} disabled={!reason} className="tap-feedback" style={{
+            flex: 1,
+            background: !reason ? C.slate200 : C.amber400,
+            color: !reason ? C.textDim : "#fff",
+            border: "none",
+            padding: "13px", borderRadius: 10, fontSize: 14, fontWeight: 700,
+            cursor: !reason ? "not-allowed" : "pointer",
+          }}>Lapor Gagal</button>
+        </div>
       </div>
-    );
-  }
+    </>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// AUTH GATE — SCAN CARD (Portable Executor Session entry)
+// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════
+// DEVICE FRONT — HP sudah ada sesi pemilik (harus logout dulu buat dipinjam)
+// ═══════════════════════════════════════════════════════════════════════════
+export const DeviceOwnerScreen = ({ owner, onHandover }) => {
+  const [showOwnerNote, setShowOwnerNote] = useState(false);
   return (
-    <div>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16, fontSize: 13.5, color: C.mute }}>
-        <Inbox size={17} />
-        <span><strong style={{ color: C.ink }}>{requests.length}</strong> menunggu keputusan</span>
+    <div style={{ height: "100%", display: "flex", flexDirection: "column", background: C.bg }}>
+      <div style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: "14px 16px", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: 7,
+            background: `linear-gradient(135deg, ${C.driverAccent}, ${C.driverAccentDark})`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: "#fff", fontWeight: 700, fontSize: 14,
+          }}>C</div>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: C.text, lineHeight: 1.2 }}>Driver Runtime</div>
+            <div style={{ fontSize: 11, color: C.textMid, lineHeight: 1.2 }}>HP ini lagi ada yang login</div>
+          </div>
+        </div>
       </div>
-      {requests.map((req) => (
-        <ApprovalCard key={req.id} req={req} onApprove={onApprove} onReject={onReject} />
-      ))}
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "20px 18px 100px" }} className="scroll-thin">
+        {/* Owner session card */}
+        <div className="slide-up" style={{
+          display: "flex", alignItems: "center", gap: 12,
+          background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12,
+          padding: "14px 16px", marginBottom: 16,
+        }}>
+          <div style={{
+            width: 48, height: 48, borderRadius: 12, background: C.slate200, color: C.slate700,
+            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 700, flexShrink: 0,
+          }}>{owner.name.split(" ").map(n => n[0]).join("").substring(0, 2)}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 15, fontWeight: 700, color: C.text }}>{owner.name}</span>
+              <Chip variant="emerald">Sesi aktif</Chip>
+            </div>
+            <div className="mono" style={{ fontSize: 11, color: C.textMid, marginTop: 2 }}>{owner.id} · {owner.role}</div>
+            <div style={{ fontSize: 11, color: C.textDim, marginTop: 2 }}>Ini HP punya {owner.name.split(" ")[0]}</div>
+          </div>
+        </div>
+
+        {/* Handover explanation */}
+        <div style={{
+          background: C.amber50, border: `1px solid ${C.amber100}`, borderLeft: `3px solid ${C.amber400}`,
+          borderRadius: 10, padding: "12px 14px", marginBottom: 14, fontSize: 12, color: C.amber700, lineHeight: 1.6,
+        }}>
+          <strong>Mau dipinjam orang lain?</strong> {owner.name.split(" ")[0]} harus <strong>Keluar</strong> dulu — sesinya ditutup & datanya dibersihin. Ga bisa scan kartu orang lain numpang di atas sesi {owner.name.split(" ")[0]}. <em>Satu HP, satu sesi.</em>
+        </div>
+
+        {showOwnerNote && (
+          <div className="slide-up" style={{
+            background: C.infoBlueBg, border: `1px solid ${C.infoBlue}22`, borderLeft: `3px solid ${C.infoBlue}`,
+            borderRadius: 10, padding: "10px 14px", marginBottom: 14, fontSize: 12, color: C.text, lineHeight: 1.5,
+          }}>
+            {owner.name.split(" ")[0]} ga ada trip aktif yang nyambung di HP ini sekarang. Kalau ini HP-nya sendiri, dia tetap login seperti biasa.
+          </div>
+        )}
+      </div>
+
+      <div style={{ background: C.surface, borderTop: `1px solid ${C.border}`, padding: "12px 14px", flexShrink: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+        <button onClick={onHandover} className="tap-feedback" style={{
+          width: "100%", background: C.amber400, color: "#fff", border: "none",
+          padding: "16px", borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: "pointer",
+          textTransform: "uppercase", letterSpacing: "0.04em",
+        }}>Keluar — Siapkan buat Dipinjam</button>
+        <button onClick={() => setShowOwnerNote(v => !v)} className="tap-feedback" style={{
+          width: "100%", background: C.surface, color: C.text, border: `1px solid ${C.border}`,
+          padding: "13px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer",
+        }}>Tetap sebagai {owner.name.split(" ")[0]}</button>
+      </div>
     </div>
   );
-}
+};
 
-function ApprovalCard({ req, onApprove, onReject }) {
-  const t = REQ_TYPES[req.typeId];
-  const [rejecting, setRejecting] = useState(false);
-  const [reason, setReason] = useState("");
-  const levels = VENDOR_RULES[req.typeId] || [];
-  const total = levels.length;
-  const hasNext = req.currentLevel + 1 < total;
-  const waitingMate = req.typeId === "tukar" && req.mateConfirmed === false;
-
-  return (
-    <div style={{
-      background: "#fff", border: `1.5px solid ${C.cardBd}`, borderRadius: 16, padding: 14,
-      marginBottom: 12, boxShadow: "0 1px 3px rgba(20,30,55,0.05)", opacity: waitingMate ? 0.92 : 1
-    }}>
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 11 }}>
-        <span style={{
-          width: 40, height: 40, borderRadius: 11, background: t.tint, flexShrink: 0,
-          display: "flex", alignItems: "center", justifyContent: "center"
-        }}>
-          <t.icon size={20} color={t.color} strokeWidth={2.2} />
-        </span>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-            <span style={{ fontSize: 15, fontWeight: 700, color: C.ink }}>{req.applicant}</span>
-            <span style={{
-              fontSize: 10.5, fontWeight: 700, color: t.color, background: t.tint,
-              padding: "3px 8px", borderRadius: 20, whiteSpace: "nowrap"
-            }}>
-              {total === 1 ? "1 level" : `Level ${req.currentLevel + 1} dari ${total}`}
-            </span>
+export const ScanScreen = ({ onScanned, resuming = false, executorName = "", remaining = 0 }) => (
+  <div style={{ height: "100%", display: "flex", flexDirection: "column", background: C.bg }}>
+    <div style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: "14px 16px", flexShrink: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{
+          width: 32, height: 32, borderRadius: 7,
+          background: `linear-gradient(135deg, ${C.driverAccent}, ${C.driverAccentDark})`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          color: "#fff", fontWeight: 700, fontSize: 14,
+        }}>C</div>
+        <div>
+          <div style={{ fontSize: 15, fontWeight: 600, color: C.text, lineHeight: 1.2 }}>Driver Runtime</div>
+          <div style={{ fontSize: 11, color: C.textMid, lineHeight: 1.2 }}>
+            {resuming ? "Trip di-pause · scan kartu buat lanjut" : "Belum ada sesi · scan untuk mulai"}
           </div>
-          <div style={{ fontSize: 12.5, color: t.color, fontWeight: 600, margin: "2px 0 3px" }}>{t.label}</div>
-          <div style={{ fontSize: 13, color: C.mute, lineHeight: 1.45 }}>{req.summary}</div>
         </div>
       </div>
-
-      {!rejecting ? (
-        <div style={{ display: "flex", gap: 9, marginTop: 13 }}>
-          <button onClick={() => setRejecting(true)}
-            style={{
-              flex: 1, padding: "10px", borderRadius: 11, border: `1.5px solid #F2C9C4`,
-              background: C.dangerBg, color: C.danger, fontWeight: 700, fontSize: 13.5, cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: "inherit"
-            }}>
-            <X size={16} /> Tolak
-          </button>
-          <button onClick={() => onApprove(req.id)}
-            style={{
-              flex: 1, padding: "10px", borderRadius: 11, border: "none",
-              background: C.ok, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: "inherit"
-            }}>
-            <Check size={16} /> {hasNext ? "Setuju → lanjut" : "Setuju"}
-          </button>
+    </div>
+    <div style={{ flex: 1, overflowY: "auto", padding: "20px 18px 100px" }} className="scroll-thin">
+      {resuming ? (
+        <div style={{
+          background: C.driverAccentBg, border: `1px solid ${C.driverAccent}22`, borderLeft: `3px solid ${C.driverAccent}`,
+          borderRadius: 10, padding: "12px 14px", marginBottom: 20, fontSize: 12, color: C.driverAccentDark, lineHeight: 1.5,
+        }} className="slide-up">
+          <strong>Lanjutkan trip.</strong> Sesi {executorName} di-pause — {remaining} task belum kelar masih nunggu. Scan kartu + PIN buat lanjut dari titik terakhir, di device manapun.
         </div>
       ) : (
-        <div style={{ marginTop: 13 }}>
-          <textarea rows={2} value={reason} onChange={(e) => setReason(e.target.value)}
-            placeholder="Alasan penolakan (wajib)…"
-            style={{ ...inpStyle, resize: "vertical" }} />
-          <div style={{ display: "flex", gap: 9, marginTop: 9 }}>
-            <button onClick={() => { setRejecting(false); setReason(""); }}
-              style={{
-                flex: 1, padding: "10px", borderRadius: 11, border: "1.5px solid #D9DCE3",
-                background: "#fff", color: C.mute, fontWeight: 600, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit"
-              }}>
-              Batal
-            </button>
-            <button disabled={!reason.trim()} onClick={() => onReject(req.id, reason)}
-              style={{
-                flex: 1, padding: "10px", borderRadius: 11, border: "none",
-                background: reason.trim() ? C.danger : "#E5B5AF", color: "#fff",
-                fontWeight: 700, fontSize: 13.5, cursor: reason.trim() ? "pointer" : "not-allowed", fontFamily: "inherit"
-              }}>
-              Kirim penolakan
-            </button>
-          </div>
+        <div style={{
+          background: C.amber50, border: `1px solid ${C.amber100}`, borderLeft: `3px solid ${C.amber400}`,
+          borderRadius: 10, padding: "10px 14px", marginBottom: 20, fontSize: 12, color: C.amber700, lineHeight: 1.5,
+        }} className="slide-up">
+          Device ini bisa jadi bukan punya lo (HP kantor / admin / temen). Identitas lo dibawa di <strong>kartu</strong>, bukan di HP ini.
         </div>
       )}
-    </div>
-  );
-}
-
-// ============================================================
-//  LAYAR WORKERS — daftar worker dalam cakupan (Jalur A)
-// ============================================================
-function ScreenWorkers({ onOpenWorker }) {
-  const [query, setQuery] = useState("");
-  const [openGroups, setOpenGroups] = useState({ danger: true, warn: true, ok: true });
-
-  const filtered = WORKERS.filter((w) => {
-    if (!query.trim()) return true;
-    const q = query.toLowerCase();
-    return w.name.toLowerCase().includes(q)
-      || w.primarySite.toLowerCase().includes(q)
-      || w.role.toLowerCase().includes(q);
-  });
-  const grouped = { danger: [], warn: [], ok: [] };
-  filtered.forEach((w) => grouped[w.status].push(w));
-  // dalam group, yang anomaly lebih banyak di atas
-  Object.values(grouped).forEach((arr) => arr.sort((a, b) => b.anomalyCount - a.anomalyCount));
-
-  return (
-    <div>
-      <div style={{
-        display: "flex", alignItems: "center", gap: 9, background: "#fff",
-        border: `1.5px solid ${C.cardBd}`, borderRadius: 12, padding: "10px 13px", marginBottom: 14,
-      }}>
-        <Search size={17} color={C.soft} />
-        <input value={query} onChange={(e) => setQuery(e.target.value)}
-          placeholder="Cari worker, site, atau peran…"
-          style={{
-            flex: 1, border: "none", outline: "none", fontSize: 14,
-            fontFamily: "inherit", color: C.ink, background: "transparent"
-          }} />
-        {query && (
-          <button onClick={() => setQuery("")}
-            style={{ border: "none", background: "none", cursor: "pointer", color: C.soft, display: "flex", padding: 0 }}>
-            <X size={16} />
-          </button>
-        )}
-      </div>
-
-      {!query && (
-        <p style={{ fontSize: 13, color: C.mute, margin: "0 0 14px", lineHeight: 1.5 }}>
-          <strong style={{ color: C.danger }}>{grouped.danger.length} bermasalah</strong>
-          {" · "}
-          <strong style={{ color: C.warn }}>{grouped.warn.length} perhatian</strong>
-          {" · "}
-          <strong style={{ color: C.ok }}>{grouped.ok.length} normal</strong>
-        </p>
-      )}
-
-      <WorkerGroup tone="danger" label="Bermasalah" workers={grouped.danger}
-        open={openGroups.danger} onToggle={() => setOpenGroups((g) => ({ ...g, danger: !g.danger }))}
-        onOpen={onOpenWorker} />
-      <WorkerGroup tone="warn" label="Perhatian" workers={grouped.warn}
-        open={openGroups.warn} onToggle={() => setOpenGroups((g) => ({ ...g, warn: !g.warn }))}
-        onOpen={onOpenWorker} />
-      <WorkerGroup tone="ok" label="Normal" workers={grouped.ok}
-        open={openGroups.ok} onToggle={() => setOpenGroups((g) => ({ ...g, ok: !g.ok }))}
-        onOpen={onOpenWorker} />
-    </div>
-  );
-}
-
-function WorkerGroup({ tone, label, workers, open, onToggle, onOpen }) {
-  if (workers.length === 0) return null;
-  const color = { danger: C.danger, warn: C.warn, ok: C.ok }[tone];
-  const bg = { danger: C.dangerBg, warn: C.warnBg, ok: C.okBg }[tone];
-  return (
-    <div style={{ marginBottom: 14 }}>
-      <button onClick={onToggle}
-        style={{
-          width: "100%", display: "flex", alignItems: "center", gap: 10,
-          padding: "10px 13px", background: bg, border: `1px solid ${color}33`,
-          borderRadius: 12, cursor: "pointer", fontFamily: "inherit", marginBottom: 10
-        }}>
-        <span style={{ width: 8, height: 8, borderRadius: "50%", background: color }} />
-        <span style={{ flex: 1, textAlign: "left", fontSize: 13, fontWeight: 800, color, textTransform: "uppercase", letterSpacing: 0.6 }}>
-          {label}
-        </span>
-        <span style={{ fontSize: 13, fontWeight: 800, color }}>{workers.length}</span>
-        <ChevronDown size={17} color={color}
-          style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .15s" }} />
-      </button>
-      {open && workers.map((w) => <WorkerRowCard key={w.id} worker={w} onClick={() => onOpen(w.id)} />)}
-    </div>
-  );
-}
-
-function WorkerRowCard({ worker, onClick }) {
-  const pct = Math.round((worker.presentDays / worker.totalDays) * 100);
-  return (
-    <button onClick={onClick}
-      style={{
-        width: "100%", display: "flex", alignItems: "center", gap: 12,
-        padding: "12px 13px", background: "#fff", border: `1.5px solid ${C.cardBd}`,
-        borderRadius: 13, marginBottom: 9, cursor: "pointer", fontFamily: "inherit", textAlign: "left"
-      }}>
-      <span style={{
-        width: 38, height: 38, borderRadius: "50%", background: C.chip,
-        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-        fontSize: 14, fontWeight: 800, color: C.mute
-      }}>
-        {worker.name.split(" ").map((s) => s[0]).slice(0, 2).join("")}
-      </span>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14.5, fontWeight: 700, color: C.ink }}>{worker.name}</div>
-        <div style={{ fontSize: 12.5, color: C.mute, marginTop: 2 }}>
-          {worker.role} · {worker.primarySite}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 5, fontSize: 11.5 }}>
-          <span style={{ color: C.soft }}>{worker.presentDays}/{worker.totalDays} hari · {pct}%</span>
-          {worker.anomalyCount > 0 && (
-            <StatusPill tone={worker.status}>{worker.anomalyCount} anomali</StatusPill>
-          )}
-        </div>
-      </div>
-      <ChevronRight size={18} color="#C4C8D0" />
-    </button>
-  );
-}
-
-// ============================================================
-//  LAYAR WORKER HISTORY — riwayat absensi per orang
-//  Daftar tanggal kronologis (terbaru di atas). Selalu tampilkan
-//  site di tiap baris (jujur tanpa syarat).
-// ============================================================
-const HISTORY_RANGES = [
-  { id: "7d", label: "7 hari" },
-  { id: "30d", label: "30 hari" },
-  { id: "month", label: "Bulan ini" },
-];
-function ScreenWorkerHistory({ workerId, onOpenDay }) {
-  const worker = WORKERS.find((w) => w.id === workerId);
-  const history = WORKER_HISTORY[workerId] || WORKER_HISTORY["w-budi"]; // demo fallback
-  const [range, setRange] = useState("30d");
-
-  // Hitung agregat dari data
-  const totalDays = history.length;
-  const presentDays = history.filter((d) => d.status === "present" || d.status === "corrected" || d.status === "anomaly").length;
-  const anomalyDays = history.filter((d) => d.status === "anomaly" || d.status === "corrected").length;
-  const leaveDays = history.filter((d) => d.status === "leave").length;
-
-  return (
-    <div>
-      {/* Header worker */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-        <span style={{
-          width: 44, height: 44, borderRadius: "50%", background: C.chip,
-          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-          fontSize: 16, fontWeight: 800, color: C.mute
-        }}>
-          {worker?.name.split(" ").map((s) => s[0]).slice(0, 2).join("")}
-        </span>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 17, fontWeight: 800, color: C.ink }}>{worker?.name}</div>
-          <div style={{ fontSize: 12.5, color: C.mute, marginTop: 2 }}>
-            {worker?.role} · biasanya di {worker?.primarySite}
-          </div>
-        </div>
-      </div>
-
-      {/* Pemilih rentang */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 14, background: C.chip, borderRadius: 12, padding: 4 }}>
-        {HISTORY_RANGES.map((r) => (
-          <button key={r.id} onClick={() => setRange(r.id)}
-            style={{
-              flex: 1, padding: "8px 10px", borderRadius: 9, border: "none", cursor: "pointer",
-              fontSize: 13, fontWeight: 700, fontFamily: "inherit",
-              background: range === r.id ? "#fff" : "transparent",
-              color: range === r.id ? C.ink : C.mute,
-              boxShadow: range === r.id ? "0 1px 2px rgba(0,0,0,0.06)" : "none"
-            }}>
-            {r.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Ringkasan agregat */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 6, marginBottom: 14 }}>
-        <SummaryNum value={presentDays} label="Hari hadir" />
-        <SummaryNum value={anomalyDays} label="Anomali" tone={anomalyDays > 0 ? "warn" : "ok"} />
-        <SummaryNum value={leaveDays} label="Cuti/sakit" />
-        <SummaryNum value={totalDays - presentDays - leaveDays} label="Off/libur" />
-      </div>
-
-      {/* Daftar tanggal kronologis */}
-      {history.map((d, i) => (
-        <DayRow key={i} day={d}
-          onClick={() => d.status !== "off" && onOpenDay(workerId, d.date)} />
-      ))}
-
-      <TransparencyNote>
-        Jam yang ditetapkan supervisor tampil beda dari scan. Ringkasan ini fakta, bukan vonis kinerja —
-        konteks (mis. alasan anomali) ada di detail tiap hari.
-      </TransparencyNote>
-    </div>
-  );
-}
-
-function DayRow({ day, onClick }) {
-  // Off/libur — entry tipis, tidak diklik
-  if (day.status === "off") {
-    return (
-      <div style={{
-        padding: "9px 13px", background: "#FAFBFC", border: `1px dashed #E0E3EA`,
-        borderRadius: 11, marginBottom: 8, fontSize: 12.5, color: C.soft, textAlign: "center"
-      }}>
-        {day.date} · Off / Libur
-      </div>
-    );
-  }
-  // Cuti/sakit/izin
-  if (day.status === "leave") {
-    return (
-      <div style={{
-        padding: "11px 13px", background: "#fff", border: `1.5px solid ${C.cardBd}`,
-        borderRadius: 12, marginBottom: 9, display: "flex", alignItems: "center", gap: 11
-      }}>
-        <span style={{ width: 8, height: 30, borderRadius: 4, background: C.blue }} />
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13.5, fontWeight: 700, color: C.ink }}>{day.date}</div>
-          <div style={{ fontSize: 12.5, color: C.mute, marginTop: 2 }}>
-            {day.leaveType} · disetujui {day.site && `· ${day.site}`}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Hari kerja: present / anomaly / corrected
-  const isAnomaly = day.status === "anomaly";
-  const isCorrected = day.status === "corrected";
-  const stripColor = isAnomaly ? C.danger : isCorrected ? C.superv : C.ok;
-
-  const outDisplay = (() => {
-    if (day.correctedOut) return day.correctedOut;
-    if (day.out) return day.out;
-    return "—";
-  })();
-
-  return (
-    <button onClick={onClick}
-      style={{
-        width: "100%", display: "flex", alignItems: "stretch", gap: 0, padding: 0,
-        background: isAnomaly ? "#FFFCF5" : "#fff",
-        border: `1.5px solid ${isAnomaly ? "#F0D9A8" : C.cardBd}`,
-        borderRadius: 13, marginBottom: 9, cursor: "pointer", fontFamily: "inherit",
-        textAlign: "left", overflow: "hidden"
-      }}>
-      <div style={{ width: 5, background: stripColor, flexShrink: 0 }} />
-      <div style={{ flex: 1, padding: "11px 12px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-          <span style={{ fontSize: 13.5, fontWeight: 700, color: C.ink }}>{day.date}</span>
-          {isAnomaly && <StatusPill tone="danger">Belum clock-out</StatusPill>}
-          {isCorrected && <SetBySupervisorTag />}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 11, marginTop: 5, fontSize: 12.5, color: C.mute, flexWrap: "wrap" }}>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-            <LogIn size={12} color={C.ok} /> {day.in || "—"}
-          </span>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-            <LogOut size={12} color={day.correctedOut ? C.superv : isAnomaly ? C.danger : C.mute} /> {outDisplay}
-          </span>
-          {day.correctedAssumption && <AssumptionTag />}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 6, fontSize: 11.5, color: C.soft, flexWrap: "wrap" }}>
-          <span style={{
-            display: "inline-flex", alignItems: "center", gap: 4,
-            background: C.chip, padding: "2px 7px", borderRadius: 6, fontWeight: 600, color: C.mute
-          }}>
-            <MapPin size={10} /> {day.site}
-          </span>
-          {day.shift && <span>{day.shift}</span>}
-          {day.evidence && <EvidenceBadge level={day.evidence} small />}
-        </div>
-        {day.note && (
-          <div style={{ fontSize: 11.5, color: C.superv, marginTop: 6, fontStyle: "italic" }}>
-            "{day.note}"
-          </div>
-        )}
-      </div>
-    </button>
-  );
-}
-
-// ============================================================
-//  LAYAR WORKER DAY — timeline satu hari penuh utk satu worker
-// ============================================================
-function ScreenWorkerDay({ workerId, date }) {
-  const worker = WORKERS.find((w) => w.id === workerId);
-  const key = `${workerId}__${date}`;
-  const data = WORKER_DAY[key] || WORKER_DAY["w-budi__10 Jun (Sen)"]; // demo fallback
-
-  return (
-    <div>
-      <div style={{ marginBottom: 14 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: C.soft, textTransform: "uppercase", letterSpacing: 0.5 }}>
-          {worker?.name}
-        </div>
-        <h3 style={{ fontSize: 19, fontWeight: 800, color: C.ink, margin: "4px 0 2px" }}>{date}</h3>
-        <div style={{ fontSize: 12.5, color: C.mute }}>
-          {data.site} · {data.shift}
-        </div>
-      </div>
-
-      {/* Timeline kronologis */}
-      <div style={{ position: "relative", paddingLeft: 22, marginBottom: 16 }}>
-        <div style={{ position: "absolute", left: 8, top: 8, bottom: 8, width: 2, background: "#E6E8EE" }} />
-        {data.events.map((e, i) => {
-          const dotColor = e.kind === "clock_out_missing" ? C.danger
-            : e.evidence === "weak" ? C.warn
-              : e.evidence === "strong" ? C.ok
-                : C.mute;
-          const labelByKind = {
-            clock_in: "Clock-in",
-            clock_out: "Clock-out",
-            clock_out_missing: "Clock-out tidak ada",
-            patrol: "Patroli",
-            cleaning: "Cleaning",
-          };
-          return (
-            <div key={i} style={{ position: "relative", marginBottom: 14 }}>
-              <div style={{
-                position: "absolute", left: -22, top: 6,
-                width: 18, height: 18, borderRadius: "50%", background: "#fff",
-                border: `3px solid ${dotColor}`, boxSizing: "border-box"
-              }} />
-              <div style={{
-                background: e.kind === "clock_out_missing" ? "#FFFCF5" : "#fff",
-                border: `1.5px solid ${e.kind === "clock_out_missing" ? "#F0D9A8" : C.cardBd}`,
-                borderRadius: 12, padding: "11px 13px"
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                  <span style={{ fontSize: 13.5, fontWeight: 700, color: C.ink }}>{e.time || "—"}</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: dotColor }}>· {labelByKind[e.kind]}</span>
-                  {e.evidence && <EvidenceBadge level={e.evidence} small />}
-                </div>
-                {e.location && (
-                  <div style={{
-                    fontSize: 12.5, color: C.mute, marginTop: 4,
-                    display: "inline-flex", alignItems: "center", gap: 4
-                  }}>
-                    <MapPin size={12} /> {e.location}
-                  </div>
-                )}
-                {e.note && (
-                  <div style={{ fontSize: 12, color: C.mute, marginTop: 5, lineHeight: 1.45 }}>
-                    {e.note}
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <TransparencyNote icon={Lock}>
-        Catatan tak bisa diubah. Satu hari worker, kronologis: clock-in, kunjungan titik, clock-out.
-        Anomali tampil sebagai kejadian, bukan disembunyikan.
-      </TransparencyNote>
-    </div>
-  );
-}
-
-// ============================================================
-//  INCIDENT — list utama (bagian 22)
-//  List lintas site, urut keparahan + waktu. Pola "yang bermasalah
-//  di atas" yang sudah konsisten di app. Site disebut sebagai chip
-//  di tiap kartu — bukan di-group, supaya kritis dari site mana pun
-//  tetap menyembul ke atas.
-// ============================================================
-function ScreenIncidents({ incidents, onOpen }) {
-  // Sort: state aktif dulu (in_progress > vendor_closed > closed),
-  // dalam aktif urut keparahan desc, lalu waktu desc (terbaru dulu).
-  const stateRank = { in_progress: 0, vendor_closed: 1, closed: 2 };
-  const sorted = [...incidents].sort((a, b) => {
-    // Komentar klien pending naik paling atas, lintas state
-    if (a.clientCommentPending && !b.clientCommentPending) return -1;
-    if (!a.clientCommentPending && b.clientCommentPending) return 1;
-    const ds = stateRank[a.state] - stateRank[b.state];
-    if (ds !== 0) return ds;
-    const dr = sevById(b.severity).rank - sevById(a.severity).rank;
-    if (dr !== 0) return dr;
-    return 0; // urutan asli (terbaru di atas, sesuai data dummy)
-  });
-
-  const activeCount = incidents.filter((i) => i.state === "in_progress").length;
-  const inWindow = incidents.filter((i) => i.state === "vendor_closed").length;
-  const totalClosed = incidents.filter((i) => i.state === "closed").length;
-
-  return (
-    <div>
-      <p style={{ fontSize: 13.5, color: C.mute, margin: "0 0 14px", lineHeight: 1.5 }}>
-        Lintas site. Yang kritis menyembul ke atas. Tap untuk lihat rantai
-        penanganan & ambil aksi.
-      </p>
-
-      {/* Ringkasan agregat ramping */}
-      <div style={{
-        display: "grid", gridTemplateColumns: "1fr 1fr 1fr",
-        gap: 7, marginBottom: 16
-      }}>
-        <MiniNum value={activeCount} label="Sedang ditangani"
-          tone={activeCount > 0 ? "warn" : "neutral"} />
-        <MiniNum value={inWindow} label="Jendela klien"
-          tone={inWindow > 0 ? "blue" : "neutral"} />
-        <MiniNum value={totalClosed} label="Tertutup" />
-      </div>
-
-      {sorted.map((inc) => (
-        <IncidentCard key={inc.id} incident={inc} onClick={() => onOpen(inc.id)} />
-      ))}
-    </div>
-  );
-}
-
-function MiniNum({ value, label, tone = "neutral" }) {
-  const map = {
-    warn: [C.warn, C.warnBg],
-    danger: [C.danger, C.dangerBg],
-    blue: [C.blue, C.blueBg],
-    ok: [C.ok, C.okBg],
-    neutral: [C.ink, "#fff"],
-  }[tone];
-  return (
-    <div style={{
-      background: map[1], border: `1.5px solid ${C.cardBd}`,
-      borderRadius: 10, padding: "7px 9px"
-    }}>
-      <div style={{ fontSize: 18, fontWeight: 800, color: map[0], lineHeight: 1.1 }}>{value}</div>
-      <div style={{ fontSize: 10, color: C.mute, marginTop: 2, lineHeight: 1.3 }}>{label}</div>
-    </div>
-  );
-}
-
-function IncidentCard({ incident, onClick }) {
-  const sev = sevById(incident.severity);
-  const cat = catById(incident.category);
-  const Icon = cat.icon;
-  const pending = incident.clientCommentPending;
-
-  return (
-    <button onClick={onClick}
-      style={{
-        width: "100%", display: "flex", alignItems: "stretch", gap: 0, padding: 0,
-        background: "#fff",
-        border: pending ? `1.5px solid ${C.warn}` : `1.5px solid ${C.cardBd}`,
-        borderRadius: 14,
-        marginBottom: 10, cursor: "pointer", fontFamily: "inherit",
-        textAlign: "left", overflow: "hidden",
-        boxShadow: pending ? `0 1px 6px ${C.warn}22` : "none"
-      }}>
-      {/* Strip keparahan kiri */}
-      <div style={{ width: 6, background: sev.color, flexShrink: 0 }} />
-      <div style={{ flex: 1, padding: "13px 14px", minWidth: 0 }}>
-        {/* Baris 1 — ikon kategori + badge keparahan + state */}
-        <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 7 }}>
-          <span style={{
-            width: 32, height: 32, borderRadius: 9, background: sev.bg,
-            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
-          }}>
-            <Icon size={16} color={sev.color} strokeWidth={2.2} />
-          </span>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
-              <span style={{
-                fontSize: 11, fontWeight: 800, color: sev.color,
-                textTransform: "uppercase", letterSpacing: 0.5
-              }}>
-                {sev.label}
-              </span>
-              <span style={{ fontSize: 11, color: C.soft }}>· {cat.label}</span>
-            </div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: C.ink, marginTop: 3, lineHeight: 1.4 }}>
-              {incident.summary}
-            </div>
-          </div>
-        </div>
-
-        {/* Baris 2 — metadata: pelapor, site, waktu */}
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 18 }}>
         <div style={{
-          display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap",
-          marginTop: 4
+          position: "relative", width: 200, height: 200, borderRadius: 18,
+          background: "#0f172a", overflow: "hidden",
+          display: "flex", alignItems: "center", justifyContent: "center",
         }}>
-          <span style={{
-            display: "inline-flex", alignItems: "center", gap: 4,
-            background: C.chip, padding: "2px 7px", borderRadius: 6,
-            fontSize: 11, fontWeight: 600, color: C.mute
-          }}>
-            <MapPin size={10} /> {incident.site}
-          </span>
-          <span style={{ fontSize: 11.5, color: C.mute }}>
-            {incident.reportedBy} · {incident.reportedAt}
-          </span>
-        </div>
-
-        {/* Baris 3 — state pill + komentar klien pending */}
-        <div style={{ marginTop: 8, display: "flex", gap: 7, flexWrap: "wrap" }}>
-          <StateBadge incident={incident} />
-          {pending && (
-            <span style={{
-              display: "inline-flex", alignItems: "center", gap: 5,
-              fontSize: 11, fontWeight: 700, color: C.warn, background: C.warnBg,
-              padding: "3px 9px", borderRadius: 20
-            }}>
-              <MessageCircle size={11} /> Komentar klien · belum direspons
-            </span>
-          )}
-        </div>
-      </div>
-      <div style={{ display: "flex", alignItems: "center", paddingRight: 10 }}>
-        <ChevronRight size={18} color="#C4C8D0" />
-      </div>
-    </button>
-  );
-}
-
-function StateBadge({ incident }) {
-  if (incident.state === "in_progress") {
-    return (
-      <span style={{
-        display: "inline-flex", alignItems: "center", gap: 5,
-        fontSize: 11, fontWeight: 700, color: C.warn, background: C.warnBg,
-        padding: "3px 9px", borderRadius: 20
-      }}>
-        <CircleDot size={11} /> Sedang ditangani · {incident.chain.length} operan
-      </span>
-    );
-  }
-  if (incident.state === "vendor_closed") {
-    const escalated = incident.closureKind === "escalated_external";
-    return (
-      <span style={{
-        display: "inline-flex", alignItems: "center", gap: 5,
-        fontSize: 11, fontWeight: 700, color: C.blue, background: C.blueBg,
-        padding: "3px 9px", borderRadius: 20
-      }}>
-        <Hourglass size={11} />
-        {escalated ? "Selesai vendor · diteruskan" : "Selesai vendor"} · jendela klien {incident.windowDaysLeft}h
-      </span>
-    );
-  }
-  // closed
-  const silent = incident.autoCloseLabel === "client_silent";
-  return (
-    <span style={{
-      display: "inline-flex", alignItems: "center", gap: 5,
-      fontSize: 11, fontWeight: 700, color: C.ok, background: C.okBg,
-      padding: "3px 9px", borderRadius: 20
-    }}>
-      <Check size={11} />
-      {silent ? "Tertutup · klien tidak menanggapi" : "Tertutup · dikonfirmasi klien"}
-    </span>
-  );
-}
-
-// ============================================================
-//  INCIDENT DETAIL — rantai operan + aksi tutup
-// ============================================================
-function ScreenIncidentDetail({ incidentId, incidents, onAction }) {
-  const inc = incidents.find((i) => i.id === incidentId);
-  const [actionMode, setActionMode] = useState(null);
-  // actionMode: null | 'handover' | 'back_to_worker' | 'resolve' | 'escalate'
-
-  if (!inc) return <div style={{ padding: 20, color: C.mute }}>Incident tidak ditemukan.</div>;
-  const sev = sevById(inc.severity);
-  const cat = catById(inc.category);
-
-  return (
-    <div>
-      {/* Header — fakta terkunci */}
-      <div style={{
-        background: "#fff", border: `1.5px solid ${C.cardBd}`,
-        borderRadius: 14, padding: "14px 15px", marginBottom: 14
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 9 }}>
-          <span style={{
-            width: 38, height: 38, borderRadius: 11, background: sev.bg,
-            display: "flex", alignItems: "center", justifyContent: "center"
-          }}>
-            <cat.icon size={19} color={sev.color} strokeWidth={2.2} />
-          </span>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
-              <span style={{
-                fontSize: 11, fontWeight: 800, color: sev.color,
-                textTransform: "uppercase", letterSpacing: 0.5
-              }}>{sev.label}</span>
-              <span style={{ fontSize: 11, color: C.soft }}>· {cat.label}</span>
-            </div>
-            <div style={{ fontSize: 15, fontWeight: 800, color: C.ink, marginTop: 3, lineHeight: 1.4 }}>
-              {inc.summary}
-            </div>
-          </div>
-        </div>
-        <div style={{
-          display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap",
-          fontSize: 12, color: C.mute
-        }}>
-          <span style={{
-            display: "inline-flex", alignItems: "center", gap: 4,
-            background: C.chip, padding: "2px 7px", borderRadius: 6, fontWeight: 600
-          }}>
-            <MapPin size={11} /> {inc.site}
-          </span>
-          <span>Dilapor {inc.reportedBy} · {inc.reportedAt}</span>
-        </div>
-        {/* Bukti placeholder */}
-        <div style={{
-          marginTop: 10, padding: "9px 11px", background: C.chip,
-          borderRadius: 9, fontSize: 11.5, color: C.mute,
-          display: "flex", alignItems: "center", gap: 9
-        }}>
-          <Camera size={14} /> Foto · GPS · Waktu (bukti terkunci sejak dibuat)
-        </div>
-      </div>
-
-      {/* Banner komentar klien pending — paling menonjol */}
-      {inc.clientCommentPending && (
-        <div style={{
-          background: C.warnBg, border: `1.5px solid ${C.warn}`,
-          borderRadius: 12, padding: "12px 14px", marginBottom: 14
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-            <MessageCircle size={16} color={C.warn} strokeWidth={2.3} />
-            <span style={{ fontSize: 12.5, fontWeight: 800, color: C.warn }}>
-              Klien berkomentar — bola kembali ke Anda
-            </span>
-          </div>
-          <div style={{ fontSize: 12, color: C.ink, lineHeight: 1.5 }}>
-            Klien belum puas dan mengembalikan kasus. Tindak lanjuti, lalu tutup ulang.
-          </div>
-        </div>
-      )}
-
-      {/* Rantai operan */}
-      <SectionLabel>Rantai penanganan ({inc.chain.length})</SectionLabel>
-      <div style={{ position: "relative", paddingLeft: 22, marginBottom: 16 }}>
-        <div style={{
-          position: "absolute", left: 8, top: 4, bottom: 4,
-          width: 2, background: "#E6E8EE"
-        }} />
-        {inc.chain.map((step, i) => (
-          <div key={i} style={{ position: "relative", marginBottom: 11 }}>
-            <div style={{
-              position: "absolute", left: -22, top: 3,
-              width: 18, height: 18, borderRadius: "50%", background: "#fff",
-              border: `3px solid ${C.blue}`, boxSizing: "border-box"
+          {[
+            { top: 12, left: 12, t: 1, l: 1 },
+            { top: 12, right: 12, t: 1, r: 1 },
+            { bottom: 12, left: 12, b: 1, l: 1 },
+            { bottom: 12, right: 12, b: 1, r: 1 },
+          ].map((c, i) => (
+            <div key={i} style={{
+              position: "absolute", width: 28, height: 28,
+              top: c.top, left: c.left, right: c.right, bottom: c.bottom,
+              borderTop: c.t ? `3px solid ${C.driverAccent}` : "none",
+              borderLeft: c.l ? `3px solid ${C.driverAccent}` : "none",
+              borderRight: c.r ? `3px solid ${C.driverAccent}` : "none",
+              borderBottom: c.b ? `3px solid ${C.driverAccent}` : "none",
+              borderRadius: 4,
             }} />
-            <div style={{
-              background: "#fff", border: `1.5px solid ${C.cardBd}`,
-              borderRadius: 11, padding: "9px 12px"
+          ))}
+          <div className="scanline" style={{
+            position: "absolute", left: "8%", right: "8%", height: 2,
+            background: C.driverAccent, boxShadow: `0 0 10px ${C.driverAccent}`,
+          }} />
+          <span style={{ fontSize: 56, opacity: 0.25 }}>▦</span>
+        </div>
+      </div>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4 }}>
+          {resuming ? "Scan buat lanjutkan trip" : "Scan kartu ID lo"}
+        </div>
+        <div style={{ fontSize: 13, color: C.textMid, lineHeight: 1.5 }}>
+          Arahkan QR di kartu ke kamera buat {resuming ? "lanjut dari titik terakhir." : "buka sesi Driver Runtime."}
+        </div>
+      </div>
+    </div>
+    <div style={{ background: C.surface, borderTop: `1px solid ${C.border}`, padding: "12px 14px", flexShrink: 0 }}>
+      <button onClick={onScanned} className="tap-feedback" style={{
+        width: "100%", background: C.driverAccent, color: "#fff", border: "none",
+        padding: "16px", borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: "pointer",
+        textTransform: "uppercase", letterSpacing: "0.04em",
+      }}>{resuming ? "Simulasikan Scan · Lanjut" : "Simulasikan Scan Kartu"}</button>
+      <div style={{ textAlign: "center", fontSize: 10, color: C.textDim, marginTop: 8 }}>(mockup — tap untuk simulasi scan berhasil)</div>
+    </div>
+  </div>
+);
+
+// ─── AUTH GATE — PIN ────────────────────────────────────────────────────────
+export const PinScreen = ({ executor, onBack, onSuccess, resuming = false }) => {
+  const [pin, setPin] = useState("");
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    if (pin.length === 4) {
+      if (pin === DEMO_PIN) {
+        const t = setTimeout(onSuccess, 220);
+        return () => clearTimeout(t);
+      } else {
+        setError(true);
+        const t = setTimeout(() => { setPin(""); setError(false); }, 480);
+        return () => clearTimeout(t);
+      }
+    }
+  }, [pin, onSuccess]);
+
+  const press = (d) => { if (pin.length < 4 && !error) setPin(pin + d); };
+
+  return (
+    <div style={{ height: "100%", display: "flex", flexDirection: "column", background: C.bg }}>
+      <div style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: "12px 14px", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+        <button onClick={onBack} className="tap-feedback" style={{
+          width: 36, height: 36, borderRadius: 8, background: "transparent", border: "none",
+          fontSize: 18, color: C.text, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+        }}>←</button>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 11, color: C.textMid, textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 600 }}>{resuming ? "Lanjutkan Sesi" : "Verifikasi Identitas"}</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: C.text }}>Masukkan PIN</div>
+        </div>
+      </div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "20px 18px 14px" }}>
+        <div className="pop" style={{
+          display: "flex", alignItems: "center", gap: 12,
+          background: C.driverAccentBg, border: `1px solid ${C.driverAccent}22`,
+          borderRadius: 12, padding: "12px 14px", marginBottom: 24,
+        }}>
+          <div style={{
+            width: 44, height: 44, borderRadius: 10, background: C.driverAccent, color: "#fff",
+            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, flexShrink: 0,
+          }}>{executor.name.split(" ").map(n => n[0]).join("").substring(0, 2)}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 10, color: C.driverAccentDark, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700, marginBottom: 2 }}>Kartu terbaca</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: C.text }}>{executor.name}</div>
+            <div className="mono" style={{ fontSize: 11, color: C.textMid }}>{executor.id} · {executor.role}</div>
+          </div>
+        </div>
+        <div className={error ? "shake" : ""} style={{ display: "flex", justifyContent: "center", gap: 16, marginBottom: 10 }}>
+          {[0, 1, 2, 3].map(i => {
+            const filled = i < pin.length;
+            return (
+              <div key={i} style={{
+                width: 16, height: 16, borderRadius: "50%",
+                background: error ? "#dc2626" : filled ? C.driverAccent : "transparent",
+                border: `2px solid ${error ? "#dc2626" : filled ? C.driverAccent : C.borderStrong}`,
+                transition: "all 0.12s ease",
+              }} />
+            );
+          })}
+        </div>
+        <div style={{ textAlign: "center", height: 18, marginBottom: 14 }}>
+          {error
+            ? <span style={{ fontSize: 12, color: "#dc2626", fontWeight: 600 }}>PIN salah · coba lagi</span>
+            : <span style={{ fontSize: 11, color: C.textDim }}>PIN demo: {DEMO_PIN}</span>}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginTop: "auto" }}>
+          {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map(d => (
+            <button key={d} onClick={() => press(d)} className="tap-feedback" style={{
+              padding: "16px 0", borderRadius: 12, background: C.surface, border: `1px solid ${C.border}`,
+              fontSize: 22, fontWeight: 600, color: C.text, cursor: "pointer",
+            }}>{d}</button>
+          ))}
+          <div />
+          <button onClick={() => press("0")} className="tap-feedback" style={{
+            padding: "16px 0", borderRadius: 12, background: C.surface, border: `1px solid ${C.border}`,
+            fontSize: 22, fontWeight: 600, color: C.text, cursor: "pointer",
+          }}>0</button>
+          <button onClick={() => setPin(pin.slice(0, -1))} className="tap-feedback" style={{
+            padding: "16px 0", borderRadius: 12, background: "transparent", border: "none",
+            fontSize: 20, color: C.textMid, cursor: "pointer",
+          }}>⌫</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── PAUSE CONFIRM SHEET — keluar di tengah trip ───────────────────────────
+export const PauseConfirmSheet = ({ remaining, onConfirm, onCancel }) => (
+  <>
+    <div onClick={onCancel} style={{ position: "absolute", inset: 0, background: "rgba(15, 23, 42, 0.5)", zIndex: 10 }} />
+    <div className="sheet-up" style={{
+      position: "absolute", bottom: 0, left: 0, right: 0,
+      background: C.surface, borderTopLeftRadius: 16, borderTopRightRadius: 16, zIndex: 11,
+      display: "flex", flexDirection: "column",
+    }}>
+      <div style={{ display: "flex", justifyContent: "center", paddingTop: 8 }}>
+        <div style={{ width: 40, height: 4, background: C.slate200, borderRadius: 2 }} />
+      </div>
+      <div style={{ padding: "14px 18px 8px" }}>
+        <div style={{ fontSize: 11, color: C.amber700, textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 700, marginBottom: 4 }}>
+          Tugas belum kelar
+        </div>
+        <div style={{ fontSize: 17, fontWeight: 700, color: C.text }}>Pause sesi di device ini?</div>
+      </div>
+      <div style={{ padding: "4px 18px 16px" }}>
+        <div style={{
+          background: C.amber50, border: `1px solid ${C.amber100}`, borderLeft: `3px solid ${C.amber400}`,
+          borderRadius: 10, padding: "12px 14px", marginBottom: 14, fontSize: 13, color: C.amber700, lineHeight: 1.6,
+        }}>
+          Masih ada <strong>{remaining} task</strong> belum kelar. Sesi di device ini bakal ditutup & datanya dibersihin — aman kalau HP-nya mau dibalikin.
+        </div>
+        <div style={{
+          background: C.infoBlueBg, border: `1px solid ${C.infoBlue}22`, borderLeft: `3px solid ${C.infoBlue}`,
+          borderRadius: 10, padding: "12px 14px", fontSize: 12, color: C.text, lineHeight: 1.6,
+        }}>
+          Trip-nya <strong>nggak hilang</strong>. Lanjut kapan aja di device manapun — tinggal <strong>scan kartu + PIN</strong>, balik persis dari titik terakhir.
+        </div>
+      </div>
+      <div style={{ padding: "0 18px 18px", display: "flex", flexDirection: "column", gap: 8 }}>
+        <button onClick={onConfirm} className="tap-feedback" style={{
+          width: "100%", background: C.amber400, color: "#fff", border: "none",
+          padding: "15px", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer",
+          textTransform: "uppercase", letterSpacing: "0.04em",
+        }}>Pause & Keluar</button>
+        <button onClick={onCancel} className="tap-feedback" style={{
+          width: "100%", background: C.surface, color: C.text, border: `1px solid ${C.border}`,
+          padding: "13px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer",
+        }}>Batal · Lanjut Kerja</button>
+      </div>
+    </div>
+  </>
+);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CUSTODY CONFIRMATION LAYER — bilateral acknowledgement (ported)
+// independent count + reveal gate + mismatch preservation
+// ═══════════════════════════════════════════════════════════════════════════
+export const PENDING_CUSTODY = {
+  custodyEventId: "CEC-0284",
+  vehicleId: "V-007",
+  vehiclePlate: "B 1234 XY",
+  loadedBy: "Anton Pratama",      // Checker who loaded
+  loadedAt: "06:18",
+  loadSessionId: "LS-2026-05-20-001",
+
+  // What warehouse recorded — driver verifies against this
+  // (warehouseRecorded = sum of drops across tasks below)
+  items: [
+    { id: "gas_12", name: "Gas 12kg", type: "returnable", warehouseRecorded: 10 },
+    { id: "gas_3", name: "Gas 3kg", type: "returnable", warehouseRecorded: 3 },
+    { id: "aqua_galon", name: "Aqua Galon", type: "returnable", warehouseRecorded: 8 },
+    { id: "aqua_600", name: "Aqua 600ml (Dus)", type: "consumable", warehouseRecorded: 4 },
+  ],
+
+  // Task manifest — what driver actually needs to execute
+  // Per task: drops + pickups, with breakdown per item
+  tasks: [
+    {
+      id: "T-050",
+      customer: "Mandiri Tower",
+      address: "Jl. Jend. Sudirman Kav. 54-55, Jakarta",
+      stopNumber: 1,
+      items: [
+        { id: "gas_12", name: "Gas 12kg", type: "returnable", drop: 4, pickup: 0 },
+        { id: "aqua_galon", name: "Aqua Galon", type: "returnable", drop: 2, pickup: 0 },
+      ],
+    },
+    {
+      id: "T-051",
+      customer: "Honda Bintaro",
+      address: "Jl. Bintaro Utama 23, Tangerang",
+      stopNumber: 2,
+      items: [
+        { id: "gas_12", name: "Gas 12kg", type: "returnable", drop: 3, pickup: 0 },
+        { id: "gas_3", name: "Gas 3kg", type: "returnable", drop: 3, pickup: 3 },
+        { id: "aqua_600", name: "Aqua 600ml (Dus)", type: "consumable", drop: 4, pickup: 0 },
+      ],
+    },
+    {
+      id: "T-052",
+      customer: "BCA Cabang Bintaro",
+      address: "Jl. Bintaro Sektor 7, Tangerang",
+      stopNumber: 3,
+      items: [
+        { id: "gas_12", name: "Gas 12kg", type: "returnable", drop: 3, pickup: 0 },
+        { id: "aqua_galon", name: "Aqua Galon", type: "returnable", drop: 6, pickup: 0 },
+      ],
+    },
+    {
+      id: "T-053",
+      customer: "Toko Sumber Rejeki",
+      address: "Jl. Bintaro Permai Blok C2",
+      stopNumber: 4,
+      items: [
+        { id: "gas_3", name: "Gas 3kg", type: "returnable", drop: 0, pickup: 3 },
+      ],
+    },
+  ],
+};
+const aggregateTaskTotals = (custody) => {
+  const totals = {};
+  custody.items.forEach(item => {
+    totals[item.id] = { drop: 0, pickup: 0, name: item.name, type: item.type };
+  });
+  custody.tasks.forEach(task => {
+    task.items.forEach(ti => {
+      if (totals[ti.id]) {
+        totals[ti.id].drop += ti.drop;
+        totals[ti.id].pickup += ti.pickup;
+      }
+    });
+  });
+  return totals;
+};
+const IndependentCountStepper = ({ value, onChange, itemName, itemType, showWarehouseRef, warehouseValue }) => {
+  const hasValue = value > 0;
+  const isConsumable = itemType === "consumable";
+
+  // Only AFTER driver has set a count, show comparison
+  const showComparison = hasValue && showWarehouseRef;
+  const delta = value - warehouseValue;
+  const isMatch = showComparison && delta === 0;
+  const isShortage = showComparison && delta < 0;
+  const isSurplus = showComparison && delta > 0;
+
+  const valueColor = !hasValue ? C.textDim
+    : !showComparison ? C.text
+      : isMatch ? C.emerald700
+        : isShortage ? C.amber700
+          : C.violet700;
+
+  return (
+    <div style={{ marginBottom: 16 }}>
+      {/* Item label */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0 }}>
+          <span style={{ fontSize: 15, fontWeight: 600, color: C.text }}>{itemName}</span>
+          {isConsumable && (
+            <span style={{
+              padding: "2px 6px", borderRadius: 3,
+              background: C.slate100, color: C.slate600,
+              fontSize: 9, fontWeight: 600,
+              textTransform: "uppercase", letterSpacing: "0.04em",
+            }}>Consumable</span>
+          )}
+        </div>
+        {/* Warehouse claim — ONLY shown if revealed */}
+        {showWarehouseRef && (
+          <div style={{ fontSize: 11, color: C.textMid, fontStyle: "italic" }}>
+            Warehouse: <span className="mono" style={{ color: C.text, fontWeight: 600 }}>{warehouseValue}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Stepper */}
+      <div style={{
+        display: "flex",
+        alignItems: "stretch",
+        background: C.surface,
+        border: `2px solid ${!showComparison ? C.border :
+          isMatch ? C.emerald400 :
+            isShortage ? C.amber400 :
+              isSurplus ? C.violet400 : C.border
+          }`,
+        borderRadius: 10,
+        overflow: "hidden",
+      }}>
+        <button
+          onClick={() => onChange(Math.max(0, value - 1))}
+          className="tap-feedback"
+          style={{
+            width: 56, height: 56,
+            border: "none", background: C.surface,
+            fontSize: 24, fontWeight: 600,
+            color: value === 0 ? C.textDim : C.text,
+            cursor: "pointer",
+            transition: "transform 0.1s ease",
+          }}
+        >−</button>
+
+        <div style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          background: !showComparison ? C.surface :
+            isMatch ? C.emerald50 :
+              isShortage ? C.amber50 :
+                isSurplus ? C.violet50 : C.surface,
+          padding: "4px 0",
+        }}>
+          <span className="mono" style={{
+            fontSize: 32, fontWeight: 700,
+            color: valueColor,
+            lineHeight: 1,
+          }}>{value}</span>
+          {showComparison && delta !== 0 && (
+            <span style={{
+              fontSize: 11, fontWeight: 600,
+              color: valueColor,
+              marginTop: 2,
+              letterSpacing: "0.04em",
             }}>
-              <div style={{
-                fontSize: 12.5, fontWeight: 700, color: C.ink,
-                display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap"
-              }}>
-                <span>{step.from}</span>
-                <ArrowRight size={12} color={C.soft} />
-                <span>{step.to}</span>
-                <span style={{ color: C.soft, fontWeight: 500 }}>· {step.at}</span>
-              </div>
-              {step.note && (
-                <div style={{ fontSize: 11.5, color: C.mute, marginTop: 3, fontStyle: "italic" }}>
-                  "{step.note}"
+              Selisih: {delta > 0 ? "+" : ""}{delta}
+            </span>
+          )}
+          {showComparison && isMatch && (
+            <span style={{
+              fontSize: 11, fontWeight: 600,
+              color: C.emerald700,
+              marginTop: 2,
+              letterSpacing: "0.04em",
+            }}>
+              ✓ Match
+            </span>
+          )}
+        </div>
+
+        <button
+          onClick={() => onChange(value + 1)}
+          className="tap-feedback"
+          style={{
+            width: 56, height: 56,
+            border: "none", background: C.surface,
+            fontSize: 24, fontWeight: 600,
+            color: C.text,
+            cursor: "pointer",
+            transition: "transform 0.1s ease",
+          }}
+        >+</button>
+      </div>
+    </div>
+  );
+};
+
+// ─── TASK MANIFEST CARD ────────────────────────────────────────────────────
+// Shows full per-task breakdown — driver execution-critical information.
+// Per doctrine: drivers SEE task list, customer, address, drop/pickup qty.
+// They do NOT see customer outstanding balance or reconciliation data.
+const TaskManifestCard = ({ custody }) => {
+  const [expandedTaskId, setExpandedTaskId] = useState(custody.tasks[0]?.id);  // first expanded
+  const totals = aggregateTaskTotals(custody);
+
+  const totalDrop = Object.values(totals).reduce((s, t) => s + t.drop, 0);
+  const totalPickup = Object.values(totals).reduce((s, t) => s + t.pickup, 0);
+
+  return (
+    <div style={{ marginBottom: 16 }}>
+      {/* Section header */}
+      <div style={{ marginBottom: 10, paddingLeft: 4 }}>
+        <div style={{ fontSize: 11, color: C.textDim, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700, marginBottom: 2 }}>
+          Task Manifest
+        </div>
+        <div style={{ fontSize: 12, color: C.textMid }}>
+          {custody.tasks.length} task · {custody.tasks.reduce((s, t) => s + t.items.length, 0)} item line · tap untuk lihat detail
+        </div>
+      </div>
+
+      {/* Per-task cards */}
+      <div style={{
+        background: C.surface,
+        border: `1px solid ${C.border}`,
+        borderRadius: 10,
+        overflow: "hidden",
+        marginBottom: 12,
+      }}>
+        {custody.tasks.map((task, idx) => {
+          const isExpanded = expandedTaskId === task.id;
+          const isLast = idx === custody.tasks.length - 1;
+          const taskTotalDrop = task.items.reduce((s, i) => s + i.drop, 0);
+          const taskTotalPickup = task.items.reduce((s, i) => s + i.pickup, 0);
+
+          return (
+            <div key={task.id} style={{
+              borderBottom: isLast ? "none" : `1px solid ${C.border}`,
+            }}>
+              {/* Task header (collapsible) */}
+              <button
+                onClick={() => setExpandedTaskId(isExpanded ? null : task.id)}
+                className="tap-feedback"
+                style={{
+                  width: "100%",
+                  padding: "12px 14px",
+                  background: "transparent",
+                  border: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  cursor: "pointer",
+                  textAlign: "left",
+                }}
+              >
+                {/* Stop number */}
+                <div style={{
+                  width: 28, height: 28, borderRadius: 6,
+                  background: isExpanded ? C.driverAccent : C.slate100,
+                  color: isExpanded ? "#fff" : C.textMid,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 12, fontWeight: 700,
+                  flexShrink: 0,
+                  transition: "all 0.15s ease",
+                }}>{task.stopNumber}</div>
+
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                    <span className="mono" style={{ fontSize: 11, color: C.textDim, fontWeight: 500 }}>
+                      {task.id}
+                    </span>
+                    {taskTotalDrop > 0 && (
+                      <span style={{
+                        fontSize: 10, fontWeight: 600,
+                        color: C.driverAccent, padding: "1px 5px",
+                        background: C.driverAccentBg, borderRadius: 3,
+                      }}>↓ {taskTotalDrop}</span>
+                    )}
+                    {taskTotalPickup > 0 && (
+                      <span style={{
+                        fontSize: 10, fontWeight: 600,
+                        color: C.violet700, padding: "1px 5px",
+                        background: C.violet50, borderRadius: 3,
+                      }}>↑ {taskTotalPickup}</span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {task.customer}
+                  </div>
+                  <div style={{ fontSize: 11, color: C.textMid, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {task.address}
+                  </div>
+                </div>
+
+                <span style={{
+                  color: C.textDim,
+                  fontSize: 12,
+                  transform: isExpanded ? "rotate(90deg)" : "none",
+                  transition: "transform 0.15s ease",
+                  flexShrink: 0,
+                }}>›</span>
+              </button>
+
+              {/* Expanded — item breakdown */}
+              {isExpanded && (
+                <div className="slide-up" style={{
+                  background: C.surfaceAlt,
+                  borderTop: `1px solid ${C.border}`,
+                  padding: "10px 14px",
+                }}>
+                  {task.items.map((item, i) => (
+                    <div key={item.id} style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      padding: "8px 0",
+                      borderBottom: i === task.items.length - 1 ? "none" : `1px solid ${C.border}`,
+                    }}>
+                      <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+                        <span style={{ fontSize: 13, color: C.text, fontWeight: 500 }}>{item.name}</span>
+                        {item.type === "consumable" && (
+                          <span style={{
+                            padding: "1px 5px", borderRadius: 3,
+                            background: C.slate100, color: C.slate600,
+                            fontSize: 9, fontWeight: 600,
+                            textTransform: "uppercase", letterSpacing: "0.04em",
+                            flexShrink: 0,
+                          }}>C</span>
+                        )}
+                      </div>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        {item.drop > 0 && (
+                          <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12 }}>
+                            <span style={{ color: C.driverAccent, fontWeight: 600 }}>↓</span>
+                            <span className="mono" style={{ color: C.text, fontWeight: 700 }}>{item.drop}</span>
+                            <span style={{ color: C.textDim, fontSize: 10 }}>drop</span>
+                          </div>
+                        )}
+                        {item.pickup > 0 && (
+                          <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12 }}>
+                            <span style={{ color: C.violet700, fontWeight: 600 }}>↑</span>
+                            <span className="mono" style={{ color: C.text, fontWeight: 700 }}>{item.pickup}</span>
+                            <span style={{ color: C.textDim, fontSize: 10 }}>pickup</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Bagian status berbeda per state */}
-      {inc.state === "in_progress" && (
-        <ActionPanel inc={inc} mode={actionMode} setMode={setActionMode}
-          onAction={onAction} />
-      )}
-
-      {inc.state === "vendor_closed" && (
-        <ClosurePanel inc={inc} />
-      )}
-
-      {inc.state === "closed" && (
-        <FinalClosurePanel inc={inc} />
-      )}
-    </div>
-  );
-}
-
-function SectionLabel({ children }) {
-  return (
-    <div style={{
-      fontSize: 11.5, fontWeight: 800, color: C.soft,
-      textTransform: "uppercase", letterSpacing: 0.7, marginBottom: 10
-    }}>
-      {children}
-    </div>
-  );
-}
-
-// Panel aksi saat incident masih 'in_progress'
-function ActionPanel({ inc, mode, setMode, onAction }) {
-  const [target, setTarget] = useState("");
-  const [note, setNote] = useState("");
-
-  if (!mode) {
-    return (
-      <>
-        <SectionLabel>Aksi</SectionLabel>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9, marginBottom: 14 }}>
-          <ActionTile icon={Repeat} label="Oper ke" sub="rekan / supervisor"
-            onClick={() => setMode("handover")} />
-          <ActionTile icon={ExternalLink} label="Eskalasi" sub="ke pihak luar"
-            onClick={() => setMode("escalate")} />
-          <ActionTile icon={Check} label="Tandai selesai" sub="vendor menyelesaikan"
-            color={C.ok} bg={C.okBg} onClick={() => setMode("resolve")} />
-          <ActionTile icon={MessageSquare} label="Tambah catatan" sub="tanpa pindah"
-            onClick={() => setMode("note")} />
-        </div>
-      </>
-    );
-  }
-
-  // Sub-modes — tampilkan form sesuai aksi
-  const cancelBtn = (
-    <button onClick={() => { setMode(null); setTarget(""); setNote(""); }}
-      style={{
-        flex: 1, padding: "11px", borderRadius: 11, border: `1.5px solid ${C.cardBd}`,
-        background: "#fff", color: C.mute, fontWeight: 600, fontSize: 13.5,
-        cursor: "pointer", fontFamily: "inherit"
-      }}>
-      Batal
-    </button>
-  );
-
-  if (mode === "handover") {
-    return (
-      <>
-        <SectionLabel>Oper ke siapa</SectionLabel>
-        <select value={target} onChange={(e) => setTarget(e.target.value)}
-          style={{ ...inpStyle2, marginBottom: 12 }}>
-          <option value="">Pilih penerima…</option>
-          <option>Sari Wulandari (worker)</option>
-          <option>Agus Pratama (worker)</option>
-          <option>Supervisor lain (Rian)</option>
-          <option>Atasan Area</option>
-        </select>
-        <label style={lblStyle2}>Catatan operan</label>
-        <textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)}
-          placeholder="Konteks utk penerima…"
-          style={{ ...inpStyle2, resize: "vertical", marginBottom: 12 }} />
-        <div style={{ display: "flex", gap: 10 }}>
-          {cancelBtn}
-          <button disabled={!target} onClick={() => { onAction(inc.id, "handover", { target, note }); setMode(null); setTarget(""); setNote(""); }}
-            style={actionBtn(target ? C.blue : "#A8C5E8")}>
-            <Send size={16} /> Oper
-          </button>
-        </div>
-      </>
-    );
-  }
-
-  if (mode === "escalate") {
-    return (
-      <>
-        <SectionLabel>Eskalasi ke pihak luar</SectionLabel>
-        <div style={{
-          background: C.warnBg, border: `1.5px solid ${C.warn}33`,
-          borderRadius: 11, padding: "10px 12px", marginBottom: 12, fontSize: 11.5,
-          color: C.warn, lineHeight: 1.5
-        }}>
-          Pihak luar belum pakai app. Tutup di sisi vendor + lampirkan bukti WA.
-          Sistem mencatat "diteruskan" — bukan "sudah diperbaiki".
-        </div>
-        <label style={lblStyle2}>Diteruskan ke</label>
-        <input value={target} onChange={(e) => setTarget(e.target.value)}
-          placeholder="Mis. Maintenance gedung BP Legok"
-          style={{ ...inpStyle2, marginBottom: 12 }} />
-        <label style={lblStyle2}>Keterangan / bukti WA</label>
-        <textarea rows={3} value={note} onChange={(e) => setNote(e.target.value)}
-          placeholder="Mis. WA via grup maintenance jam 14:00, screenshot terlampir"
-          style={{ ...inpStyle2, resize: "vertical", marginBottom: 12 }} />
-        <div style={{ display: "flex", gap: 10 }}>
-          {cancelBtn}
-          <button disabled={!target || !note}
-            onClick={() => { onAction(inc.id, "escalate", { target, note }); setMode(null); setTarget(""); setNote(""); }}
-            style={actionBtn(target && note ? C.warn : "#E3C77A")}>
-            <Check size={16} /> Tutup vendor · diteruskan
-          </button>
-        </div>
-      </>
-    );
-  }
-
-  if (mode === "resolve") {
-    return (
-      <>
-        <SectionLabel>Tandai selesai (vendor menyelesaikan)</SectionLabel>
-        <div style={{
-          background: C.okBg, border: `1.5px solid ${C.ok}33`,
-          borderRadius: 11, padding: "10px 12px", marginBottom: 12, fontSize: 11.5,
-          color: C.ok, lineHeight: 1.5
-        }}>
-          Pilih ini kalau vendor benar-benar menyelesaikan kasus. Akan masuk
-          jendela klien {VENDOR_AUTO_CLOSE_DAYS} hari sebelum auto-close.
-        </div>
-        <label style={lblStyle2}>Bagaimana diselesaikan</label>
-        <textarea rows={3} value={note} onChange={(e) => setNote(e.target.value)}
-          placeholder="Mis. CCTV diperiksa, orang dikenali sebagai tamu sah"
-          style={{ ...inpStyle2, resize: "vertical", marginBottom: 12 }} />
-        <div style={{ display: "flex", gap: 10 }}>
-          {cancelBtn}
-          <button disabled={!note}
-            onClick={() => { onAction(inc.id, "resolve", { note }); setMode(null); setNote(""); }}
-            style={actionBtn(note ? C.ok : "#A9DDCB")}>
-            <Check size={16} /> Tandai selesai
-          </button>
-        </div>
-      </>
-    );
-  }
-
-  if (mode === "note") {
-    return (
-      <>
-        <SectionLabel>Tambah catatan</SectionLabel>
-        <textarea rows={3} value={note} onChange={(e) => setNote(e.target.value)}
-          placeholder="Catatan utk jejak kasus…"
-          style={{ ...inpStyle2, resize: "vertical", marginBottom: 12 }} />
-        <div style={{ display: "flex", gap: 10 }}>
-          {cancelBtn}
-          <button disabled={!note} onClick={() => { onAction(inc.id, "note", { note }); setMode(null); setNote(""); }}
-            style={actionBtn(note ? C.ink : "#999")}>
-            <FileText size={16} /> Tambah
-          </button>
-        </div>
-      </>
-    );
-  }
-  return null;
-}
-
-function ActionTile({ icon: Icon, label, sub, color, bg, onClick }) {
-  return (
-    <button onClick={onClick}
-      style={{
-        display: "flex", alignItems: "center", gap: 11, padding: "12px 13px",
-        background: bg || "#fff", border: `1.5px solid ${color ? color + "33" : C.cardBd}`,
-        borderRadius: 12, cursor: "pointer", fontFamily: "inherit", textAlign: "left"
-      }}>
-      <span style={{
-        width: 32, height: 32, borderRadius: 9,
-        background: color ? "#fff" : C.chip,
-        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
-      }}>
-        <Icon size={16} color={color || C.ink} strokeWidth={2.2} />
-      </span>
-      <div style={{ minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: color || C.ink }}>{label}</div>
-        <div style={{ fontSize: 11, color: C.soft, marginTop: 1 }}>{sub}</div>
-      </div>
-    </button>
-  );
-}
-
-// Panel saat vendor_closed — di jendela klien
-function ClosurePanel({ inc }) {
-  const escalated = inc.closureKind === "escalated_external";
-  return (
-    <>
-      <SectionLabel>Status</SectionLabel>
-      <div style={{
-        background: escalated ? C.warnBg : C.okBg,
-        border: `1.5px solid ${(escalated ? C.warn : C.ok) + "33"}`,
-        borderRadius: 12, padding: "13px 14px", marginBottom: 12
-      }}>
-        <div style={{
-          fontSize: 13, fontWeight: 800,
-          color: escalated ? C.warn : C.ok
-        }}>
-          {escalated
-            ? "Selesai vendor · diteruskan ke pihak luar"
-            : "Selesai vendor · ditangani sendiri"}
-        </div>
-        <div style={{ fontSize: 12, color: C.ink, marginTop: 5, lineHeight: 1.45 }}>
-          Ditutup {inc.closedAt} oleh {inc.closedBy}.
-        </div>
-        {inc.escalationNote && (
-          <div style={{
-            fontSize: 11.5, color: C.mute, marginTop: 6, fontStyle: "italic",
-            paddingTop: 7, borderTop: `1px dashed ${C.warn}33`
-          }}>
-            "{inc.escalationNote}"
-          </div>
-        )}
-        {escalated && (
-          <div style={{ fontSize: 11, color: C.warn, marginTop: 7, fontWeight: 600 }}>
-            Sistem tidak tahu apakah pihak luar sudah memperbaiki.
-          </div>
-        )}
-      </div>
-      <div style={{
-        background: C.blueBg, border: `1.5px solid ${C.blue}33`,
-        borderRadius: 11, padding: "10px 12px", fontSize: 12, color: C.blue,
-        lineHeight: 1.5, display: "flex", gap: 9
-      }}>
-        <Hourglass size={15} style={{ flexShrink: 0, marginTop: 1 }} />
-        <span>
-          Jendela klien: {inc.windowDaysLeft} hari tersisa. Auto-close jujur:
-          kalau klien diam, label "klien tidak menanggapi"; kalau klien menanggapi,
-          label "dikonfirmasi klien".
-        </span>
-      </div>
-    </>
-  );
-}
-
-// Panel saat sudah fully closed
-function FinalClosurePanel({ inc }) {
-  const silent = inc.autoCloseLabel === "client_silent";
-  return (
-    <>
-      <SectionLabel>Status final</SectionLabel>
-      <div style={{
-        background: C.okBg, border: `1.5px solid ${C.ok}33`,
-        borderRadius: 12, padding: "13px 14px", marginBottom: 12
-      }}>
-        <div style={{ fontSize: 13, fontWeight: 800, color: C.ok }}>
-          {silent
-            ? "Tertutup · klien tidak menanggapi"
-            : "Tertutup · dikonfirmasi klien"}
-        </div>
-        <div style={{ fontSize: 12, color: C.ink, marginTop: 5, lineHeight: 1.45 }}>
-          {silent
-            ? `Jendela ${VENDOR_AUTO_CLOSE_DAYS} hari lewat tanpa keberatan dari klien. Sistem tidak menebak setuju — hanya mencatat diam.`
-            : "Klien menanggapi & menutup secara aktif."}
-        </div>
-      </div>
-    </>
-  );
-}
-
-const lblStyle2 = {
-  display: "block", fontSize: 12.5, fontWeight: 700,
-  color: "#41506E", marginBottom: 7
-};
-const inpStyle2 = {
-  width: "100%", boxSizing: "border-box",
-  padding: "11px 13px", fontSize: 14, border: "1.5px solid #D9DCE3",
-  borderRadius: 11, outline: "none", fontFamily: "inherit", color: C.ink
-};
-function actionBtn(color) {
-  return {
-    flex: 2, padding: "11px", borderRadius: 11, border: "none",
-    background: color, color: "#fff", fontWeight: 700, fontSize: 14,
-    cursor: "pointer", fontFamily: "inherit",
-    display: "flex", alignItems: "center", justifyContent: "center", gap: 7
-  };
-}
-
-// ============================================================
-//  COMPLAINT — LAYAR SUPERVISOR (bagian 23)
-//  Cermin incident, dgn perbedaan:
-//   - diangkat klien (raisedBy), bukan worker
-//   - badge divisi tujuan (routedTo) — fondasi 1c
-//   - penanda komentar klien menunggu respons ("bola balik")
-//   - ActionPanel punya "Oper ke worker" (opsional, situasional)
-// ============================================================
-function ScreenComplaints({ complaints, onOpen }) {
-  // Sort: komentar klien pending DULU (paling mendesak — bola di vendor),
-  // lalu in_progress, lalu vendor_closed, lalu closed. Dalam grup urut
-  // keparahan desc. Pola "yang bermasalah di atas".
-  const stateRank = { in_progress: 0, vendor_closed: 1, closed: 2 };
-  const sorted = [...complaints].sort((a, b) => {
-    // Komentar klien pending naik paling atas, lintas state
-    if (a.clientCommentPending && !b.clientCommentPending) return -1;
-    if (!a.clientCommentPending && b.clientCommentPending) return 1;
-    const ds = stateRank[a.state] - stateRank[b.state];
-    if (ds !== 0) return ds;
-    return sevById(b.severity).rank - sevById(a.severity).rank;
-  });
-
-  const pendingComment = complaints.filter((c) => c.clientCommentPending).length;
-  const active = complaints.filter((c) => c.state === "in_progress").length;
-  const inWindow = complaints.filter((c) => c.state === "vendor_closed").length;
-  const closed = complaints.filter((c) => c.state === "closed").length;
-
-  return (
-    <div>
-      <p style={{ fontSize: 13.5, color: C.mute, margin: "0 0 14px", lineHeight: 1.5 }}>
-        Komplain dari klien, lintas site. Yang butuh respons Anda menyembul ke atas.
-        Tap untuk lihat rantai & ambil aksi.
-      </p>
-
-      {/* Banner komentar klien pending — kalau ada */}
-      {pendingComment > 0 && (
-        <div style={{
-          background: C.warnBg, border: `1.5px solid ${C.warn}`,
-          borderRadius: 12, padding: "11px 13px", marginBottom: 14,
-          display: "flex", alignItems: "center", gap: 10
-        }}>
-          <MessageCircle size={18} color={C.warn} strokeWidth={2.2} />
-          <div style={{ flex: 1, fontSize: 12.5, color: C.warn, fontWeight: 600, lineHeight: 1.4 }}>
-            {pendingComment} komplain dengan komentar klien menunggu respons Anda
-          </div>
-        </div>
-      )}
-
-      <div style={{
-        display: "grid", gridTemplateColumns: "1fr 1fr 1fr",
-        gap: 7, marginBottom: 16
-      }}>
-        <MiniNum value={active} label="Sedang ditangani"
-          tone={active > 0 ? "warn" : "neutral"} />
-        <MiniNum value={inWindow} label="Jendela klien"
-          tone={inWindow > 0 ? "blue" : "neutral"} />
-        <MiniNum value={closed} label="Tertutup" />
-      </div>
-
-      {sorted.map((cmp) => (
-        <ComplaintCard key={cmp.id} complaint={cmp} onClick={() => onOpen(cmp.id)} />
-      ))}
-    </div>
-  );
-}
-
-function ComplaintCard({ complaint, onClick }) {
-  const sev = sevById(complaint.severity);
-  const cat = complaintCatById(complaint.category);
-  const Icon = cat.icon;
-  const pending = complaint.clientCommentPending;
-
-  return (
-    <button onClick={onClick}
-      style={{
-        width: "100%", display: "flex", alignItems: "stretch", gap: 0, padding: 0,
-        background: "#fff",
-        border: pending ? `1.5px solid ${C.warn}` : `1.5px solid ${C.cardBd}`,
-        borderRadius: 14, marginBottom: 10, cursor: "pointer", fontFamily: "inherit",
-        textAlign: "left", overflow: "hidden",
-        boxShadow: pending ? `0 1px 6px ${C.warn}22` : "none"
-      }}>
-      <div style={{ width: 6, background: sev.color, flexShrink: 0 }} />
-      <div style={{ flex: 1, padding: "13px 14px", minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 7 }}>
-          <span style={{
-            width: 32, height: 32, borderRadius: 9, background: sev.bg,
-            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
-          }}>
-            <Icon size={16} color={sev.color} strokeWidth={2.2} />
-          </span>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
-              <span style={{
-                fontSize: 11, fontWeight: 800, color: sev.color,
-                textTransform: "uppercase", letterSpacing: 0.5
-              }}>
-                {sev.label}
-              </span>
-              <span style={{ fontSize: 11, color: C.soft }}>· {cat.label}</span>
-              {/* Badge divisi tujuan (fondasi 1c) */}
-              <span style={{
-                fontSize: 10, fontWeight: 700, color: C.blue,
-                background: C.blueBg, padding: "1px 7px", borderRadius: 20
-              }}>
-                {complaint.routedTo}
-              </span>
-            </div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: C.ink, marginTop: 3, lineHeight: 1.4 }}>
-              {complaint.summary}
-            </div>
-          </div>
-        </div>
-
-        <div style={{
-          display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap",
-          marginTop: 4
-        }}>
-          <span style={{
-            display: "inline-flex", alignItems: "center", gap: 4,
-            background: C.chip, padding: "2px 7px", borderRadius: 6,
-            fontSize: 11, fontWeight: 600, color: C.mute
-          }}>
-            <MapPin size={10} /> {complaint.site}
-          </span>
-          <span style={{ fontSize: 11.5, color: C.mute }}>
-            {complaint.raisedBy} · {complaint.raisedAt}
-          </span>
-          {complaint.inputSource === "supervisor_recorded" && (
-            <span style={{
-              fontSize: 10, fontWeight: 700, color: C.superv,
-              background: C.supervBg, padding: "1px 6px", borderRadius: 20
-            }}>
-              dicatat dari telepon
-            </span>
-          )}
-        </div>
-
-        <div style={{ marginTop: 8, display: "flex", gap: 7, flexWrap: "wrap" }}>
-          <ComplaintStateBadge complaint={complaint} />
-          {pending && (
-            <span style={{
-              display: "inline-flex", alignItems: "center", gap: 5,
-              fontSize: 11, fontWeight: 700, color: C.warn, background: C.warnBg,
-              padding: "3px 9px", borderRadius: 20
-            }}>
-              <MessageCircle size={11} /> Komentar klien · belum direspons
-            </span>
-          )}
-        </div>
-      </div>
-      <div style={{ display: "flex", alignItems: "center", paddingRight: 10 }}>
-        <ChevronRight size={18} color="#C4C8D0" />
-      </div>
-    </button>
-  );
-}
-
-function ComplaintStateBadge({ complaint }) {
-  if (complaint.state === "in_progress") {
-    return (
-      <span style={{
-        display: "inline-flex", alignItems: "center", gap: 5,
-        fontSize: 11, fontWeight: 700, color: C.warn, background: C.warnBg,
-        padding: "3px 9px", borderRadius: 20
-      }}>
-        <CircleDot size={11} /> Sedang ditangani · {complaint.chain.length} langkah
-      </span>
-    );
-  }
-  if (complaint.state === "vendor_closed") {
-    return (
-      <span style={{
-        display: "inline-flex", alignItems: "center", gap: 5,
-        fontSize: 11, fontWeight: 700, color: C.blue, background: C.blueBg,
-        padding: "3px 9px", borderRadius: 20
-      }}>
-        <Hourglass size={11} /> Selesai vendor · jendela klien {complaint.windowDaysLeft}h
-      </span>
-    );
-  }
-  const silent = complaint.autoCloseLabel === "client_silent";
-  return (
-    <span style={{
-      display: "inline-flex", alignItems: "center", gap: 5,
-      fontSize: 11, fontWeight: 700, color: C.ok, background: C.okBg,
-      padding: "3px 9px", borderRadius: 20
-    }}>
-      <Check size={11} />
-      {silent ? "Tertutup · klien tidak menanggapi" : "Tertutup · dikonfirmasi klien"}
-    </span>
-  );
-}
-
-// ============================================================
-//  COMPLAINT DETAIL — rantai respons + aksi
-// ============================================================
-function ScreenComplaintDetail({ complaintId, complaints, onAction }) {
-  const cmp = complaints.find((c) => c.id === complaintId);
-  const [mode, setMode] = useState(null);
-  // mode: null | 'worker' | 'supervisor' | 'resolve' | 'note' | 'respond_client'
-
-  if (!cmp) return <div style={{ padding: 20, color: C.mute }}>Komplain tidak ditemukan.</div>;
-  const sev = sevById(cmp.severity);
-  const cat = complaintCatById(cmp.category);
-
-  return (
-    <div>
-      {/* Header — fakta komplain */}
-      <div style={{
-        background: "#fff", border: `1.5px solid ${C.cardBd}`,
-        borderRadius: 14, padding: "14px 15px", marginBottom: 14
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 9 }}>
-          <span style={{
-            width: 38, height: 38, borderRadius: 11, background: sev.bg,
-            display: "flex", alignItems: "center", justifyContent: "center"
-          }}>
-            <cat.icon size={19} color={sev.color} strokeWidth={2.2} />
-          </span>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
-              <span style={{
-                fontSize: 11, fontWeight: 800, color: sev.color,
-                textTransform: "uppercase", letterSpacing: 0.5
-              }}>{sev.label}</span>
-              <span style={{ fontSize: 11, color: C.soft }}>· {cat.label}</span>
-              <span style={{
-                fontSize: 10, fontWeight: 700, color: C.blue,
-                background: C.blueBg, padding: "1px 7px", borderRadius: 20
-              }}>
-                {cmp.routedTo}
-              </span>
-            </div>
-            <div style={{ fontSize: 15, fontWeight: 800, color: C.ink, marginTop: 3, lineHeight: 1.4 }}>
-              {cmp.summary}
-            </div>
-          </div>
-        </div>
-        <div style={{
-          display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap",
-          fontSize: 12, color: C.mute
-        }}>
-          <span style={{
-            display: "inline-flex", alignItems: "center", gap: 4,
-            background: C.chip, padding: "2px 7px", borderRadius: 6, fontWeight: 600
-          }}>
-            <MapPin size={11} /> {cmp.site}
-          </span>
-          <span>Diajukan {cmp.raisedBy} · {cmp.raisedAt}</span>
-        </div>
-        {/* Catatan kalau dicatat dari telepon (Cara masuk 2) */}
-        {cmp.inputSource === "supervisor_recorded" && cmp.recordedNote && (
-          <div style={{
-            marginTop: 10, padding: "9px 11px", background: C.supervBg,
-            borderRadius: 9, fontSize: 11.5, color: C.superv, lineHeight: 1.5,
-            display: "flex", alignItems: "flex-start", gap: 8
-          }}>
-            <FileText size={14} style={{ flexShrink: 0, marginTop: 1 }} />
-            <span>{cmp.recordedNote}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Banner komentar klien pending — paling menonjol */}
-      {cmp.clientCommentPending && (
-        <div style={{
-          background: C.warnBg, border: `1.5px solid ${C.warn}`,
-          borderRadius: 12, padding: "12px 14px", marginBottom: 14
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-            <MessageCircle size={16} color={C.warn} strokeWidth={2.3} />
-            <span style={{ fontSize: 12.5, fontWeight: 800, color: C.warn }}>
-              Klien berkomentar — bola kembali ke Anda
-            </span>
-          </div>
-          <div style={{ fontSize: 12, color: C.ink, lineHeight: 1.5 }}>
-            Klien tidak puas dan mengembalikan komplain. Respons di bawah, lalu
-            tutup ulang kalau sudah dibereskan.
-          </div>
-        </div>
-      )}
-
-      {/* Rantai respons */}
-      <SectionLabel>Rantai respons ({cmp.chain.length})</SectionLabel>
-      <div style={{ position: "relative", paddingLeft: 22, marginBottom: 16 }}>
-        <div style={{
-          position: "absolute", left: 8, top: 4, bottom: 4,
-          width: 2, background: "#E6E8EE"
-        }} />
-        {cmp.chain.map((step, i) => {
-          // Langkah dari klien ditandai warna ungu (data dari luar vendor)
-          const fromClient = step.from === cmp.raisedBy;
-          return (
-            <div key={i} style={{ position: "relative", marginBottom: 11 }}>
-              <div style={{
-                position: "absolute", left: -22, top: 3,
-                width: 18, height: 18, borderRadius: "50%", background: "#fff",
-                border: `3px solid ${fromClient ? C.superv : C.blue}`, boxSizing: "border-box"
-              }} />
-              <div style={{
-                background: "#fff", border: `1.5px solid ${C.cardBd}`,
-                borderRadius: 11, padding: "9px 12px"
-              }}>
-                <div style={{
-                  fontSize: 12.5, fontWeight: 700, color: C.ink,
-                  display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap"
-                }}>
-                  <span>{step.from}</span>
-                  <ArrowRight size={12} color={C.soft} />
-                  <span>{step.to}</span>
-                  <span style={{ color: C.soft, fontWeight: 500 }}>· {step.at}</span>
-                </div>
-                {step.note && (
-                  <div style={{ fontSize: 11.5, color: C.mute, marginTop: 3, fontStyle: "italic" }}>
-                    "{step.note}"
-                  </div>
-                )}
-              </div>
-            </div>
           );
         })}
       </div>
 
-      {/* Panel aksi per state */}
-      {cmp.state === "in_progress" && (
-        <ComplaintActionPanel cmp={cmp} mode={mode} setMode={setMode} onAction={onAction} />
-      )}
-      {cmp.state === "vendor_closed" && <ClosurePanel inc={cmp} />}
-      {cmp.state === "closed" && <FinalClosurePanel inc={cmp} />}
+      {/* TOTAL CIRCULATION — aggregate verification */}
+      <div style={{
+        background: C.driverAccentBg,
+        border: `1px solid ${C.driverAccent}22`,
+        borderLeft: `3px solid ${C.driverAccent}`,
+        borderRadius: 10,
+        padding: "12px 14px",
+      }}>
+        <div style={{ fontSize: 10, color: C.driverAccentDark, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700, marginBottom: 10 }}>
+          Total Circulation
+        </div>
+
+        {/* Per-item totals */}
+        {Object.entries(totals).map(([itemId, t]) => {
+          const itemMeta = custody.items.find(i => i.id === itemId);
+          if (!itemMeta) return null;
+          const loaded = itemMeta.warehouseRecorded;
+          const expectedReturn = loaded - t.drop + t.pickup;
+          const drops = t.drop;
+          const pickups = t.pickup;
+
+          return (
+            <div key={itemId} style={{
+              padding: "8px 0",
+              borderBottom: `1px solid ${C.driverAccent}11`,
+              fontSize: 12,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                <span style={{ color: C.text, fontWeight: 600 }}>{t.name}</span>
+                {t.type === "consumable" && (
+                  <span style={{
+                    padding: "1px 5px", borderRadius: 3,
+                    background: C.slate100, color: C.slate600,
+                    fontSize: 9, fontWeight: 600,
+                    textTransform: "uppercase", letterSpacing: "0.04em",
+                  }}>C</span>
+                )}
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6, fontSize: 11 }}>
+                <div>
+                  <span style={{ color: C.textMid, display: "block", marginBottom: 1 }}>Muat</span>
+                  <span className="mono" style={{ color: C.text, fontWeight: 700, fontSize: 13 }}>{loaded}</span>
+                </div>
+                <div>
+                  <span style={{ color: C.textMid, display: "block", marginBottom: 1 }}>↓ Drop</span>
+                  <span className="mono" style={{ color: C.driverAccent, fontWeight: 700, fontSize: 13 }}>{drops}</span>
+                </div>
+                <div>
+                  <span style={{ color: C.textMid, display: "block", marginBottom: 1 }}>↑ Pickup</span>
+                  <span className="mono" style={{ color: C.violet700, fontWeight: 700, fontSize: 13 }}>{pickups}</span>
+                </div>
+              </div>
+              {/* Validation check inline */}
+              {loaded !== drops && (
+                <div style={{ marginTop: 6, fontSize: 10, color: C.amber700, fontWeight: 500 }}>
+                  ⚠ Muat ({loaded}) ≠ total drop ({drops})
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {/* Aggregate footer */}
+        <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.driverAccent}33`, display: "flex", gap: 14, fontSize: 11 }}>
+          <div>
+            <span style={{ color: C.textMid }}>Total ↓ drop: </span>
+            <span className="mono" style={{ color: C.driverAccent, fontWeight: 700 }}>{totalDrop}</span>
+          </div>
+          <div>
+            <span style={{ color: C.textMid }}>Total ↑ pickup: </span>
+            <span className="mono" style={{ color: C.violet700, fontWeight: 700 }}>{totalPickup}</span>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 10, fontSize: 10, color: C.textMid, lineHeight: 1.5, fontStyle: "italic" }}>
+          Muat awal = jumlah drop total. Pickup nambah ke vehicle selama rute.
+        </div>
+      </div>
     </div>
   );
-}
+};
 
-function ComplaintActionPanel({ cmp, mode, setMode, onAction }) {
-  const [target, setTarget] = useState("");
-  const [note, setNote] = useState("");
+// ═══════════════════════════════════════════════════════════════════════════
+// SCREEN 1: CUSTODY NOTIFICATION (Driver Home Surface)
+// ═══════════════════════════════════════════════════════════════════════════
+// Driver sees a pending custody confirmation BEFORE they can do anything else.
+// This is BLOCKING — they cannot proceed to task execution until handled.
+export const CustodyNotificationScreen = ({ custody, onStartConfirmation, onBack }) => {
+  return (
+    <div style={{ height: "100%", display: "flex", flexDirection: "column", background: C.bg }}>
 
-  const reset = () => { setMode(null); setTarget(""); setNote(""); };
-  const cancelBtn = (
-    <button onClick={reset}
-      style={{
-        flex: 1, padding: "11px", borderRadius: 11, border: `1.5px solid ${C.cardBd}`,
-        background: "#fff", color: C.mute, fontWeight: 600, fontSize: 13.5,
-        cursor: "pointer", fontFamily: "inherit"
+      {/* Zone 1: Identity Header */}
+      <div style={{
+        background: C.surface,
+        borderBottom: `1px solid ${C.border}`,
+        padding: "14px 16px",
+        flexShrink: 0,
       }}>
-      Batal
-    </button>
-  );
-
-  if (!mode) {
-    return (
-      <>
-        <SectionLabel>Aksi</SectionLabel>
-        {cmp.clientCommentPending && (
-          <div style={{ fontSize: 11.5, color: C.warn, marginBottom: 10, lineHeight: 1.5 }}>
-            Klien menunggu respons. Tindak lanjuti, lalu tutup ulang.
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <button onClick={onBack} className="tap-feedback" style={{
+            width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+            background: "transparent", border: "none", fontSize: 18, color: C.text, cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>←</button>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 15, fontWeight: 600, color: C.text, lineHeight: 1.2 }}>
+              Penerimaan Muatan
+            </div>
+            <div style={{ fontSize: 11, color: C.textMid, lineHeight: 1.2 }}>
+              {DRIVER.name} · Driver Runtime
+            </div>
           </div>
-        )}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9, marginBottom: 14 }}>
-          <ActionTile icon={Users} label="Oper ke worker" sub="minta worker tindak lanjut"
-            onClick={() => setMode("worker")} />
-          <ActionTile icon={Repeat} label="Oper ke supervisor" sub="rekan / atasan"
-            onClick={() => setMode("supervisor")} />
-          <ActionTile icon={Check} label="Tandai selesai" sub="vendor merespons"
-            color={C.ok} bg={C.okBg} onClick={() => setMode("resolve")} />
-          <ActionTile icon={MessageSquare} label="Tambah catatan" sub="tanpa pindah"
-            onClick={() => setMode("note")} />
         </div>
-      </>
-    );
-  }
+      </div>
 
-  if (mode === "worker") {
-    return (
-      <>
-        <SectionLabel>Oper ke worker</SectionLabel>
+      {/* Zone 3: Main content */}
+      <div style={{ flex: 1, padding: "20px 16px 100px", overflowY: "auto" }} className="scroll-thin">
+
+        {/* Custody Pending Banner — operationally important */}
         <div style={{
-          background: C.blueBg, border: `1.5px solid ${C.blue}33`,
-          borderRadius: 11, padding: "10px 12px", marginBottom: 12, fontSize: 11.5,
-          color: C.blue, lineHeight: 1.5
-        }}>
-          Operan masuk ke inbox worker. Pakai ini kalau complaint butuh tindak
-          lapangan (mis. bersihkan ulang, periksa titik). Worker lapor balik saat selesai.
+          background: C.amber50,
+          border: `1px solid ${C.amber100}`,
+          borderLeft: `3px solid ${C.amber400}`,
+          borderRadius: 10,
+          padding: "14px 16px",
+          marginBottom: 20,
+        }} className="slide-up">
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <span style={{ fontSize: 11, color: C.amber700, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              ⓘ Konfirmasi Diperlukan
+            </span>
+          </div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 4 }}>
+            Vehicle siap berangkat, butuh konfirmasi penerimaan
+          </div>
+          <div style={{ fontSize: 12, color: C.amber700, lineHeight: 1.5 }}>
+            Lo belum bisa mulai task hari ini sebelum konfirmasi load dari warehouse.
+          </div>
         </div>
-        <label style={lblStyle2}>Worker penerima</label>
-        <select value={target} onChange={(e) => setTarget(e.target.value)}
-          style={{ ...inpStyle2, marginBottom: 12 }}>
-          <option value="">Pilih worker…</option>
-          <option>Dewi Lestari (Cleaning)</option>
-          <option>Sari Wulandari (Security)</option>
-          <option>Agus Pratama (Security)</option>
-          <option>Citra Dewi (Cleaning)</option>
-        </select>
-        <label style={lblStyle2}>Instruksi untuk worker</label>
-        <textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)}
-          placeholder="Mis. Tolong bersihkan ulang lobby & lapor balik dgn foto"
-          style={{ ...inpStyle2, resize: "vertical", marginBottom: 12 }} />
-        <div style={{ display: "flex", gap: 10 }}>
-          {cancelBtn}
-          <button disabled={!target || !note}
-            onClick={() => { onAction(cmp.id, "handover_worker", { target, note }); reset(); }}
-            style={actionBtn(target && note ? C.blue : "#A8C5E8")}>
-            <Send size={16} /> Oper ke worker
-          </button>
-        </div>
-      </>
-    );
-  }
 
-  if (mode === "supervisor") {
-    return (
-      <>
-        <SectionLabel>Oper ke supervisor lain</SectionLabel>
-        <label style={lblStyle2}>Penerima</label>
-        <select value={target} onChange={(e) => setTarget(e.target.value)}
-          style={{ ...inpStyle2, marginBottom: 12 }}>
-          <option value="">Pilih penerima…</option>
-          <option>Supervisor Keamanan</option>
-          <option>Supervisor Cleaning</option>
-          <option>Manajemen Jab</option>
-          <option>Atasan Area</option>
-        </select>
-        <label style={lblStyle2}>Catatan operan</label>
-        <textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)}
-          placeholder="Konteks utk penerima…"
-          style={{ ...inpStyle2, resize: "vertical", marginBottom: 12 }} />
-        <div style={{ display: "flex", gap: 10 }}>
-          {cancelBtn}
-          <button disabled={!target}
-            onClick={() => { onAction(cmp.id, "handover_supervisor", { target, note }); reset(); }}
-            style={actionBtn(target ? C.blue : "#A8C5E8")}>
-            <Send size={16} /> Oper
-          </button>
-        </div>
-      </>
-    );
-  }
-
-  if (mode === "resolve") {
-    const respondingToComment = cmp.clientCommentPending;
-    return (
-      <>
-        <SectionLabel>Tandai selesai (vendor merespons)</SectionLabel>
+        {/* Vehicle Card */}
         <div style={{
-          background: C.okBg, border: `1.5px solid ${C.ok}33`,
-          borderRadius: 11, padding: "10px 12px", marginBottom: 12, fontSize: 11.5,
-          color: C.ok, lineHeight: 1.5
+          background: C.surface,
+          border: `1px solid ${C.border}`,
+          borderRadius: 10,
+          padding: "16px",
+          marginBottom: 16,
         }}>
-          {respondingToComment
-            ? `Anda merespons komentar klien. Akan masuk jendela klien ${VENDOR_AUTO_CLOSE_DAYS} hari lagi — klien bisa puas, komentar lagi, atau diam.`
-            : `Vendor merespons komplain. Masuk jendela klien ${VENDOR_AUTO_CLOSE_DAYS} hari sebelum auto-close.`}
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{
+              width: 48, height: 48, borderRadius: 10,
+              background: C.driverAccentBg,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 24,
+              flexShrink: 0,
+            }}>🚚</div>
+            <div style={{ flex: 1 }}>
+              <div className="mono" style={{ fontSize: 16, fontWeight: 700, color: C.text }}>
+                {custody.vehiclePlate}
+              </div>
+            </div>
+          </div>
+
+          {/* Load info */}
+          <div style={{ marginTop: 14, paddingTop: 14, borderTop: `1px solid ${C.border}` }}>
+            <div style={{ display: "grid", gap: 8, fontSize: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: C.textMid }}>Dimuat oleh</span>
+                <span style={{ color: C.text, fontWeight: 500 }}>{custody.loadedBy}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: C.textMid }}>Waktu loading</span>
+                <span className="mono" style={{ color: C.text, fontWeight: 500 }}>{custody.loadedAt}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: C.textMid }}>Custody event</span>
+                <span className="mono" style={{ color: C.text, fontWeight: 500 }}>{custody.custodyEventId}</span>
+              </div>
+            </div>
+          </div>
         </div>
-        <label style={lblStyle2}>Bagaimana ditangani</label>
-        <textarea rows={3} value={note} onChange={(e) => setNote(e.target.value)}
-          placeholder="Mis. Briefing ulang tim, jadwal cleaning sore ditambah"
-          style={{ ...inpStyle2, resize: "vertical", marginBottom: 12 }} />
-        <div style={{ display: "flex", gap: 10 }}>
-          {cancelBtn}
-          <button disabled={!note}
-            onClick={() => { onAction(cmp.id, "resolve", { note }); reset(); }}
-            style={actionBtn(note ? C.ok : "#A9DDCB")}>
-            <Check size={16} /> Tandai selesai
-          </button>
+
+        {/* TASK MANIFEST — full visibility per doctrine (driver execution-critical info) */}
+        <TaskManifestCard custody={custody} />
+
+        {/* Doctrine reminder */}
+        <div style={{
+          background: C.infoBlueBg,
+          border: `1px solid ${C.infoBlue}22`,
+          borderLeft: `3px solid ${C.infoBlue}`,
+          borderRadius: 10,
+          padding: "12px 14px",
+          fontSize: 12,
+          color: C.text,
+          lineHeight: 1.6,
+        }}>
+          <strong>Cara konfirmasi:</strong> Lo akan diminta hitung fisik setiap item secara independen. Lo tidak akan lihat angka dari warehouse sebelum lo hitung — biar konfirmasi-nya genuine bilateral, bukan formality.
         </div>
-      </>
-    );
-  }
+      </div>
 
-  if (mode === "note") {
-    return (
-      <>
-        <SectionLabel>Tambah catatan</SectionLabel>
-        <textarea rows={3} value={note} onChange={(e) => setNote(e.target.value)}
-          placeholder="Catatan utk jejak komplain…"
-          style={{ ...inpStyle2, resize: "vertical", marginBottom: 12 }} />
-        <div style={{ display: "flex", gap: 10 }}>
-          {cancelBtn}
-          <button disabled={!note}
-            onClick={() => { onAction(cmp.id, "note", { note }); reset(); }}
-            style={actionBtn(note ? C.ink : "#999")}>
-            <FileText size={16} /> Tambah
-          </button>
-        </div>
-      </>
-    );
-  }
-  return null;
-}
+      {/* Zone 5: Sticky action bar */}
+      <div style={{
+        background: C.surface,
+        borderTop: `1px solid ${C.border}`,
+        padding: "12px 14px",
+        flexShrink: 0,
+        boxShadow: "0 -4px 12px rgba(0,0,0,0.04)",
+      }}>
+        <button
+          onClick={onStartConfirmation}
+          className="tap-feedback"
+          style={{
+            width: "100%",
+            background: C.driverAccent,
+            color: "#fff",
+            border: "none",
+            padding: "16px",
+            borderRadius: 10,
+            fontSize: 15,
+            fontWeight: 700,
+            cursor: "pointer",
+            textTransform: "uppercase",
+            letterSpacing: "0.04em",
+          }}
+        >
+          Mulai Konfirmasi Penerimaan
+        </button>
+      </div>
+    </div>
+  );
+};
 
-// ============================================================
-//  SHELL / NAVIGASI
-// ============================================================
-export default function App() {
-  const [stack, setStack] = useState([{ view: "home" }]);
-  const [requests, setRequests] = useState(INITIAL_REQUESTS);
-  const [incidents, setIncidents] = useState(INITIAL_INCIDENTS);
-  const [complaints, setComplaints] = useState(INITIAL_COMPLAINTS);
-  const top = stack[stack.length - 1];
-  const push = (v) => setStack((s) => [...s, v]);
-  const pop = () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s));
+// ═══════════════════════════════════════════════════════════════════════════
+// SCREEN 2: INDEPENDENT COUNT WORKSPACE
+// ═══════════════════════════════════════════════════════════════════════════
+// Driver counts physically BEFORE seeing warehouse-recorded values.
+// "Reveal" happens after driver explicitly opts in (single press).
+export const IndependentCountWorkspace = ({ custody, onBack, onContinue }) => {
+  const [counts, setCounts] = useState(
+    custody.items.reduce((acc, item) => ({ ...acc, [item.id]: 0 }), {})
+  );
+  const [hasRevealed, setHasRevealed] = useState(false);
 
-  function approveRequest(id) {
-    setRequests((q) => {
-      const req = q.find((r) => r.id === id);
-      const total = (VENDOR_RULES[req.typeId] || []).length;
-      const hasNext = req.currentLevel + 1 < total;
-      if (hasNext) return q.map((r) => (r.id === id ? { ...r, currentLevel: r.currentLevel + 1 } : r));
-      return q.filter((r) => r.id !== id);
-    });
-  }
-  function rejectRequest(id) {
-    setRequests((q) => q.filter((r) => r.id !== id));
-  }
+  const items = custody.items;
+  const returnableItems = items.filter(i => i.type === "returnable");
+  const consumableItems = items.filter(i => i.type === "consumable");
 
-  // Aksi incident: tambah ke chain dan/atau ubah state
-  function handleIncidentAction(incidentId, kind, payload) {
-    setIncidents((all) => all.map((inc) => {
-      if (inc.id !== incidentId) return inc;
-      const now = "Sekarang";
-      if (kind === "handover") {
-        return {
-          ...inc, chain: [...inc.chain,
-          { from: "Supervisor Site", to: payload.target, at: now, note: payload.note }]
-        };
-      }
-      if (kind === "note") {
-        return {
-          ...inc, chain: [...inc.chain,
-          { from: "Supervisor Site", to: "Catatan", at: now, note: payload.note }]
-        };
-      }
-      if (kind === "resolve") {
-        return {
-          ...inc, state: "vendor_closed", closureKind: "vendor_resolved",
-          closedAt: now, closedBy: "Supervisor Site", windowDaysLeft: VENDOR_AUTO_CLOSE_DAYS,
-          clientCommentPending: false,
-          chain: [...inc.chain, {
-            from: "Supervisor Site", to: "Selesai",
-            at: now, note: payload.note
-          }]
-        };
-      }
-      if (kind === "escalate") {
-        return {
-          ...inc, state: "vendor_closed", closureKind: "escalated_external",
-          closedAt: now, closedBy: "Supervisor Site", windowDaysLeft: VENDOR_AUTO_CLOSE_DAYS,
-          escalationNote: payload.note, clientCommentPending: false,
-          chain: [...inc.chain, {
-            from: "Supervisor Site", to: payload.target,
-            at: now, note: payload.note
-          }]
-        };
-      }
-      return inc;
-    }));
-  }
+  const allCounted = items.every(item => counts[item.id] > 0);
+  const hasAnyCount = Object.values(counts).some(v => v > 0);
 
-  // Aksi complaint — cermin incident, plus operan ke worker & respons komentar klien.
-  // Saat ada clientCommentPending dan supervisor merespons (resolve), pending
-  // dibersihkan — bola berpindah lagi ke klien (jendela baru).
-  function handleComplaintAction(complaintId, kind, payload) {
-    setComplaints((all) => all.map((cmp) => {
-      if (cmp.id !== complaintId) return cmp;
-      const now = "Sekarang";
-      const self = cmp.routedTo; // supervisor yg menangani (sesuai routing)
-      if (kind === "handover_worker") {
-        return {
-          ...cmp, chain: [...cmp.chain,
-          { from: self, to: payload.target, at: now, note: payload.note }]
-        };
-      }
-      if (kind === "handover_supervisor") {
-        return {
-          ...cmp, chain: [...cmp.chain,
-          { from: self, to: payload.target, at: now, note: payload.note }]
-        };
-      }
-      if (kind === "note") {
-        return {
-          ...cmp, chain: [...cmp.chain,
-          { from: self, to: "Catatan", at: now, note: payload.note }]
-        };
-      }
-      if (kind === "resolve") {
-        // Tutup ke jendela klien; bersihkan pending komentar klien (kalau ada)
-        return {
-          ...cmp, state: "vendor_closed", closureKind: "vendor_resolved",
-          closedAt: now, windowDaysLeft: VENDOR_AUTO_CLOSE_DAYS,
-          clientCommentPending: false,
-          chain: [...cmp.chain, { from: self, to: "Selesai", at: now, note: payload.note }]
-        };
-      }
-      return cmp;
-    }));
-  }
-
-  const title = (() => {
-    if (top.view === "home") return "Beranda";
-    if (top.view === "approvals") return "Kotak Approval";
-    if (top.view === "sites") return "Site Saya";
-    if (top.view === "presence") return SITES.find((s) => s.id === top.siteId)?.name || "Kehadiran";
-    if (top.view === "patrol") return SITES.find((s) => s.id === top.siteId)?.name || "Patroli";
-    if (top.view === "timeline") return "Detail Titik";
-    if (top.view === "workers") return "Worker Saya";
-    if (top.view === "worker_history") return WORKERS.find((w) => w.id === top.workerId)?.name || "Riwayat Worker";
-    if (top.view === "worker_day") return "Detail Hari";
-    if (top.view === "incidents") return "Incident";
-    if (top.view === "incident_detail") return "Detail Incident";
-    if (top.view === "complaints") return "Komplain Klien";
-    if (top.view === "complaint_detail") return "Detail Komplain";
-    return "";
-  })();
+  // Determine match state after reveal
+  const hasMismatch = hasRevealed && items.some(item => counts[item.id] !== item.warehouseRecorded);
+  const allMatch = hasRevealed && items.every(item => counts[item.id] === item.warehouseRecorded);
 
   return (
-    <div style={{
-      minHeight: "100vh", background: "#EDEFF3", fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
-      padding: "28px 16px 48px", display: "flex", flexDirection: "column", alignItems: "center",
-    }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        *::-webkit-scrollbar{width:0}`}</style>
+    <div style={{ height: "100%", display: "flex", flexDirection: "column", background: C.bg }}>
 
-      <div style={{ textAlign: "center", marginBottom: 22 }}>
-        <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: 3, color: C.ok }}>AUTSORZ</div>
-        <div style={{ fontSize: 14, color: C.mute, marginTop: 2 }}>Supervisor — Approval, Kehadiran, Patroli</div>
+      {/* Zone 1: Header */}
+      <div style={{
+        background: C.surface,
+        borderBottom: `1px solid ${C.border}`,
+        padding: "12px 14px",
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        flexShrink: 0,
+      }}>
+        <button
+          onClick={onBack}
+          className="tap-feedback"
+          style={{
+            width: 36, height: 36, borderRadius: 8,
+            background: "transparent", border: "none",
+            fontSize: 18, color: C.text, cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >←</button>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 11, color: C.textMid, textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 600 }}>
+            Konfirmasi Penerimaan
+          </div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: C.text }}>
+            {custody.vehiclePlate}
+          </div>
+        </div>
+        {/* Step indicator */}
+        <div style={{
+          background: C.driverAccentBg,
+          color: C.driverAccent,
+          padding: "4px 8px",
+          borderRadius: 4,
+          fontSize: 10,
+          fontWeight: 700,
+          textTransform: "uppercase",
+          letterSpacing: "0.04em",
+        }}>
+          {hasRevealed ? "Step 2/2" : "Step 1/2"}
+        </div>
+      </div>
+
+      {/* Zone 4: Context rail */}
+      <div style={{
+        background: C.driverAccentBg,
+        borderBottom: `1px solid ${C.border}`,
+        padding: "10px 14px",
+        flexShrink: 0,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: C.driverAccentDark }}>
+          {!hasRevealed ? (
+            <>
+              <span style={{ fontWeight: 600 }}>Hitung independen</span>
+              <span style={{ color: C.textDim }}>·</span>
+              <span>angka warehouse belum diperlihatkan</span>
+            </>
+          ) : (
+            <>
+              <span style={{ fontWeight: 600 }}>Verifikasi vs catatan warehouse</span>
+              <span style={{ color: C.textDim }}>·</span>
+              <span>{allMatch ? "Match" : "Ada selisih"}</span>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Zone 3: Workspace */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "16px 14px 100px" }} className="scroll-thin">
+
+        {/* Instructions banner */}
+        {!hasRevealed && (
+          <div style={{
+            background: C.infoBlueBg,
+            border: `1px solid ${C.infoBlue}22`,
+            borderLeft: `3px solid ${C.infoBlue}`,
+            borderRadius: 8,
+            padding: "12px 14px",
+            marginBottom: 16,
+            display: "flex",
+            gap: 10,
+          }} className="slide-up">
+            <span style={{ color: C.infoBlue, fontSize: 16, lineHeight: 1, marginTop: 2 }}>ⓘ</span>
+            <div style={{ flex: 1, fontSize: 12, color: C.text, lineHeight: 1.5 }}>
+              <strong>Hitung sendiri dulu.</strong> Angka warehouse akan terungkap setelah lo selesai hitung — biar konfirmasi-nya genuine, bukan auto-match.
+            </div>
+          </div>
+        )}
+
+        {/* Returnable Section */}
+        {returnableItems.length > 0 && (
+          <div style={{ marginBottom: 8 }}>
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              marginBottom: 10,
+              paddingBottom: 6,
+              borderBottom: `1px solid ${C.border}`,
+            }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: C.driverAccent }} />
+              <span style={{
+                fontSize: 12, fontWeight: 700, color: C.driverAccentDark,
+                textTransform: "uppercase", letterSpacing: "0.08em",
+              }}>Returnable</span>
+            </div>
+            {returnableItems.map(item => (
+              <IndependentCountStepper
+                key={item.id}
+                itemName={item.name}
+                itemType={item.type}
+                value={counts[item.id]}
+                onChange={(v) => setCounts({ ...counts, [item.id]: v })}
+                showWarehouseRef={hasRevealed}
+                warehouseValue={item.warehouseRecorded}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Consumable Section */}
+        {consumableItems.length > 0 && (
+          <div style={{ marginTop: 20 }}>
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              marginBottom: 10,
+              paddingBottom: 6,
+              borderBottom: `1px solid ${C.border}`,
+            }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: C.slate400 }} />
+              <span style={{
+                fontSize: 12, fontWeight: 700, color: C.slate700,
+                textTransform: "uppercase", letterSpacing: "0.08em",
+              }}>Consumable</span>
+            </div>
+            {consumableItems.map(item => (
+              <IndependentCountStepper
+                key={item.id}
+                itemName={item.name}
+                itemType={item.type}
+                value={counts[item.id]}
+                onChange={(v) => setCounts({ ...counts, [item.id]: v })}
+                showWarehouseRef={hasRevealed}
+                warehouseValue={item.warehouseRecorded}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* After reveal — outcome summary */}
+        {hasRevealed && allMatch && (
+          <div style={{
+            marginTop: 16,
+            background: C.emerald50,
+            border: `1px solid ${C.emerald100}`,
+            borderLeft: `3px solid ${C.emerald400}`,
+            borderRadius: 10,
+            padding: "14px 16px",
+          }} className="slide-up">
+            <div style={{ fontSize: 14, fontWeight: 700, color: C.emerald700, marginBottom: 4 }}>
+              ✓ Semua match
+            </div>
+            <div style={{ fontSize: 12, color: C.emerald700, lineHeight: 1.5 }}>
+              Hitungan lo sama dengan catatan warehouse. Lo bisa konfirmasi load dan berangkat.
+            </div>
+          </div>
+        )}
+
+        {hasRevealed && hasMismatch && (
+          <div style={{
+            marginTop: 16,
+            background: C.amber50,
+            border: `1px solid ${C.amber100}`,
+            borderLeft: `3px solid ${C.amber400}`,
+            borderRadius: 10,
+            padding: "14px 16px",
+          }} className="slide-up">
+            <div style={{ fontSize: 14, fontWeight: 700, color: C.amber700, marginBottom: 4 }}>
+              ! Ada selisih dengan catatan warehouse
+            </div>
+            <div style={{ fontSize: 12, color: C.amber700, lineHeight: 1.5, marginBottom: 8 }}>
+              Hitungan lo berbeda dengan catatan warehouse. Lo punya 2 pilihan:
+            </div>
+            <ul style={{ fontSize: 12, color: C.amber700, lineHeight: 1.6, paddingLeft: 18, margin: 0 }}>
+              <li><strong>Recount</strong> — kalau lo ragu dengan hitungan lo</li>
+              <li><strong>Report mismatch</strong> — kalau lo yakin dengan hitungan lo</li>
+            </ul>
+          </div>
+        )}
+      </div>
+
+      {/* Zone 5: Action bar */}
+      <div style={{
+        background: C.surface,
+        borderTop: `1px solid ${C.border}`,
+        padding: "12px 14px",
+        flexShrink: 0,
+        boxShadow: "0 -4px 12px rgba(0,0,0,0.04)",
+        display: "flex",
+        flexDirection: "column",
+        gap: 8,
+      }}>
+        {!hasRevealed ? (
+          <button
+            onClick={() => setHasRevealed(true)}
+            disabled={!allCounted}
+            className="tap-feedback"
+            style={{
+              width: "100%",
+              background: !allCounted ? C.slate200 : C.driverAccent,
+              color: !allCounted ? C.textDim : "#fff",
+              border: "none",
+              padding: "16px",
+              borderRadius: 10,
+              fontSize: 15,
+              fontWeight: 700,
+              cursor: allCounted ? "pointer" : "not-allowed",
+              textTransform: "uppercase",
+              letterSpacing: "0.04em",
+            }}
+          >
+            {!hasAnyCount ? "Mulai Hitung" :
+              !allCounted ? `Hitung Semua Item (${Object.values(counts).filter(v => v > 0).length}/${items.length})` :
+                "Lihat Catatan Warehouse →"}
+          </button>
+        ) : (
+          <>
+            <button
+              onClick={() => onContinue(counts, allMatch ? "confirm" : "mismatch")}
+              className="tap-feedback"
+              style={{
+                width: "100%",
+                background: allMatch ? C.emerald500 : C.amber400,
+                color: "#fff",
+                border: "none",
+                padding: "16px",
+                borderRadius: 10,
+                fontSize: 15,
+                fontWeight: 700,
+                cursor: "pointer",
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+              }}
+            >
+              {allMatch ? "Konfirmasi Load · Siap Berangkat" : "Lanjut · Report Mismatch"}
+            </button>
+            {hasMismatch && (
+              <button
+                onClick={() => {
+                  // Recount: reset counts, hide warehouse reveal
+                  setCounts(custody.items.reduce((acc, item) => ({ ...acc, [item.id]: 0 }), {}));
+                  setHasRevealed(false);
+                }}
+                className="tap-feedback"
+                style={{
+                  width: "100%",
+                  background: C.surface,
+                  color: C.text,
+                  border: `1px solid ${C.border}`,
+                  padding: "13px",
+                  borderRadius: 10,
+                  fontSize: 14,
+                  fontWeight: 500,
+                  cursor: "pointer",
+                }}
+              >
+                Recount Dulu
+              </button>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SCREEN 3A: CONFIRMATION SUCCESS
+// ═══════════════════════════════════════════════════════════════════════════
+export const ConfirmationSuccessScreen = ({ custody, counts, onProceed }) => {
+  return (
+    <div style={{ height: "100%", display: "flex", flexDirection: "column", background: C.bg }}>
+      <div style={{
+        background: C.surface,
+        borderBottom: `1px solid ${C.border}`,
+        padding: "14px 16px",
+        flexShrink: 0,
+      }}>
+        <div style={{ fontSize: 11, color: C.textMid, textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 600 }}>
+          Custody Confirmed
+        </div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: C.text }}>
+          {custody.vehiclePlate}
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px 100px" }} className="scroll-thin">
+        {/* Success banner */}
+        <div style={{
+          background: C.emerald50,
+          border: `1px solid ${C.emerald100}`,
+          borderRadius: 12,
+          padding: "24px 20px",
+          marginBottom: 20,
+          textAlign: "center",
+        }} className="slide-up">
+          <div style={{
+            width: 64, height: 64,
+            borderRadius: "50%",
+            background: C.emerald500,
+            color: "#fff",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 32,
+            fontWeight: 700,
+            marginBottom: 14,
+          }}>✓</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: C.emerald700, marginBottom: 4 }}>
+            Konfirmasi Tercatat
+          </div>
+          <div style={{ fontSize: 13, color: C.textMid, lineHeight: 1.5 }}>
+            Custody event <span className="mono" style={{ fontWeight: 600, color: C.text }}>{custody.custodyEventId}</span> sudah confirmed. Vehicle ditandai siap berangkat.
+          </div>
+        </div>
+
+        {/* Confirmed items summary */}
+        <div style={{ fontSize: 11, color: C.textDim, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700, marginBottom: 8 }}>
+          Yang Dikonfirmasi
+        </div>
+        <div style={{
+          background: C.surface,
+          border: `1px solid ${C.border}`,
+          borderRadius: 10,
+          overflow: "hidden",
+        }}>
+          {custody.items.map((item, idx) => (
+            <div key={item.id} style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "12px 14px",
+              borderBottom: idx === custody.items.length - 1 ? "none" : `1px solid ${C.border}`,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 13, fontWeight: 500, color: C.text }}>{item.name}</span>
+                {item.type === "consumable" && (
+                  <span style={{
+                    padding: "1px 5px", borderRadius: 3,
+                    background: C.slate100, color: C.slate600,
+                    fontSize: 9, fontWeight: 600,
+                    textTransform: "uppercase", letterSpacing: "0.04em",
+                  }}>C</span>
+                )}
+              </div>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+                <span className="mono" style={{ fontSize: 14, fontWeight: 700, color: C.emerald700 }}>
+                  {counts[item.id]}
+                </span>
+                <span style={{ fontSize: 11, color: C.textDim }}>✓</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Next step hint */}
+        <div style={{
+          marginTop: 20,
+          padding: "12px 14px",
+          background: C.driverAccentBg,
+          border: `1px solid ${C.driverAccent}22`,
+          borderLeft: `3px solid ${C.driverAccent}`,
+          borderRadius: 8,
+          fontSize: 12,
+          color: C.text,
+          lineHeight: 1.6,
+        }}>
+          <strong>Selanjutnya:</strong> Mulai eksekusi {custody.tasks.length} task hari ini, dimulai dari stop 1 ({custody.tasks[0]?.customer}).
+        </div>
+      </div>
+
+      {/* Action bar */}
+      <div style={{
+        background: C.surface,
+        borderTop: `1px solid ${C.border}`,
+        padding: "12px 14px",
+        flexShrink: 0,
+      }}>
+        <button
+          onClick={onProceed}
+          className="tap-feedback"
+          style={{
+            width: "100%",
+            background: C.driverAccent,
+            color: "#fff",
+            border: "none",
+            padding: "16px",
+            borderRadius: 10,
+            fontSize: 15,
+            fontWeight: 700,
+            cursor: "pointer",
+            textTransform: "uppercase",
+            letterSpacing: "0.04em",
+          }}
+        >
+          Lapor Selesai · Kembali ke Home →
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SCREEN 3B: MISMATCH REPORTING
+// ═══════════════════════════════════════════════════════════════════════════
+export const MismatchReportScreen = ({ custody, counts, onBack, onSubmit }) => {
+  const [note, setNote] = useState("");
+  const [hasPhoto, setHasPhoto] = useState(false);
+
+  // Identify mismatches
+  const mismatches = custody.items
+    .map(item => ({
+      ...item,
+      driverCounted: counts[item.id],
+      delta: counts[item.id] - item.warehouseRecorded,
+    }))
+    .filter(item => item.delta !== 0);
+
+  const canSubmit = note.trim().length >= 10 && hasPhoto;  // alasan + foto wajib
+
+  return (
+    <div style={{ height: "100%", display: "flex", flexDirection: "column", background: C.bg }}>
+
+      {/* Header */}
+      <div style={{
+        background: C.surface,
+        borderBottom: `1px solid ${C.border}`,
+        padding: "12px 14px",
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        flexShrink: 0,
+      }}>
+        <button
+          onClick={onBack}
+          className="tap-feedback"
+          style={{
+            width: 36, height: 36, borderRadius: 8,
+            background: "transparent", border: "none",
+            fontSize: 18, color: C.text, cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >←</button>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 11, color: C.textMid, textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 600 }}>
+            Report Mismatch
+          </div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: C.text }}>
+            {custody.vehiclePlate} · Custody Discrepancy
+          </div>
+        </div>
+      </div>
+
+      {/* Workspace */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "16px 14px 100px" }} className="scroll-thin">
+
+        {/* Important context */}
+        <div style={{
+          background: C.amber50,
+          border: `1px solid ${C.amber100}`,
+          borderLeft: `3px solid ${C.amber400}`,
+          borderRadius: 10,
+          padding: "14px 16px",
+          marginBottom: 20,
+          fontSize: 13,
+          color: C.amber700,
+          lineHeight: 1.6,
+        }} className="slide-up">
+          <div style={{ fontWeight: 700, marginBottom: 4 }}>Penting</div>
+          Lo akan submit disagreement dengan catatan warehouse. Ini bukan judgement siapa yang salah — supervisor akan investigasi setelahnya.
+        </div>
+
+        {/* Mismatch list */}
+        <div style={{ fontSize: 11, color: C.textDim, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700, marginBottom: 8 }}>
+          Item dengan selisih ({mismatches.length})
+        </div>
+
+        {mismatches.map(item => {
+          const isShortage = item.delta < 0;
+          return (
+            <div key={item.id} style={{
+              background: C.surface,
+              border: `1px solid ${C.border}`,
+              borderLeft: `3px solid ${isShortage ? C.amber400 : C.violet400}`,
+              borderRadius: 10,
+              padding: "14px 16px",
+              marginBottom: 10,
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{item.name}</span>
+                  {item.type === "consumable" && (
+                    <span style={{
+                      padding: "1px 5px", borderRadius: 3,
+                      background: C.slate100, color: C.slate600,
+                      fontSize: 9, fontWeight: 600,
+                      textTransform: "uppercase", letterSpacing: "0.04em",
+                    }}>C</span>
+                  )}
+                </div>
+                <Chip variant={isShortage ? "amber" : "violet"}>
+                  {isShortage ? "Kurang" : "Lebih"}
+                </Chip>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+                <div>
+                  <div style={{ fontSize: 10, color: C.textDim, textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 600, marginBottom: 2 }}>
+                    Warehouse
+                  </div>
+                  <div className="mono" style={{ fontSize: 18, fontWeight: 700, color: C.text }}>
+                    {item.warehouseRecorded}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 10, color: C.textDim, textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 600, marginBottom: 2 }}>
+                    Lo Hitung
+                  </div>
+                  <div className="mono" style={{ fontSize: 18, fontWeight: 700, color: C.text }}>
+                    {item.driverCounted}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 10, color: C.textDim, textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 600, marginBottom: 2 }}>
+                    Selisih
+                  </div>
+                  <div className="mono" style={{ fontSize: 18, fontWeight: 700, color: isShortage ? C.amber700 : C.violet700 }}>
+                    {item.delta > 0 ? "+" : ""}{item.delta}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Mandatory note */}
+        <div style={{ marginTop: 20 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 8 }}>
+            Penjelasan Driver
+            <span style={{ color: C.amber700, marginLeft: 6, fontWeight: 500 }}>(wajib · minimal 10 karakter)</span>
+          </div>
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Apa yang lo lihat saat hitung? Apakah ada kondisi yang tidak biasa di vehicle?"
+            style={{
+              width: "100%",
+              minHeight: 100,
+              padding: "12px",
+              border: `1px solid ${C.border}`,
+              borderRadius: 8,
+              fontSize: 14,
+              fontFamily: "inherit",
+              resize: "vertical",
+              background: C.surface,
+            }}
+          />
+          <div style={{ marginTop: 6, fontSize: 11, color: note.length >= 10 ? C.emerald700 : C.textDim }}>
+            {note.length} / minimum 10 karakter
+          </div>
+        </div>
+
+        {/* Mandatory photo */}
+        <div style={{ marginTop: 16 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 8 }}>
+            Foto Bukti
+            <span style={{ color: C.amber700, marginLeft: 6, fontWeight: 500 }}>(wajib)</span>
+          </div>
+          <button
+            onClick={() => setHasPhoto(!hasPhoto)}
+            className="tap-feedback"
+            style={{
+              width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              padding: "13px", borderRadius: 8, cursor: "pointer",
+              background: hasPhoto ? C.emerald50 : C.surface,
+              border: `1px solid ${hasPhoto ? C.emerald500 + "66" : C.borderStrong}`,
+              color: hasPhoto ? C.emerald700 : C.text, fontSize: 14, fontWeight: 600,
+            }}
+          >
+            <span style={{ fontSize: 16 }}>{hasPhoto ? "✓" : "📷"}</span>
+            <span>{hasPhoto ? "Foto bukti · 1 terlampir" : "Ambil / Lampirkan Foto"}</span>
+          </button>
+          <div style={{ marginTop: 6, fontSize: 11, color: C.textDim }}>
+            Foto kondisi muatan aktual — jadi bukti buat Supervisor.
+          </div>
+        </div>
+
+        {/* Doctrine reminder — boleh lanjut */}
+        <div style={{
+          marginTop: 16,
+          background: C.infoBlueBg,
+          border: `1px solid ${C.infoBlue}22`,
+          borderLeft: `3px solid ${C.infoBlue}`,
+          borderRadius: 8,
+          padding: "12px 14px",
+          fontSize: 11,
+          color: C.text,
+          lineHeight: 1.6,
+        }}>
+          Setelah lapor: selisih dikirim ke <strong>Supervisor</strong> buat di-resolve. <strong>Lo tetap bisa jalan</strong> — custody-nya pakai jumlah aktual yang lo hitung. <em>Discrepancy ≠ Lost.</em> Supervisor bisa kontak kalau perlu klarifikasi.
+        </div>
+      </div>
+
+      {/* Action bar */}
+      <div style={{
+        background: C.surface,
+        borderTop: `1px solid ${C.border}`,
+        padding: "12px 14px",
+        flexShrink: 0,
+        display: "flex",
+        flexDirection: "column",
+        gap: 8,
+      }}>
+        <button
+          onClick={() => canSubmit && onSubmit(mismatches, note)}
+          disabled={!canSubmit}
+          className="tap-feedback"
+          style={{
+            width: "100%",
+            background: !canSubmit ? C.slate200 : C.amber400,
+            color: !canSubmit ? C.textDim : "#fff",
+            border: "none",
+            padding: "16px",
+            borderRadius: 10,
+            fontSize: 15,
+            fontWeight: 700,
+            cursor: canSubmit ? "pointer" : "not-allowed",
+            textTransform: "uppercase",
+            letterSpacing: "0.04em",
+          }}
+        >
+          Lapor Selisih & Lanjut Kerja →
+        </button>
+        {!canSubmit && (
+          <div style={{ textAlign: "center", fontSize: 11, color: C.textDim }}>
+            Isi alasan (min 10 karakter) + lampirkan foto dulu
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SCREEN 3B-after: MISMATCH SUBMITTED
+// ═══════════════════════════════════════════════════════════════════════════
+export const MismatchSubmittedScreen = ({ custody, onDone }) => {
+  return (
+    <div style={{ height: "100%", display: "flex", flexDirection: "column", background: C.bg }}>
+      <div style={{
+        background: C.surface,
+        borderBottom: `1px solid ${C.border}`,
+        padding: "14px 16px",
+        flexShrink: 0,
+      }}>
+        <div style={{ fontSize: 11, color: C.textMid, textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 600 }}>
+          Selisih Dilaporkan
+        </div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: C.text }}>
+          {custody.vehiclePlate}
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px 100px" }} className="scroll-thin">
+        <div style={{
+          background: C.emerald50,
+          border: `1px solid ${C.emerald100}`,
+          borderRadius: 12,
+          padding: "24px 20px",
+          marginBottom: 20,
+          textAlign: "center",
+        }} className="slide-up">
+          <div style={{
+            width: 64, height: 64,
+            borderRadius: "50%",
+            background: C.emerald500,
+            color: "#fff",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 32,
+            fontWeight: 700,
+            marginBottom: 14,
+          }}>✓</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: C.emerald700, marginBottom: 4 }}>
+            Siap Berangkat — dengan Catatan Selisih
+          </div>
+          <div style={{ fontSize: 13, color: C.textMid, lineHeight: 1.5 }}>
+            Custody dikonfirmasi pakai <strong>jumlah aktual yang lo hitung</strong>. Selisih + foto udah dikirim ke Supervisor.
+          </div>
+        </div>
+
+        <div style={{
+          background: C.surface,
+          border: `1px solid ${C.border}`,
+          borderRadius: 10,
+          padding: "14px 16px",
+          marginBottom: 16,
+        }}>
+          <div style={{ fontSize: 11, color: C.textDim, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600, marginBottom: 8 }}>
+            Apa yang terjadi sekarang
+          </div>
+          <ol style={{ fontSize: 13, color: C.text, lineHeight: 1.7, paddingLeft: 18, margin: 0 }}>
+            <li><strong>Lo lanjut kerja</strong> — task kebuka, jalan dengan muatan aktual</li>
+            <li>Selisih masuk antrian <strong>Supervisor</strong> buat di-resolve (paralel)</li>
+            <li>Supervisor bisa kontak lo / nahan vehicle kalau perlu</li>
+          </ol>
+        </div>
+
+        <div style={{
+          background: C.infoBlueBg,
+          border: `1px solid ${C.infoBlue}22`,
+          borderLeft: `3px solid ${C.infoBlue}`,
+          borderRadius: 10,
+          padding: "12px 14px",
+          fontSize: 12,
+          color: C.text,
+          lineHeight: 1.6,
+        }}>
+          <strong>Discrepancy ≠ Lost.</strong> Selisih itu flag, bukan kesimpulan. Lo gak perlu "fix" — itu domain Supervisor. Tugas lo cuma report akurat & jalan.
+        </div>
       </div>
 
       <div style={{
-        position: "relative", width: 390, maxWidth: "100%", background: "#F6F7F9",
-        borderRadius: 30, border: "1px solid #E6E8EE", boxShadow: "0 24px 60px -20px rgba(20,30,55,0.25)",
-        overflow: "hidden", display: "flex", flexDirection: "column", height: 800
+        background: C.surface,
+        borderTop: `1px solid ${C.border}`,
+        padding: "12px 14px",
+        flexShrink: 0,
       }}>
-        <div style={{ height: 32, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ width: 110, height: 22, background: C.ink, borderRadius: 14 }} />
-        </div>
+        <button
+          onClick={onDone}
+          className="tap-feedback"
+          style={{
+            width: "100%",
+            background: C.driverAccent,
+            color: "#fff",
+            border: "none",
+            padding: "16px",
+            borderRadius: 10,
+            fontSize: 15,
+            fontWeight: 700,
+            cursor: "pointer",
+            textTransform: "uppercase",
+            letterSpacing: "0.04em",
+          }}
+        >
+          Lanjut · Mulai Kerja →
+        </button>
+      </div>
+    </div>
+  );
+};
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HOME LAYER — landing setelah login (custody-gate · cargo · rute · return)
+// ═══════════════════════════════════════════════════════════════════════════
+const isGas = (it) => it.name.toLowerCase().includes("gas");
+const isGalon = (it) => it.name.toLowerCase().includes("galon");
+
+const deriveLoaded = (tasks) => {
+  let t = 0, g = 0;
+  tasks.forEach(tk => tk.items.forEach(it => { if (isGas(it)) t += it.planDrop; else if (isGalon(it)) g += it.planDrop; }));
+  return { tabung: t, galon: g };
+};
+// Baseline custody dari hitungan aktual driver (kalau ada selisih, ini yang dipakai — bukan manifest gudang)
+const deriveLoadedFromCounts = (counts) => ({
+  tabung: (counts.gas_12 || 0) + (counts.gas_3 || 0),
+  galon: (counts.aqua_galon || 0),
+});
+const deriveCargo = (tasks, loadedOverride) => {
+  let loadT = 0, loadG = 0, dropT = 0, dropG = 0, pickT = 0, pickG = 0;
+  tasks.forEach(tk => tk.items.forEach(it => {
+    if (isGas(it)) { loadT += it.planDrop; dropT += (it.actualDrop || 0); pickT += (it.actualPickup || 0); }
+    else if (isGalon(it)) { loadG += it.planDrop; dropG += (it.actualDrop || 0); pickG += (it.actualPickup || 0); }
+  }));
+  // Pakai baseline aktual (hasil hitung custody) kalau dikasih — biar surplus/shortage keliatan
+  if (loadedOverride) { loadT = loadedOverride.tabung; loadG = loadedOverride.galon; }
+  return { tabungIsi: loadT - dropT, tabungKosong: pickT, galonIsi: loadG - dropG, galonKosong: pickG };
+};
+const taskItemsLabel = (t) => {
+  const drop = t.items.reduce((s, i) => s + i.planDrop, 0);
+  const pick = t.items.reduce((s, i) => s + i.planPickup, 0);
+  const p = [];
+  if (drop) p.push(`kirim ${drop}`);
+  if (pick) p.push(`ambil ${pick}`);
+  return p.join(" · ") || "—";
+};
+
+const HomeHeaderStrip = ({ driver, vehicle, onLogout }) => (
+  <div style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: "12px 16px", flexShrink: 0 }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+      <div style={{
+        width: 42, height: 42, borderRadius: 11, background: C.driverAccent, color: "#fff",
+        display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, flexShrink: 0,
+      }}>{driver.name.split(" ").map(n => n[0]).join("").substring(0, 2)}</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: C.text, lineHeight: 1.2 }}>{driver.name}</div>
+        {vehicle ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+            <span className="mono" style={{ fontSize: 12, fontWeight: 600, color: C.driverAccentDark }}>{vehicle.plate}</span>
+            <span style={{ fontSize: 11, color: C.textDim }}>· kendaraan ditugaskan</span>
+          </div>
+        ) : (
+          <div style={{ fontSize: 11, color: C.textDim, marginTop: 2 }}>Belum ditugaskan kendaraan</div>
+        )}
+      </div>
+      <button onClick={onLogout} title="Keluar (handover)" className="tap-feedback" style={{
+        display: "flex", alignItems: "center", gap: 6, height: 34, padding: "0 11px", borderRadius: 8,
+        background: C.surface, border: `1px solid ${C.border}`, fontSize: 12, fontWeight: 600,
+        color: C.driverAccent, cursor: "pointer",
+      }}>⏻ Keluar</button>
+    </div>
+  </div>
+);
+
+const HomeCustodyCard = ({ status, loaded, onConfirm }) => {
+  if (status === "confirmed" || status === "confirmed_selisih") {
+    const selisih = status === "confirmed_selisih";
+    return (
+      <div className="pop" style={{
+        background: C.surface, border: `1px solid ${selisih ? C.amber400 : C.emerald100}`, borderRadius: 12,
+        overflow: "hidden", marginBottom: 14,
+      }}>
         <div style={{
-          display: "flex", alignItems: "center", gap: 10, padding: "12px 18px",
-          background: "#fff", borderBottom: `1px solid ${C.line}`
+          display: "flex", alignItems: "center", gap: 10,
+          background: selisih ? C.surface : C.emerald50, padding: "12px 14px",
         }}>
-          {stack.length > 1 ? (
-            <button onClick={pop} style={{ border: "none", background: "none", cursor: "pointer", padding: 0, color: C.ink, display: "flex" }}>
-              <ChevronLeft size={24} />
-            </button>
-          ) : <span style={{ width: 24 }} />}
-          <span style={{ fontSize: 17, fontWeight: 700, color: C.ink }}>{title}</span>
+          <div style={{
+            width: 28, height: 28, borderRadius: "50%", background: C.emerald500, color: "#fff",
+            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, flexShrink: 0,
+          }}>✓</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: C.emerald700 }}>Muatan dikonfirmasi</div>
+            <div style={{ fontSize: 11, color: C.textMid }}>{loaded.tabung} tabung · {loaded.galon} galon · jumlah aktual</div>
+          </div>
         </div>
-        <div style={{ flex: 1, overflowY: "auto", padding: 18, position: "relative" }}>
-          {top.view === "home" && (
-            <ScreenHome approvals={requests} incidents={incidents} complaints={complaints}
-              onGo={(target) => push({ view: target })} />
-          )}
-          {top.view === "approvals" && (
-            <ScreenApprovals requests={requests}
-              onApprove={approveRequest} onReject={rejectRequest} />
-          )}
-          {top.view === "sites" && (
-            <ScreenSites
-              onOpenPresence={(siteId) => push({ view: "presence", siteId })}
-              onOpenPatrol={(siteId) => push({ view: "patrol", siteId })}
-            />
-          )}
-          {top.view === "presence" && (
-            <ScreenPresence siteId={top.siteId}
-              onOpenPatrolThisSite={() => push({ view: "patrol", siteId: top.siteId })}
-              onOpenWorkerHistory={(wid) => push({ view: "worker_history", workerId: wid })} />
-          )}
-          {top.view === "patrol" && (
-            <ScreenPatrol siteId={top.siteId} onOpenPoint={(pid) => push({ view: "timeline", pointId: pid })} />
-          )}
-          {top.view === "timeline" && <ScreenTimeline pointId={top.pointId} />}
-          {top.view === "workers" && (
-            <ScreenWorkers onOpenWorker={(wid) => push({ view: "worker_history", workerId: wid })} />
-          )}
-          {top.view === "worker_history" && (
-            <ScreenWorkerHistory workerId={top.workerId}
-              onOpenDay={(wid, date) => push({ view: "worker_day", workerId: wid, date })} />
-          )}
-          {top.view === "worker_day" && (
-            <ScreenWorkerDay workerId={top.workerId} date={top.date} />
-          )}
-          {top.view === "incidents" && (
-            <ScreenIncidents incidents={incidents}
-              onOpen={(id) => push({ view: "incident_detail", incidentId: id })} />
-          )}
-          {top.view === "incident_detail" && (
-            <ScreenIncidentDetail incidentId={top.incidentId} incidents={incidents}
-              onAction={handleIncidentAction} />
-          )}
-          {top.view === "complaints" && (
-            <ScreenComplaints complaints={complaints}
-              onOpen={(id) => push({ view: "complaint_detail", complaintId: id })} />
-          )}
-          {top.view === "complaint_detail" && (
-            <ScreenComplaintDetail complaintId={top.complaintId} complaints={complaints}
-              onAction={handleComplaintAction} />
-          )}
+        {selisih && (
+          <div style={{ background: C.amber50, borderTop: `1px solid ${C.amber100}`, padding: "9px 14px", fontSize: 11, color: C.amber700, lineHeight: 1.5 }}>
+            <strong>! Ada selisih dari catatan gudang</strong> — udah dilaporkan, Supervisor lagi review. Kerjaan tetap jalan.
+          </div>
+        )}
+      </div>
+    );
+  }
+  return (
+    <div className="slide-up" style={{
+      background: C.surface, border: `1px solid ${C.amber400}`, borderRadius: 14, overflow: "hidden", marginBottom: 14,
+      boxShadow: "0 2px 8px rgba(245,158,11,0.12)",
+    }}>
+      <div style={{ background: C.amber50, borderBottom: `1px solid ${C.amber100}`, padding: "10px 14px", display: "flex", alignItems: "center", gap: 8 }}>
+        <Chip variant="amber">⬤ Perlu Aksi</Chip>
+        <span style={{ fontSize: 12, fontWeight: 700, color: C.amber700 }}>Konfirmasi Penerimaan Muatan</span>
+      </div>
+      <div style={{ padding: "12px 14px" }}>
+        <div style={{ fontSize: 12, color: C.textMid, marginBottom: 10 }}>
+          Muat dari <strong style={{ color: C.text }}>Gudang Pusat</strong>. Cek & konfirmasi sebelum berangkat.
+        </div>
+        <div style={{ background: C.surfaceAlt, border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 12px", marginBottom: 12 }}>
+          {[["Tabung Gas", loaded.tabung], ["Galon Air", loaded.galon]].map(([name, qty], i) => (
+            <div key={name} style={{
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+              padding: "5px 0", borderTop: i > 0 ? `1px solid ${C.border}` : "none",
+            }}>
+              <span style={{ fontSize: 13, color: C.text }}>{name}</span>
+              <span className="mono" style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{qty}</span>
+            </div>
+          ))}
+        </div>
+        <button onClick={onConfirm} className="tap-feedback" style={{
+          width: "100%", background: C.driverAccent, color: "#fff", border: "none",
+          padding: "14px", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer",
+        }}>Konfirmasi Penerimaan →</button>
+        <div style={{ textAlign: "center", fontSize: 10, color: C.textDim, marginTop: 7 }}>
+          membuka layar Konfirmasi Penerimaan (hitung mandiri)
         </div>
       </div>
     </div>
+  );
+};
+
+const HomeCargoCard = ({ cargo }) => {
+  const Cell = ({ label, isi, kosong }) => (
+    <div style={{ flex: 1, padding: "10px 12px" }}>
+      <div style={{ fontSize: 11, color: C.textDim, fontWeight: 600, marginBottom: 6 }}>{label}</div>
+      <div style={{ display: "flex", gap: 14 }}>
+        <div>
+          <div className="mono" style={{ fontSize: 18, fontWeight: 700, color: C.text, lineHeight: 1 }}>{isi}</div>
+          <div style={{ fontSize: 10, color: C.emerald700, marginTop: 3 }}>isi</div>
+        </div>
+        <div>
+          <div className="mono" style={{ fontSize: 18, fontWeight: 700, color: kosong > 0 ? C.amber700 : C.textDim, lineHeight: 1 }}>{kosong}</div>
+          <div style={{ fontSize: 10, color: C.textDim, marginTop: 3 }}>kosong</div>
+        </div>
+      </div>
+    </div>
+  );
+  return (
+    <div className="slide-up" style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, marginBottom: 14, overflow: "hidden" }}>
+      <div style={{ padding: "10px 14px 0", display: "flex", alignItems: "center", gap: 7 }}>
+        <span style={{ fontSize: 14 }}>📦</span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: C.text }}>Isi Kendaraan Sekarang</span>
+      </div>
+      <div style={{ display: "flex", padding: "4px 2px 8px" }}>
+        <Cell label="Tabung" isi={cargo.tabungIsi} kosong={cargo.tabungKosong} />
+        <div style={{ width: 1, background: C.border, margin: "8px 0" }} />
+        <Cell label="Galon" isi={cargo.galonIsi} kosong={cargo.galonKosong} />
+      </div>
+      <div style={{ padding: "0 14px 10px", fontSize: 10, color: C.textDim }}>
+        Update otomatis tiap serah-terima (kirim isi, ambil kosong).
+      </div>
+    </div>
+  );
+};
+
+const HomeRouteCard = ({ tasks, locked, onOpenFeed }) => {
+  const total = tasks.length;
+  const completed = tasks.filter(t => t.state === "completed").length;
+  const failed = tasks.filter(t => t.state === "failed").length;
+  const closed = completed + failed;
+  const pct = total ? Math.round((closed / total) * 100) : 0;
+  const next = tasks.find(t => t.state === "assigned");
+
+  if (locked) {
+    return (
+      <div style={{ background: C.surface, border: `1px solid ${C.borderStrong}`, borderRadius: 14, marginBottom: 14, overflow: "hidden" }}>
+        <div style={{ padding: "12px 14px", display: "flex", alignItems: "center", gap: 10, borderBottom: `1px solid ${C.border}` }}>
+          <div style={{
+            width: 34, height: 34, borderRadius: 9, background: C.slate100, color: C.textDim,
+            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15,
+          }}>🔒</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: C.textMid }}>Rute Hari Ini</div>
+            <div style={{ fontSize: 12, color: C.textDim }}>{total} tujuan</div>
+          </div>
+        </div>
+        <div style={{ background: C.amber50, padding: "8px 14px", fontSize: 11, color: C.amber700, fontWeight: 600 }}>
+          Konfirmasi muatan dulu buat mulai — ini tujuan lo hari ini:
+        </div>
+        <div style={{ padding: "6px 8px 8px" }}>
+          {tasks.map((t) => (
+            <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 8px", opacity: 0.85 }}>
+              <div style={{
+                width: 22, height: 22, borderRadius: "50%", flexShrink: 0, background: C.slate100, color: C.textMid,
+                display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700,
+              }}>{t.stopNumber}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: C.textMid }}>{t.customer}</div>
+                <div style={{ fontSize: 11, color: C.textDim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.address} · {taskItemsLabel(t)}</div>
+              </div>
+              {t.state === "completed" && <Chip variant="emerald">Selesai</Chip>}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="pop" style={{
+      background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, marginBottom: 14, overflow: "hidden",
+    }}>
+      {/* header + progress */}
+      <div style={{ padding: "12px 14px", borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+          <div style={{
+            width: 34, height: 34, borderRadius: 9, background: C.driverAccentBg, color: C.driverAccent,
+            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15,
+          }}>🚚</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>Rute Hari Ini</div>
+            <div style={{ fontSize: 12, color: C.textMid }}>
+              {closed} dari {total} stop · {next ? `lanjut: ${next.customer}` : "semua kelar 🎉"}
+            </div>
+          </div>
+          <span className="mono" style={{ fontSize: 13, fontWeight: 700, color: closed === total ? C.emerald700 : C.driverAccent }}>{pct}%</span>
+        </div>
+        <div style={{ height: 7, background: C.slate100, borderRadius: 100, overflow: "hidden" }}>
+          <div style={{ width: `${pct}%`, height: "100%", background: closed === total ? C.emerald500 : C.driverAccent, transition: "width 0.3s ease" }} />
+        </div>
+      </div>
+
+      {/* detail list — tappable buka tasklist */}
+      <div style={{ padding: "6px 8px 4px" }}>
+        {tasks.map((t) => {
+          const isNext = next && t.id === next.id;
+          const dotBg = t.state === "completed" ? C.emerald500 : t.state === "failed" ? C.amber400 : isNext ? C.driverAccent : C.slate100;
+          const dotFg = t.state === "completed" || t.state === "failed" || isNext ? "#fff" : C.textMid;
+          return (
+            <button key={t.id} onClick={onOpenFeed} className="tap-feedback" style={{
+              width: "100%", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 10,
+              padding: "9px 8px", borderRadius: 10, background: isNext ? C.driverAccentBg : "transparent", border: "none",
+            }}>
+              <div style={{
+                width: 22, height: 22, borderRadius: "50%", flexShrink: 0, background: dotBg, color: dotFg,
+                display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700,
+              }}>{t.state === "completed" ? "✓" : t.stopNumber}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: t.state === "completed" ? C.textDim : C.text, textDecoration: t.state === "completed" ? "line-through" : "none" }}>{t.customer}</div>
+                <div style={{ fontSize: 11, color: C.textDim, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.address} · {taskItemsLabel(t)}</div>
+              </div>
+              {t.state === "completed" && <Chip variant="emerald">Selesai</Chip>}
+              {t.state === "failed" && <Chip variant="amber">Gagal</Chip>}
+              {t.state === "assigned" && <Chip variant={isNext ? "indigo" : "neutral"}>{isNext ? "Lanjut" : "Kirim"}</Chip>}
+            </button>
+          );
+        })}
+      </div>
+
+      <button onClick={onOpenFeed} className="tap-feedback" style={{
+        width: "100%", background: C.surfaceAlt, border: "none", borderTop: `1px solid ${C.border}`,
+        padding: "11px", fontSize: 12, fontWeight: 700, color: C.driverAccent, cursor: "pointer",
+      }}>Buka Tasklist (eksekusi) →</button>
+    </div>
+  );
+};
+
+const HomeReturnCard = ({ ready, onReturn }) => (
+  <button onClick={onReturn} className="tap-feedback slide-up" style={{
+    width: "100%", textAlign: "left", cursor: "pointer",
+    background: ready ? C.amber50 : C.surface, border: `1px solid ${ready ? C.amber400 : C.border}`,
+    borderRadius: 14, padding: "14px", marginBottom: 14,
+  }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div style={{
+        width: 36, height: 36, borderRadius: 9, background: ready ? C.amber100 : C.slate100, color: ready ? C.amber700 : C.textMid,
+        display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16,
+      }}>🏭</div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: ready ? C.amber700 : C.text }}>Return Kendaraan</div>
+        <div style={{ fontSize: 12, color: ready ? C.amber700 : C.textDim }}>
+          {ready ? "Semua kelar — balik & serahkan ke gudang" : "Balik & serahkan kendaraan + sisa muatan ke gudang"}
+        </div>
+      </div>
+      <span style={{ fontSize: 20, color: ready ? C.amber700 : C.textDim }}>›</span>
+    </div>
+  </button>
+);
+
+const HomeBottomBar = () => (
+  <div style={{ display: "flex", background: C.surface, borderTop: `1px solid ${C.border}`, paddingBottom: 4, flexShrink: 0 }}>
+    <button className="tap-feedback" style={{
+      flex: 1, background: "transparent", border: "none", cursor: "pointer",
+      padding: "9px 0 7px", display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
+    }}>
+      <span style={{ fontSize: 19 }}>🏠</span>
+      <span style={{ fontSize: 10, fontWeight: 700, color: C.driverAccent }}>Home</span>
+    </button>
+    <button style={{
+      flex: 1, background: "transparent", border: "none", cursor: "default",
+      padding: "9px 0 7px", display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
+      position: "relative", opacity: 0.45,
+    }}>
+      <span style={{ fontSize: 19, filter: "grayscale(1)", opacity: 0.55 }}>🔔</span>
+      <span style={{ fontSize: 10, fontWeight: 500, color: C.textDim }}>Notifikasi</span>
+      <span style={{
+        position: "absolute", top: 5, right: "calc(50% - 20px)", fontSize: 8, fontWeight: 700,
+        color: C.textDim, background: C.slate100, padding: "1px 5px", borderRadius: 100,
+      }}>segera</span>
+    </button>
+  </div>
+);
+
+export const HomeView = ({ tasks, custodyStatus, custodyCounts, onConfirmCustody, onOpenFeed, onLogout, onReturn }) => {
+  const total = tasks.length;
+  const closed = tasks.filter(t => t.state === "completed" || t.state === "failed").length;
+  const confirmed = custodyStatus === "confirmed" || custodyStatus === "confirmed_selisih";
+  // Baseline = jumlah aktual yang dikonfirmasi driver (kalau ada); kalau belum, manifest gudang
+  const loaded = (confirmed && custodyCounts) ? deriveLoadedFromCounts(custodyCounts) : deriveLoaded(tasks);
+  const cargo = deriveCargo(tasks, (confirmed && custodyCounts) ? loaded : null);
+  return (
+    <div style={{ height: "100%", display: "flex", flexDirection: "column", background: C.bg }}>
+      <HomeHeaderStrip driver={DRIVER} vehicle={VEHICLE} onLogout={onLogout} />
+      <div style={{ flex: 1, overflowY: "auto", padding: "14px 16px 20px" }} className="scroll-thin">
+        <div style={{ fontSize: 12, color: C.textDim, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700, marginBottom: 10 }}>
+          {confirmed ? "Hari Ini" : "Sebelum Berangkat"}
+        </div>
+        <HomeCustodyCard status={custodyStatus} loaded={loaded} onConfirm={onConfirmCustody} />
+        {confirmed && <HomeCargoCard cargo={cargo} />}
+        <HomeRouteCard tasks={tasks} locked={!confirmed} onOpenFeed={onOpenFeed} />
+        {confirmed && <HomeReturnCard ready={closed >= total} onReturn={onReturn} />}
+      </div>
+      <HomeBottomBar />
+    </div>
+  );
+};
+
+// ─── RETURN SCREEN (ringkas) ────────────────────────────────────────────────
+export const ReturnScreen = ({ tasks, onBack, onConfirm }) => {
+  const cargo = deriveCargo(tasks);
+  return (
+    <div style={{ height: "100%", display: "flex", flexDirection: "column", background: C.bg }}>
+      <div style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: "12px 14px", display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+        <button onClick={onBack} className="tap-feedback" style={{
+          width: 34, height: 34, borderRadius: 8, background: "transparent", border: "none",
+          fontSize: 18, color: C.text, cursor: "pointer",
+        }}>←</button>
+        <div>
+          <div style={{ fontSize: 11, color: C.textMid, textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 600 }}>Akhir Hari</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: C.text }}>Return Kendaraan</div>
+        </div>
+      </div>
+      <div style={{ flex: 1, overflowY: "auto", padding: "16px" }} className="scroll-thin">
+        <div style={{ fontSize: 13, color: C.textMid, lineHeight: 1.5, marginBottom: 14 }}>
+          Serahkan kendaraan <strong style={{ color: C.text }}>{VEHICLE.plate}</strong> + sisa muatan ke gudang. Gudang yang hitung & validasi (reconciliation = domain Vehicle Runtime).
+        </div>
+        <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, overflow: "hidden", marginBottom: 14 }}>
+          <div style={{ padding: "10px 14px", borderBottom: `1px solid ${C.border}`, fontSize: 12, fontWeight: 700, color: C.text }}>Sisa di Kendaraan</div>
+          {[["Tabung isi", cargo.tabungIsi], ["Tabung kosong", cargo.tabungKosong], ["Galon isi", cargo.galonIsi], ["Galon kosong", cargo.galonKosong]].map(([k, v], i) => (
+            <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "9px 14px", borderTop: i > 0 ? `1px solid ${C.border}` : "none" }}>
+              <span style={{ fontSize: 13, color: C.textMid }}>{k}</span>
+              <span className="mono" style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{v}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{
+          background: C.infoBlueBg, border: `1px solid ${C.infoBlue}22`, borderLeft: `3px solid ${C.infoBlue}`,
+          borderRadius: 10, padding: "11px 14px", fontSize: 12, color: C.text, lineHeight: 1.5,
+        }}>
+          Setelah gudang konfirmasi return, sesi lo otomatis ketutup (logout terminal).
+        </div>
+      </div>
+      <div style={{ background: C.surface, borderTop: `1px solid ${C.border}`, padding: "12px 14px", flexShrink: 0 }}>
+        <button onClick={onConfirm} className="tap-feedback" style={{
+          width: "100%", background: C.driverAccent, color: "#fff", border: "none",
+          padding: "16px", borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: "pointer",
+        }}>Serahkan ke Gudang →</button>
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MAIN COMPONENT — Full Driver Runtime (login → home → tasklist → return)
+// ═══════════════════════════════════════════════════════════════════════════
+export default function DriverRuntimeFull() {
+  const [tasks, setTasks] = useState(INITIAL_TASKS);
+  const [screen, setScreen] = useState("home");      // home | feed | workspace | return
+  const [session, setSession] = useState(null);     // executor aktif (null = belum login)
+  const [authStep, setAuthStep] = useState("scan");  // scan | pin (saat belum ada sesi)
+  const [custodyStatus, setCustodyStatus] = useState("pending");  // pending | confirmed | mismatch — gate tasklist
+  const [custodyCounts, setCustodyCounts] = useState(null);       // hasil hitung independen
+  const [activeTaskId, setActiveTaskId] = useState(null);
+  const [recentlyCompletedId, setRecentlyCompletedId] = useState(null);
+  const [paused, setPaused] = useState(false);              // trip di-pause (executor keluar di tengah)
+  const [showPauseConfirm, setShowPauseConfirm] = useState(false);
+  const [deviceOwner, setDeviceOwner] = useState(DEVICE_OWNER);  // pemilik sesi di HP ini (null = device kosong)
+
+  const pendingCount = tasks.filter(t => t.state === "assigned").length;
+  const activeTask = tasks.find(t => t.id === activeTaskId);
+
+  const handleSelectTask = (task) => {
+    if (task.state === "assigned") {
+      setActiveTaskId(task.id);
+      setScreen("workspace");
+    }
+    // Completed / failed tasks — could open read-only detail (not implemented here)
+  };
+
+  const handleSubmitTask = ({ actuals, outcome, hasSignature }) => {
+    const now = new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+
+    setTasks(prev => prev.map(t => {
+      if (t.id !== activeTaskId) return t;
+
+      if (outcome === "failed") {
+        return { ...t, state: "failed", completedAt: now };
+      }
+
+      // Update item actuals
+      const updatedItems = t.items.map(item => ({
+        ...item,
+        actualDrop: actuals[item.id].drop,
+        actualPickup: actuals[item.id].pickup,
+      }));
+
+      return {
+        ...t,
+        state: "completed",
+        completedAt: now,
+        customerConfirmed: !!hasSignature,
+        items: updatedItems,
+      };
+    }));
+
+    setRecentlyCompletedId(activeTaskId);
+    setTimeout(() => setRecentlyCompletedId(null), 2000);
+
+    setActiveTaskId(null);
+    setScreen("feed");
+  };
+
+  const handleBack = () => {
+    setActiveTaskId(null);
+    setScreen("feed");
+  };
+
+  // Keluar sesi. Kalau masih ada task pending = PAUSE (perlu konfirmasi, trip tetap idup).
+  // Kalau semua kelar = END bersih.
+  const requestExit = () => {
+    if (pendingCount > 0) setShowPauseConfirm(true);
+    else endSession();
+  };
+
+  const confirmPause = () => {
+    // PAUSE: tutup sesi + wipe lokal (di-simulasi), TAPI tasks dipertahankan (state di server).
+    setShowPauseConfirm(false);
+    setPaused(true);
+    setSession(null);
+    setAuthStep("scan");
+    setActiveTaskId(null);
+    setScreen("home");
+  };
+
+  const endSession = () => {
+    // END: sesi tutup, balik ke gate bersih (bukan paused).
+    setPaused(false);
+    setSession(null);
+    setAuthStep("scan");
+    setActiveTaskId(null);
+    setScreen("home");
+  };
+
+  return (
+    <>
+      <FontLoader />
+      <div style={{
+        minHeight: "100vh",
+        width: "100vw",
+        background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "30px 20px",
+        gap: 20,
+      }}>
+        <div style={{ color: "#cbd5e1", textAlign: "center", marginBottom: 8 }}>
+          <div style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600, opacity: 0.7 }}>
+            Consteon
+          </div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginTop: 4 }}>
+            Driver Runtime · Full Flow
+          </div>
+          <div style={{ fontSize: 12, opacity: 0.6, marginTop: 4 }}>
+            Scan → Home → Custody → Tasklist → Return
+          </div>
+        </div>
+
+        <div className="phone-shadow" style={{
+          width: 390,
+          height: 780,
+          maxHeight: "calc(100vh - 140px)",
+          background: C.bg,
+          borderRadius: 36,
+          overflow: "hidden",
+          position: "relative",
+        }}>
+          <div style={{
+            height: 36,
+            background: C.surface,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "0 24px",
+            fontSize: 13,
+            fontWeight: 600,
+            color: C.text,
+            position: "relative",
+            zIndex: 5,
+          }}>
+            <span>08:24</span>
+            <span style={{ display: "flex", gap: 4, alignItems: "center", fontSize: 11 }}>
+              <span>●●●●●</span>
+              <span style={{ marginLeft: 4 }}>🔋</span>
+            </span>
+          </div>
+
+          <div style={{ height: "calc(100% - 36px)", position: "relative" }}>
+            {/* DEVICE FRONT — HP udah ada sesi pemilik: handover dulu */}
+            {!session && deviceOwner && (
+              <DeviceOwnerScreen
+                owner={deviceOwner}
+                onHandover={() => { setDeviceOwner(null); setAuthStep("scan"); setPaused(false); }}
+              />
+            )}
+
+            {/* AUTH GATE — device kosong: scan + PIN (runtime hard-block sampai sesi kebuka) */}
+            {!session && !deviceOwner && authStep === "scan" && (
+              <ScanScreen
+                onScanned={() => setAuthStep("pin")}
+                resuming={paused}
+                executorName={DRIVER.name}
+                remaining={pendingCount}
+              />
+            )}
+            {!session && !deviceOwner && authStep === "pin" && (
+              <PinScreen
+                executor={DRIVER}
+                resuming={paused}
+                onBack={() => setAuthStep("scan")}
+                onSuccess={() => { setSession(DRIVER); setPaused(false); }}
+              />
+            )}
+
+            {/* RUNTIME — hanya setelah sesi kebuka */}
+            {session && screen === "home" && (
+              <HomeView
+                tasks={tasks}
+                custodyStatus={custodyStatus}
+                custodyCounts={custodyCounts}
+                onConfirmCustody={() => setScreen("custody_notif")}
+                onOpenFeed={() => setScreen("feed")}
+                onLogout={requestExit}
+                onReturn={() => setScreen("return")}
+              />
+            )}
+
+            {/* CUSTODY CONFIRMATION sub-flow */}
+            {session && screen === "custody_notif" && (
+              <CustodyNotificationScreen
+                custody={PENDING_CUSTODY}
+                onStartConfirmation={() => setScreen("custody_count")}
+                onBack={() => setScreen("home")}
+              />
+            )}
+            {session && screen === "custody_count" && (
+              <IndependentCountWorkspace
+                custody={PENDING_CUSTODY}
+                onBack={() => setScreen("custody_notif")}
+                onContinue={(counts, outcome) => {
+                  setCustodyCounts(counts);
+                  setScreen(outcome === "confirm" ? "custody_success" : "custody_mismatch_report");
+                }}
+              />
+            )}
+            {session && screen === "custody_success" && custodyCounts && (
+              <ConfirmationSuccessScreen
+                custody={PENDING_CUSTODY}
+                counts={custodyCounts}
+                onProceed={() => { setCustodyStatus("confirmed"); setScreen("home"); }}
+              />
+            )}
+            {session && screen === "custody_mismatch_report" && custodyCounts && (
+              <MismatchReportScreen
+                custody={PENDING_CUSTODY}
+                counts={custodyCounts}
+                onBack={() => setScreen("custody_count")}
+                onSubmit={() => setScreen("custody_mismatch_submitted")}
+              />
+            )}
+            {session && screen === "custody_mismatch_submitted" && (
+              <MismatchSubmittedScreen
+                custody={PENDING_CUSTODY}
+                onDone={() => { setCustodyStatus("confirmed_selisih"); setScreen("home"); }}
+              />
+            )}
+
+            {session && screen === "feed" && (
+              <TaskFeedScreen
+                tasks={tasks}
+                onSelectTask={handleSelectTask}
+                recentlyCompletedId={recentlyCompletedId}
+                onBack={() => setScreen("home")}
+              />
+            )}
+            {session && screen === "workspace" && activeTask && (
+              <DeliveryExecutionWorkspace
+                task={activeTask}
+                onBack={handleBack}
+                onSubmit={handleSubmitTask}
+              />
+            )}
+            {session && screen === "return" && (
+              <ReturnScreen
+                tasks={tasks}
+                onBack={() => setScreen("home")}
+                onConfirm={endSession}
+              />
+            )}
+
+            {/* PAUSE confirmation — keluar di tengah trip */}
+            {showPauseConfirm && (
+              <PauseConfirmSheet
+                remaining={pendingCount}
+                onConfirm={confirmPause}
+                onCancel={() => setShowPauseConfirm(false)}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Quick reset for demo */}
+        <div style={{
+          display: "flex",
+          gap: 8,
+          padding: "8px 16px",
+          background: "rgba(255,255,255,0.08)",
+          borderRadius: 100,
+          backdropFilter: "blur(10px)",
+        }}>
+          <button
+            onClick={() => {
+              setTasks(INITIAL_TASKS);
+              setActiveTaskId(null);
+              setScreen("home");
+              setRecentlyCompletedId(null);
+              setSession(null);
+              setAuthStep("scan");
+              setCustodyStatus("pending");
+              setCustodyCounts(null);
+              setPaused(false);
+              setShowPauseConfirm(false);
+              setDeviceOwner(DEVICE_OWNER);
+            }}
+            style={{
+              background: "transparent",
+              color: "#cbd5e1",
+              border: "none",
+              padding: "5px 14px",
+              borderRadius: 100,
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            ↻ Reset Demo
+          </button>
+        </div>
+      </div>
+    </>
   );
 }

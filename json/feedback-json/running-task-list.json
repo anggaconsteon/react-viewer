@@ -1,0 +1,18 @@
+{
+  "_doc": "Running task list (H1 section 5.1). Active trips with it[] ad/ap progress.",
+  "type": "RUNNING_TASK_LIST",
+  "vidtable": "20342033315492",
+  "table": "84214220504259//task",
+  "search": "tst◼on_delivery",
+  "titleField": "vv",
+  "vehicleTable": "84214220504259//stock_location",
+  "vehicleNameField": "ln",
+  "execField": "dv",
+  "workforceTable": "84214220504259//workforce",
+  "nameField": "n",
+  "itemsField": "it",
+  "doneMarker": "ad,ap",
+  "noteField": "",
+  "status": "ok",
+  "text": "Berjalan◆Stop◆dari"
+}

@@ -1,0 +1,8 @@
+{
+    "type": "NOTICE_BAR",
+    "variant": "info",
+    "icon": "",
+    "text": "Sebagian customer migrasi belum tercatat saldo awal. Catat biar outstanding akurat.",
+    "actionText": "Catat",
+    "actionRoute": "vertikaTeknoLokaciptaSeed"
+}

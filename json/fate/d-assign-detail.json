@@ -1,0 +1,12 @@
+{
+  "_doc": "D · MODEL detail 1 assign (per phase). WORKSPACE_HEADER + fakta + tombol phase (conditional by st). ack = savesend inline (st→ready). ready→route SelfieArrival, present→route SelfieDone (savesend ada di page selfie). awaiting/closed = read-only (no button). CONDITIONS pakai positional ◀N▶ = index kolom st di doc — {stPos} dev resolve. GAP: display fakta hadir/selesai/jadwal/selisih butuh read-card (lihat catatan).",
+  "title": "Fate",
+  "hideBottomBar": true,
+  "children": [
+    {"type":"WORKSPACE_HEADER","vidtable":"{fateTableVid}","table":"{fateTenant}//assign","search":"pv◼{pv}⭘vid◼{modelVid}","idField":"vid","titleField":"ti","addressField":"br","backRoute":"fateHome","text":"Detail Project◆Jejak kamu"},
+    {"type":"NOTICE_BAR","variant":"info","icon":"","text":"Hadir & selesai kecatet otomatis pas kamu lapor (selfie). Selisih jadwal = fakta terkunci, nunggu konfirmasi brand via Fate."},
+    {"type":"RBT","alignment":"spaceevenly","conditions":"[[◀{stPos}▶◼assigned]]","children":[{"text":"Konfirmasi keikutsertaan","action":"savesend","route":"fateHome","delay":2,"flag":"assign-ack","buttonColor":"green","textColor":"white","updateEventRow":"{fateTenant}//assign⭘tablevid◼{fateTableVid}⭘search◼pv★{pv}☆vid★{modelVid}⭘st◼ready","addToEvent":"{fateTenant}//event⭘r◼43200⭘tablevid◼{fateTableVid}⭘ty◼ack⭘t◼◀2|T7|epoch▶⭘ts◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶⭘pv◼{pv}⭘cv◼{modelVid}⭘cn◼{modelName}","chain":{"type":"DO_DIALOG","title":"Terkonfirmasi","children":[{"type":"TXT","data":"Sip, kamu ikut project ini"},{"type":"RBT","alignment":"center","children":[{"text":"Ok","route":"fateHome"}]}]}}]},
+    {"type":"RBT","alignment":"spaceevenly","conditions":"[[◀{stPos}▶◼ready]]","children":[{"text":"Lapor hadir di venue","action":"","route":"fateSelfieArrival","buttonColor":"green","textColor":"white"}]},
+    {"type":"RBT","alignment":"spaceevenly","conditions":"[[◀{stPos}▶◼present]]","children":[{"text":"Lapor selesai","action":"","route":"fateSelfieDone","buttonColor":"green","textColor":"white"}]}
+  ]
+}

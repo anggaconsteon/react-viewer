@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "<string>", line 19, in <module>
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u25c6' in position 7: character maps to <undefined>
+A30	=IF($B$10="";"";ARRAYFORMULA(IF(ROW(A30:A34)=ROW(A30);VLOOKUP("attendance";'Web Menu'!$J:$J;1;FALSE);ROW(A30:A34)-ROW(A30))))
+B30	=SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(VLOOKUP("pageWrapper";'Web Widget'!$A:$J;10;FALSE);"[TITLE]";VLOOKUP(A30;{'Web Menu'!$J:$J\'Web Menu'!$F:$F};2;FALSE));"[DESCRIPTION]";Z30);"[TB_ALIGN]";AD30);"[BT_ALIGN]";AE30);"[TB_CHILDREN]";IFERROR(MID(TEXTJOIN("";TRUE;FILTER($E$30:$E$34;$C$30:$C$34="topbar"));2;50000);""));"[CONTENT]";IFERROR(MID(TEXTJOIN("";TRUE;FILTER($E$30:$E$34;$C$30:$C$34="content"));2;50000);""));"[BT_CHILDREN]";IFERROR(MID(TEXTJOIN("";TRUE;FILTER($E$30:$E$34;$C$30:$C$34="bottomBar"));2;50000);""))
+E30	=ARRAYFORMULA(IF(A30:A34="";"";IF(NOT(ISNUMBER(A30:A34));"JSON";IF(ISERROR(D30:D34);"";IF(D30:D34="";"";IF(F30:F34<>TRUE;"";","&D30:D34))))))
+D31	=SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(VLOOKUP(B31;'Web Widget'!$A:$J;10;FALSE);"[KEY]";G31);"[TARGET]";H31);"[PLACEHOLDER]";I31);"[OPTIONS]";J31);"[EMPTY_TEXT]";K31);"[VARIANT]";L31)
+G31	="costCenter"
+H31	=A30&"Content"
+I31	="Pilih cost center"
+K31	="Cost center tidak ditemukan"
+D32	=VLOOKUP(B32;'Web Widget'!$A:$J;10;FALSE)
+D33	=SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(VLOOKUP(B33;'Web Widget'!$A:$J;10;FALSE);"[ICON]";O33);"[TEXT]";M33);"[DATA]";N33);"[API_URL]";Q33);"[SUCCESS]";R33);"[THEN]";T33);"[ERROR]";S33)
+N33	="costCenter"
+Q33	="https://consteon.io/api/spreadsheet"
+D34	=SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(VLOOKUP(B20;'Web Widget'!$A:$J;10;FALSE);"[SRC]";G34);"[PERM]";H34);"[VISIBLE_SHEETS]";L34);"[ID]";I34);"[SHEET_NAME]";L34);"[ROWHEADER]";IF(J34="";1;J34));"[ROWSTARTDATA]";IF(K34="";2;K34))
+G34	="[SRC:"&A30&"]"

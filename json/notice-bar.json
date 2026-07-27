@@ -1,0 +1,37 @@
+[
+    {
+        "type": "noticeBar",
+        "variant": "danger",
+        "icon": "[ICON]",
+        "text": "Sesi expired / device dicabut. Scan ulang kartu buat lanjut."
+    },
+    {
+        "type": "noticeBar",
+        "variant": "warn",
+        "icon": "[ICON]",
+        "text": "Device ini bisa jadi bukan punya lo (HP kantor / admin / temen). Identitas lo dibawa di kartu, bukan di HP ini."
+    },
+    {
+        "type": "noticeBar",
+        "variant": "warn",
+        "icon": "[ICON]",
+        "iconAlign": "top",
+        "label": "KONFIRMASI DIPERLUKAN",
+        "title": "Vehicle siap berangkat, butuh konfirmasi penerimaan",
+        "text": "Lo belum bisa mulai task hari ini sebelum konfirmasi load dari warehouse."
+    },
+    {
+        "type": "noticeBar",
+        "variant": "info",
+        "icon": "[ICON]",
+        "iconAlign": "center",
+        "title": "Hitung sendiri dulu.",
+        "text": "Angka warehouse akan terungkap setelah lo selesai hitung — biar konfirmasi-nya genuine, bukan auto-match."
+    },
+    {
+        "type": "noticeBar",
+        "variant": "ok",
+        "icon": "[ICON]",
+        "text": "Sesi aktif. Semua serah-terima kecatat ke kartu lo."
+    }
+]

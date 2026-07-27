@@ -19,7 +19,14 @@
       "Bash(python -c \"import weasyprint; print\\('weasyprint ok'\\)\")",
       "Bash(python -c \"import xhtml2pdf; print\\('xhtml2pdf ok'\\)\")",
       "Bash(python *)",
-      "Bash(PYTHONIOENCODING=utf-8 python .tmp_formula_gen.py)"
+      "Bash(PYTHONIOENCODING=utf-8 python .tmp_formula_gen.py)",
+      "Read(//c/Users/FCT/Documents/Development/consteon/cloud-function/**)",
+      "Bash(go get *)",
+      "Bash(go doc *)",
+      "Bash(rtk go *)",
+      "Bash(go mod *)",
+      "Bash(rtk ls *)",
+      "Bash(rtk find *)"
     ]
   }
 }

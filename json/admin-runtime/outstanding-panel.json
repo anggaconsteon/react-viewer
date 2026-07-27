@@ -1,0 +1,21 @@
+{
+    "_doc": "H1 child #9 — NEW renderer. 'Prioritas Pengambilan' = collapsible aged-list. GENERIC: collapsible list ber-tier-umur + aksi per baris. Reusable: aging piutang, SLA breach, item kedaluwarsa. judul panel nyatu di header (drop TXT terpisah). table asset_cache lt◼client, hideZero TRUE (sembunyi qt net 0). titleField lv (client id) → name via locationTable.locationNameField (ln). days {dev}=now−ageAnchorField(t) hari; tier dangerAge>14 / warnAge>7 / else ok (warna theme); urut tertua atas. actionText Jadwalkan → actionSheet vehiclePicker (mode schedule → bikin pickup task). text [panelTitle]◆[qtyUnit]◆[ageUnit]◆[dangerLabel]◆[warnLabel]◆[okLabel] (statusLabels relabel). OPEN Q4: asset_cache keyed lv__ii__cd mungkin gak simpen ts → ageAnchorField bisa butuh join movement terakhir. Mockup: AdminHomeView OutstandingPanel. Spec §5.3.",
+    "type": "OUTSTANDING_PANEL",
+    "vidtable": "20342033315492",
+    "table": "84214220504259//asset_cache",
+    "search": "lt◼client",
+    "hideZero": "TRUE",
+    "collapsible": "TRUE",
+    "titleField": "lv",
+    "locationTable": "84214220504259//stock_location",
+    "locationNameField": "ln",
+    "itemField": "ii",
+    "qtyField": "qt",
+    "ageAnchorField": "t",
+    "dangerAge": 14,
+    "warnAge": 7,
+    "actionText": "Jadwalkan",
+    "actionSheet": "vehiclePicker",
+    "emptyText": "Tidak ada outstanding · semua sudah tertagih",
+    "text": "Prioritas Pengambilan◆pcs◆hari◆Kritis◆Perhatian◆Normal"
+}

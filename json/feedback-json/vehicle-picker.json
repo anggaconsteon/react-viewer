@@ -1,0 +1,11 @@
+{
+  "_doc": "Vehicle picker bottom sheet (H1 section 6). Shared assign/reassign/schedule.",
+  "type": "VEHICLE_PICKER",
+  "vidtable": "20342033315492",
+  "table": "84214220504259//stock_location",
+  "search": "lt◼vehicle",
+  "plateField": "ln",
+  "typeField": "ty",
+  "captureToken": "vehicleId",
+  "text": "Pilih Kendaraan◆task aktif◆Ad-hoc / Lainnya◆Kendaraan tidak tetap"
+}

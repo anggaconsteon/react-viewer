@@ -1,0 +1,1 @@
+gcloud functions deploy appStartup2 --source https://source.developers.google.com/projects/otq-01/repos/Functions/moveable-aliases/master/paths/ane1/appStartup2/ --trigger-http --runtime=nodejs16 --region=asia-northeast1

@@ -25,28 +25,76 @@ Layar detail satu cost center: daftar titik patroli & cleaning (Gudang Bahan, Ge
 ```json
 {
   "type": "LIST_STATISTIC_CARD",
-  "ledgerCode": "event-patrol",
-  "vidtable": "{tablevid}",
-  "table": "$test/{tenantVid}//site",
+  "ledgerCode": "patrolPoint",
+  "vidtable": "20342033315492",
+  "table": "84214220504259//site",
+  "itemsField": "ll",
   "search": "av◼{ccVid}",
   "conditions": "[[◀av▶◼{ccVid}]]",
+  "searchFields": "ln",
+  "thresholdMs": "43200000",
+  "routeParam": "li◼pointId◆ln◼point◆ln◼pointName◆sv◼site",
   "text": "Cari titik◆Ketik nama titik◆Data tidak ditemukan",
   "period": "24 jam◼86400000★7 hari◼604800000★30 hari◼2592000000",
   "periodDefault": "86400000",
   "stats": "{totalVisits}◆Total kunjungan★{noVisitCount}◆Titik tanpa kunjungan★{typedCount}◆Lokasi diketik",
-  "content": "<ln>◆{type}◆Terakhir {lastAgo} · {lastBy}◆{visits} kunjungan dalam {period}",
+  "content": "<ln>◆PATROLI◆Terakhir {lastAgo} · {lastBy}◆{visits} kunjungan dalam {period}",
   "status": "{ps}",
   "badge": "{evidence}",
-  "route": "patroliCleaningPointTimeline"
+  "route": "vertikaTeknoLokaciptaPatrolPointTimeline"
 }
 ```
 
-- Field list-level (`ledgerCode`/`vidtable`/`table`/`search`/`text`/`route`) = mirip `LIST_ITEM_CARD`.
-- ⚠️ **Data source = SATU doc `site`** (cost center yang di-tap, match `<av>`==`{ccVid}` inject), bukan collection event. Tiap kartu titik = satu elemen `ll[]` di doc itu (nama = `ll[].ln`). Agregat kunjungan = left-join event ledger per titik (lihat §5.1).
-- `period` = tab bar. Tiap tab `label◼offsetMs`, `★` antar tab. `periodDefault` = offset tab aktif awal.
-- `stats` = 3 box statistik. Tiap box `value◆label`, `★` antar box.
-- `content` = template kartu titik, dipack `◆` (nama◆tipe◆baris terakhir◆baris jumlah).
-- `status` = strip kiri kartu (stale). `badge` = pill bukti. `route` = tujuan tap kartu (timeline titik).
+**Field-set (final, feedback dev 2026-06-04 — reusable; lihat `docs/list-statistic-card-dynamic.md`):**
+
+| Field | Contoh | Fungsi |
+|---|---|---|
+| `ledgerCode` | `patrolPoint` | **pemilih strategy agregasi** (gabung dari `computeMode`). Ada strategy Dart terdaftar → hitung token `{...}` (subscribe sibling `event`, join `ln`). Gak ada → **generic**: kartu murni dari `<charcode>` item. |
+| `vidtable` | `20342033315492` | collection vid |
+| `table` | `84214220504259//site` | path data (collection cost center) |
+| `itemsField` | `ll` | **array-of-object di dalam doc** yang di-render jadi kartu. Tiap elemen = 1 kartu. Domain lain isi nama array lain (`rooms`, dll). |
+| `search` | `av◼{ccVid}` | **WHERE Firebase (server)** single-filter — doc mana di-fetch. Di sini: ambil 1 doc cost center yg di-tap. |
+| `conditions` | `[[◀av▶◼{ccVid}]]` | **WHERE Firebase (server)** compound AND-join. |
+| `searchFields` | `ln` | **search box (client)** — char-code field item yg dicocokin pas ngetik. ◆-multi. BEDA dari `search`. |
+| `thresholdMs` | `43200000` | ambang stale (ms, 12 jam), dibaca strategy. Dulu `staleMs`. |
+| `routeParam` | `li◼pointId◆ln◼point◆ln◼pointName◆sv◼site` | nav: bawa field item → token di layar tujuan. `docField◼token`, multi pisah `◆`. Dulu `tapContext`. |
+| `period`/`periodDefault` | `24 jam◼86400000★…` / `86400000` | tab periode (`label◼offsetMs`, rolling) — lihat §3 |
+| `stats` | `{totalVisits}◆Total kunjungan★…` | 3 box statistik (`value◆label`, `★` antar box) |
+| `content` | `<ln>◆PATROLI◆…` | template kartu titik (◆-pack: nama◆tipe◆baris-terakhir◆baris-jumlah) |
+| `status` | `{ps}` / `<charcode>` / literal | strip kiri kartu (stale) |
+| `badge` | `{evidence}` / `<charcode>` | pill bukti |
+| `route` | `vertikaTeknoLokaciptaPatrolPointTimeline` | tujuan tap kartu |
+
+- ⚠️ **Data source = SATU doc `site`** (cost center yang di-tap, match `<av>`==`{ccVid}` inject), bukan collection event. Tiap kartu titik = satu elemen `itemsField` (`ll[]`) di doc itu (nama = `ll[].ln`). Agregat kunjungan = left-join event ledger per titik (lihat §5.1).
+- ⚠️ **`search`/`conditions` vs `searchFields`** — `search`/`conditions` = WHERE server (doc mana di-fetch). `searchFields` = field yg dicocokin search box client (di atas item yg udah ke-fetch). Dua hal beda.
+- **`{type}` RESOLVED:** dipack literal di `content` (`◆PATROLI◆`), bukan token hitung. Gak ada kategori di `ll`, gak reliable derive dari `ty` event → user tulis literal per-template. Kalau domain butuh kategori dinamis, taruh `<charcode>` item.
+- **RENAME dari versi lama:** `computeMode`→`ledgerCode`, `staleMs`→`thresholdMs`, `tapContext`→`routeParam`, `searchField`→`searchFields`. `itemsField` = field BARU (array→kartu). `search`/`conditions` TETAP (WHERE).
+
+### 2.1 Mode generic (reusable ke domain lain)
+
+`ledgerCode` tanpa strategy terdaftar → gak subscribe sibling, gak hitung token. `stats`/`content`/`status`/`badge` ambil `<charcode>` item langsung atau literal. Contoh: 1 doc gedung berisi array `rooms`, tiap ruang jadi kartu:
+
+```json
+{
+  "type": "LIST_STATISTIC_CARD",
+  "ledgerCode": "building",
+  "vidtable": "20342033315492",
+  "table": "84214220504259//building",
+  "itemsField": "rooms",
+  "search": "av◼{bldVid}",
+  "conditions": "[[◀av▶◼{bldVid}]]",
+  "searchFields": "rn",
+  "routeParam": "ri◼roomId◆rn◼room",
+  "text": "Cari ruangan◆Ketik nama ruangan◆Data tidak ditemukan",
+  "stats": "<tot>◆Total ruangan★<occ>◆Terisi★<free>◆Kosong",
+  "content": "<rn>◆<rt>◆Kapasitas <cap>◆<note>",
+  "status": "<rs>",
+  "badge": "<rb>",
+  "route": "roomDetail"
+}
+```
+
+**Aturan token `stats`/`content`/`status`/`badge`:** boleh `{computedToken}` (kalo strategy aktif), `<charcode>` (dari item), atau literal (`ok`/`warn`/`danger`). Engine resolve generic.
 
 ---
 
@@ -85,7 +133,7 @@ Layar detail satu cost center: daftar titik patroli & cleaning (Gudang Bahan, Ge
 
 | Token | Arti | Asal hitung |
 |-------|------|-------------|
-| `{type}` | kategori titik (PATROLI / CLEANING) | **TBD** — kategori titik di `ll`, atau derive dari `ty` event (konfirmasi) |
+| ~~`{type}`~~ | RESOLVED → bukan token. Kategori dipack literal di `content` (`◆PATROLI◆`). Gak ada kategori reliable di `ll`/`ty`. | — |
 | `{lastAgo}` | jeda kunjungan terakhir (mnt/jam/hari lalu) | `now − MAX(t)` event di titik, diformat |
 | `{lastBy}` | pelaku kunjungan terakhir | `cn` event terbaru di titik |
 | `{visits}` | jumlah kunjungan dalam window | COUNT event di titik dalam `[start, now]` |
@@ -106,15 +154,15 @@ Layar detail satu cost center: daftar titik patroli & cleaning (Gudang Bahan, Ge
 
 - **Titik (authoritative)** = array `ll` (array of objects) di doc `site` cost center ini. Titik 0-kunjungan WAJIB dari `ll` (gak ada di event ledger) → dibutuhkan untuk `{noVisitCount}`.
 - **Kunjungan** = event ledger (`event/content`), field `ty` (type), `t` (epoch), `ln` (location name), `cn` (creator), `lq` (QR id).
-- Dev expand `ll[]` → baris, left-join agregat event per titik (join event `lq` == `ll[].li`; fallback event `ln` == `ll[].ln` exact match untuk scan manual).
+- ⚠️ **WHERE event = `ln` (nama titik) + `ty` (tipe event, mis. `report-patrol`).** `ty` WAJIB karena collection event campur banyak tipe. Dev expand `ll[]` → baris, left-join agregat event per titik: `event.ln == ll[].ln AND event.ty == <tipe-patrol>`. **`lq` (QR id) BUKAN buat join/filter** — cuma buat tentuin `{evidence}` (strong/weak). Match `ln` string harus persis (typo/spasi beda = orphan).
 
 ### 5.2 Per kartu titik (dalam window aktif)
 
 ```
-visits_titik   = COUNT(event WHERE ln = titik AND t ∈ [start, now])
-lastAgo_titik  = now − MAX(t WHERE ln = titik)        // format mnt/jam/hari
+visits_titik   = COUNT(event WHERE ln = titik AND ty = <patrol> AND t ∈ [start, now])
+lastAgo_titik  = now − MAX(t WHERE ln = titik AND ty = <patrol>)   // format mnt/jam/hari
 lastBy_titik   = cn dari event t-terbaru di titik
-{ps}           = warn jika (now − MAX(t)) ≥ 43200000 ms (12 jam), else ok
+{ps}           = warn jika (now − MAX(t)) ≥ thresholdMs (43200000 = 12 jam), else ok
 {evidence}     = strong jika event terakhir punya lq (QR); weak jika diketik/GPS
 ```
 
@@ -148,10 +196,12 @@ Default `43200000` ms (12 jam, sebaiknya configurable, simpan ms biar konsisten 
 
 1. **Render type baru `LIST_STATISTIC_CARD`** — 1 widget = tab `period` (`label◼code`) + box `stats` + search + list kartu (`content`+`status`+`badge`+`route`). Bisa?
 2. **`badge` field** untuk pill bukti — OK, atau fold ke `content` text?
-3. **`{type}` source** — `ll` simpan kategori titik, atau derive dari `ty` event?
+3. ✅ RESOLVED — **`{type}`** dipack literal di `content` (`◆PATROLI◆`), bukan token. Gak ada kategori reliable di `ll`/`ty`.
 4. **Tab klik → re-filter** — pastikan ganti tab re-compute stats + per-kartu pakai window baru (frontend).
-5. **Threshold stale (`43200000` ms = 12 jam)** — taruh di mana biar configurable (ms, konsisten sama `period`).
+5. ✅ RESOLVED — **`thresholdMs`** field (`43200000` ms = 12 jam), dibaca strategy. Configurable di JSON.
 6. **Kosakata status** — `ok`/`warn` + warna (hijau/kuning/amber), + evidence `strong`/`weak`.
+7. ✅ RESOLVED — **WHERE event = `ln` + `ty`** (bukan `lq`/`li`). `lq` cuma buat `{evidence}`.
+8. **Strategy `patrolPoint`** — agregasi (subscribe `event`, join `ln`+`ty`) dipegang strategy Dart yg di-key dari `ledgerCode`. `ledgerCode` lain tanpa strategy = generic (lihat §2.1).
 
 ---
 
