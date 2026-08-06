@@ -16,6 +16,7 @@
 - **LSP import diagnostics are bogus in this repo** — truth is `go build ./... && go vet ./... && go test ./...`. gofmt must be clean.
 - **Type-tolerance:** ids are written as String (addEventRow) OR Number (table CRUD). Read activity fields with `fsdoc.Str`/`fsdoc.Int` (proto map) and config/customer fields with `fsdoc.AsString`/`fsdoc.AsInt64` (interface map). Customer key `in`-query uses both forms (`eqAny`).
 - **Scope:** CF only. Widget SIGNAL_LIST aging-compute + filling `reorder_config` (sheet) are OTHER people's tasks (see Dependencies) — out of this plan.
+- **FIELD CODES FINALIZED (post-plan, dictionary-registered):** `last_at`→**`lo`**, `cd`→**`cad`** (cd = condition in movement/task, collision), `derived_at`→**dropped**; config keys → short codes **`aco afl acf atf cco ckf cnf cpf dcd oco`**. Some code blocks below still show the old names — the COMMITTED code (`internal/reorder/reorder.go`) + the Dictionary tabs `reorder_cache`/`reorder_config` are the source of truth.
 
 ---
 

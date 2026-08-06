@@ -22,14 +22,14 @@ Reorder Radar = sinyal "customer berisiko berhenti order". **Pola RENDERER-AGING
 
 **Kerjaan:** tambah **kemampuan generic "umur→tier"** di SIGNAL_LIST:
 
-1. **Input (dari config widget):** nama field timestamp (mis. `last_at`), nama field cadence (mis. `cd`), + threshold `attentionFraction` (default `0.8`), `dormantMultiplier` (default `3.0`). (Analyst tentukan nama key config-nya.)
+1. **Input (dari config widget):** nama field timestamp (`lo`), nama field cadence (`cad`), + threshold `attentionFraction` (default `0.8`), `dormantMultiplier` (default `3.0`). (Analyst tentukan nama key config-nya.)
 2. **Hitung saat render**, per kartu:
-   - `ds = floor((now − last_at) / 86400000)` (hari). `last_at` kosong → kartu di-skip (never_ordered TIDAK ada di v1).
+   - `ds = floor((now − lo) / 86400000)` (hari). `lo` kosong → kartu di-skip (never_ordered TIDAK ada di v1).
    - `st` (tier):
-     - `ds ≤ cd × 0.8` → `fresh`
-     - `cd × 0.8 < ds ≤ cd` → `approaching`
-     - `cd < ds ≤ cd × 3.0` → `overdue`
-     - `ds > cd × 3.0` → `dormant`
+     - `ds ≤ cad × 0.8` → `fresh`
+     - `cad × 0.8 < ds ≤ cad` → `approaching`
+     - `cad < ds ≤ cad × 3.0` → `overdue`
+     - `ds > cad × 3.0` → `dormant`
 3. **Pakai hasil hitung** buat: `markerField`/`sort` (pakai `ds` yang dihitung), `statusField`/badge/`groupField` (pakai `st` yang dihitung). Bukan baca field `ds`/`st` dari doc (doc gak punya).
 4. **GATED by config:** kemampuan ini nyala HANYA kalau config kasih field aging (timestamp+cadence). Config lama tanpa itu → SIGNAL_LIST jalan apa adanya (display-only). **Backward-compatible wajib** — SIGNAL_LIST dipakai case lain (mis. asset-servis) yang gak boleh berubah.
 5. **Baca collection** `reorder_cache` (via `table` config biasa; snapshot live).
@@ -43,10 +43,11 @@ Reorder Radar = sinyal "customer berisiko berhenti order". **Pola RENDERER-AGING
 |---|---|
 | `rc` | id customer (=doc key) |
 | `cn` / `cp` | nama / hp (denorm) |
-| `last_at` | epoch ms order terakhir |
-| `cd` | cadence hari (default dari config) |
-| `derived_at` | epoch derive terakhir |
-(TANPA `ds`/`st` — layar yang hitung.)
+| `lo` | epoch ms order terakhir |
+| `cad` | cadence hari (default dari config; BUKAN `cd` — cd=condition) |
+(TANPA `ds`/`st` — layar yang hitung. `derived_at` di-drop.)
+
+> Kode field terdaftar di Dictionary book tab **`reorder_cache`** + **`reorder_config`** (sheet `1_XHmo5…`).
 
 ---
 
@@ -55,18 +56,18 @@ Reorder Radar = sinyal "customer berisiko berhenti order". **Pola RENDERER-AGING
 ### 2a. Doc setelan CF — `reorder_config/{vertical}`
 Path: `MobileTable/{db}/tables/{tid}/reorder_config/galon`. CF baca ini (di-cache 60s). Isi galon:
 
-| field | nilai galon |
-|---|---|
-| `activityColl` | `movement` |
-| `activityFilter` | `mt◼DROP` |
-| `activityCustomerField` | `tl` |
-| `activityTimeField` | `t` |
-| `customerColl` | `stock_location` |
-| `customerKeyField` | `lv` |
-| `customerNameField` | `ln` |
-| `customerPhoneField` | `hpic` |
-| `defaultCadenceDays` | `14` |
-| `outputColl` | `reorder_cache` |
+| field (kode) | arti | nilai galon |
+|---|---|---|
+| `aco` | activity collection | `movement` |
+| `afl` | activity filter (DSL) | `mt◼DROP` |
+| `acf` | activity customer field | `tl` |
+| `atf` | activity time field | `t` |
+| `cco` | customer collection | `stock_location` |
+| `ckf` | customer key field | `lv` |
+| `cnf` | customer name field | `ln` |
+| `cpf` | customer phone field | `hpic` |
+| `dcd` | default cadence days | `14` |
+| `oco` | output collection | `reorder_cache` |
 
 **Yang analyst perlu putuskan/spec:** cara isi doc ini (seeder Apps Script dari sheet? manual? pola seeder existing) + konfirmasi `defaultCadenceDays` galon (14 = asumsi).
 
@@ -84,7 +85,7 @@ Path: `MobileTable/{db}/tables/{tid}/reorder_config/galon`. CF baca ini (di-cach
 - **`never_ordered`** (customer belum pernah order): CF event-driven cuma bikin doc buat yang PERNAH aktivitas. Nge-cover never-ordered = enumerate semua customer (fitur terpisah, on-open/cron). Potong v1.
 - **event/AC rute** (servis via `event` ledger): slot `(event,create)` udah dipakai payout + loop router return-on-gate-fail → rute event ke-2 ke-shadow. Pas AC masuk: ubah loop `return nil`→`continue` + reorder sesudah payout, ATAU gabung ke handler event. Lihat design §4b.
 - **`ty` di movement** (mbedain galon/CNG/logistik 1 tenant): butuh dev Flutter stamp `ty` di movement. Galon-only skrg = `mt◼DROP` cukup. Filter config udah multi-klausa-ready.
-- **`gaps` mini-timeline + learned-cadence** (rata-rata jarak order): butuh CF simpan histori order (dedup by `mrf`), bukan cuma last_at.
+- **`gaps` mini-timeline + learned-cadence** (rata-rata jarak order): butuh CF simpan histori order (dedup by `mrf`), bukan cuma `lo`.
 - **`followup_state` anti-nag** (task_open/recently_contacted): butuh query task/coordination.
 
 ---

@@ -30,8 +30,10 @@ Doktrin Reorder = **pull dashboard, nol auto-action** → tak butuh jam latar. C
 
 | Jenis | Field | Siapa isi | Kapan berubah |
 |---|---|---|---|
-| **Stabil** | `last_at`, `cd`, `cn`, `cp`, `derived_at` | CF (server) | hanya pas ada aktivitas (DROP/servis) |
-| **Volatile (jam)** | `ds` (hari), `st` (tier/warna) | SIGNAL_LIST (layar) | dihitung tiap render dari `last_at`+`cd`+threshold vs `now()` |
+| **Stabil** | `lo`, `cad`, `cn`, `cp` | CF (server) | hanya pas ada aktivitas (DROP/servis) |
+| **Volatile (jam)** | `ds` (hari), `st` (tier/warna) | SIGNAL_LIST (layar) | dihitung tiap render dari `lo`+`cad`+threshold vs `now()` |
+
+> **Kode field (final, terdaftar Dictionary):** last-order = **`lo`** (dulu ditulis `last_at` di narasi bawah), cadence = **`cad`** (BUKAN `cd` = condition di movement/task). `derived_at` di-drop. Config pakai short-code `aco/afl/acf/atf/cco/ckf/cnf/cpf/dcd/oco` (§5). Narasi di bawah kadang masih sebut `last_at`/`cd` sebagai konsep — kode aslinya `lo`/`cad`.
 
 Analogi: simpan **tanggal lahir** (stabil), umur dihitung saat ditanya (volatile). Tak pernah simpan "umur=30" lalu update tiap tahun.
 
@@ -55,39 +57,41 @@ Analogi: simpan **tanggal lahir** (stabil), umur dihitung saat ditanya (volatile
 
 **d. Output `reorder_cache/{key}`** — CF tulis; SIGNAL_LIST baca live.
 
-**e. Widget `SIGNAL_LIST` (dev Flutter):** kemampuan **generic** "umur→tier": dari `last_at`+`cd`+threshold → `ds`+`st` saat render → badge/sort/group pakai hasil hitung. **Gated by config** (cuma nyala kalau field umur diisi) → pemakaian lama tak berubah. Kemampuan ini reusable semua case aging (servis `od`/`cad` dll).
+**e. Widget `SIGNAL_LIST` (dev Flutter):** kemampuan **generic** "umur→tier": dari `lo`+`cad`+threshold → `ds`+`st` saat render → badge/sort/group pakai hasil hitung. **Gated by config** (cuma nyala kalau field umur diisi) → pemakaian lama tak berubah. Kemampuan ini reusable semua case aging (servis `od`/`cad` dll).
 
 ## 5. Kontrak data
 
+**Kode field = short-code, terdaftar di Dictionary book** (sheet `1_XHmo5…`, tab **`reorder_cache`** + **`reorder_config`**). `cd` TIDAK dipakai (sudah = condition di movement/task) → cadence = **`cad`**.
+
 **Config doc — `MobileTable/{db}/tables/{tid}/reorder_config/{vertical}`** (galon):
 
-| field | galon | catatan |
-|---|---|---|
-| `activityColl` | `movement` | relatif; CF prefix `paths.Base` |
-| `activityFilter` | `mt◼DROP` | DSL `key◼value⭘…`; siap `mt◼DROP⭘ty◼galon` nanti |
-| `activityCustomerField` | `tl` | DROP to-location = pelanggan |
-| `activityTimeField` | `t` | epoch |
-| `customerColl` | `stock_location` | untuk denorm nama/hp |
-| `customerFilter` | `lt◼client` | |
-| `customerKeyField` | `lv` | cocok dgn `tl` |
-| `customerNameField` | `ln` | → `cn` |
-| `customerPhoneField` | `hpic` | → `cp` |
-| `defaultCadenceDays` | `14` | dipakai widget utk threshold |
-| `outputColl` | `reorder_cache` | |
+| kode | arti | galon | catatan |
+|---|---|---|---|
+| `aco` | activityColl | `movement` | relatif; CF prefix `paths.Base` |
+| `afl` | activityFilter | `mt◼DROP` | DSL `key◼value⭘…`; siap `mt◼DROP⭘ty◼galon` nanti |
+| `acf` | activityCustomerField | `tl` | DROP to-location = pelanggan |
+| `atf` | activityTimeField | `t` | epoch |
+| `cco` | customerColl | `stock_location` | untuk denorm nama/hp |
+| `ckf` | customerKeyField | `lv` | cocok dgn `tl` |
+| `cnf` | customerNameField | `ln` | → `cn` |
+| `cpf` | customerPhoneField | `hpic` | → `cp` |
+| `dcd` | defaultCadenceDays | `14` | dipakai widget utk threshold |
+| `oco` | outputColl | `reorder_cache` | |
 
-Threshold tier (di **widget config**, bukan CF): `attentionFraction=0.8`, `dormantMultiplier=3.0`. Tier: `d≤cd×0.8`=fresh · `≤cd`=approaching · `≤cd×3`=overdue · `>cd×3`=dormant · `last_at` kosong=never_ordered.
+(`customerFilter` tak dipakai v1 — customer di-lookup by key buat denorm, bukan enumerate. Lihat §10.)
+
+Threshold tier (di **widget config**, bukan CF): `attentionFraction=0.8`, `dormantMultiplier=3.0`. Tier: `ds≤cad×0.8`=fresh · `≤cad`=approaching · `≤cad×3`=overdue · `>cad×3`=dormant · `lo` kosong=(never_ordered, potong v1).
 
 **Output doc — `reorder_cache/{key}`** (CF tulis):
 
-| field | isi |
+| kode | isi |
 |---|---|
 | `rc` | customer id (=key) |
 | `cn` / `cp` | nama / hp (denorm) |
-| `last_at` | epoch aktivitas terakhir |
-| `cd` | cadence default (hari) |
-| `derived_at` | epoch derive terakhir |
+| `lo` | epoch aktivitas order terakhir |
+| `cad` | cadence default (hari) |
 
-`ds`/`st` **tidak** disimpan — dihitung widget.
+`ds`/`st` **tidak** disimpan — dihitung widget. `derived_at` di-drop (YAGNI).
 
 ## 6. Alur data
 
