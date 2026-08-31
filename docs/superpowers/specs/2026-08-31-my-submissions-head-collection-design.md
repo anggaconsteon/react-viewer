@@ -18,7 +18,7 @@ Kendala data (hasil audit 2026-08-31):
 | Patrol report | `//event` langsung (`ty◼report-patrol`) | Gak ada status; `cv` masih baked demo |
 | Incident | `vtl.report-incident` sendiri, **positional** `<1>..<30>` | Bukan event; identitas di posisi `<4>/<5>` = VID proxy |
 | Koreksi jam (bottom-sheet) | update `workforce` + jejak `//event` | Gak ada status/nomor |
-| Complaint | ❓ belum ketemu di docs repo | Verifikasi sheet live |
+| Complaint | table `complaint` (info user 2026-08-31), **positional** kayak incident | Mekanisme array lama; layout kolom cek sheet live |
 
 Field gak seragam antar fitur (judul: `ttl`/`d`/`<15>`; status: `st`/`dv`/`<3>`; ref: `ref` vs `rf`). Query lintas collection gak mungkin di DSL renderer (AND-only, no join).
 
@@ -120,17 +120,47 @@ Desain ini pattern generic, bukan fitur one-off:
 3. **`fc` = marker family.** Head jenis lain besok (mis. `fc◼task-head`) bisa hidup di collection yang sama atau terpisah tanpa ganggu feed.
 4. Blok `◆` dual-write = pola copy-paste baku — masuk checklist skill/spec supaya tiap fitur baru otomatis ikut.
 
-## 7. Rollout
+## 7. Refactor incident + complaint: positional → keyed (scope tambahan user 2026-08-31)
 
-1. **Request family** dulu (ijin/sakit/lembur/koreksi absen) — nomor + status + approval udah rapi.
-2. Complaint (setelah verifikasi §8.1).
-3. Incident (tambah blok `◆` submission di addToTable submit existing).
-4. Patrol / laporan rutin — masuk feed dengan `st◼done` langsung (gak ada lifecycle).
+Incident (`vtl.report-incident`) dan complaint (`complaint`) masih pakai **addToTable positional** (`<1>..<30>`, wajib lengkap, shift index kalau nambah field). Di-refactor jadi **keyed** (addToEvent char-code) supaya: (a) konsisten kamus, (b) bisa `updateEventRow` merge → status flow sama kayak request, (c) langsung ikut kontrak `//submission`.
+
+### 7.1 Mapping incident positional → keyed
+
+| Posisi lama | Isi | Char-code baru |
+|---|---|---|
+| `<1>` | flag ref (K899) | metadata `fc` (tetap di string, bukan doc) |
+| `<2>` | autoNumber | `nm` |
+| `<3>` | MENUNGGU | `st◼waiting` (kanonik §4) |
+| `<4>`/`<5>` | VID/nama pengirim | `cv`/`cn` (formula Settings B1/B2) |
+| `<6>`/`<7>` | CC | `av`/`an` |
+| `<8>`/`<9>` | site | `sv`/`sn` |
+| `<10>`/`<11>` | tanggal/epoch | `ts`/`t` |
+| `<12>`/`<13>` | lokasi/loc-id | `ln`/`lq` |
+| `<15>` | judul insiden | `ttl` |
+| `<17>` | dokumen pendukung | `i` |
+| `<18>` | catatan | `d` |
+| `<14>` `<16>` `<19>` `<20>` | ?, jenis keluhan, urgensi, assigned | ⬜ TERBUKA — map ke kode existing tanpa bikin kode baru per-fitur (kandidat: jenis→`cl`? urgensi→`lvl`? assigned→`ta`/`VID`) — putuskan bareng user, JANGAN nambah kamus |
+| `index◼2★S◼…` | index positional | ⬜ cek: mekanisme index keyed ada/perlu? |
+
+Complaint: mapping serupa setelah layout positional-nya dibaca dari sheet live.
+
+### 7.2 Migrasi
+
+- **Cutover, bukan dual-format**: tombol submit ganti ke keyed, page reader (list/detail incident & complaint existing) di-update baca field name.
+- Data positional lama **dibiarkan mati sendiri** — retention 4320 menit (3 hari) → overlap cuma beberapa hari. ⬜ verify retention beneran ngehapus.
+- Inventory dulu SEMUA page/widget yang baca dua table ini sebelum flip (tugas implementation plan).
+
+## 7b. Rollout
+
+1. **Request family** dulu (ijin/sakit/lembur/koreksi absen) — udah keyed, nomor + status + approval rapi. Cuma nambah blok `◆`.
+2. **Incident refactor keyed** (§7.1) + dual-write `//submission` sekalian — 1 kali sentuh config.
+3. **Complaint refactor keyed** + dual-write — setelah layout live dibaca.
+4. Patrol / laporan rutin — masuk feed `st◼done` langsung (gak ada lifecycle).
 5. Data lama TIDAK di-backfill — feed mulai terisi dari kiriman baru. (Backfill = CF one-shot, only if diminta.)
 
 ## 8. Verifikasi WAJIB sebelum implementasi (blocker)
 
-1. ⬜ **Complaint**: nulis ke collection mana, tombolnya di page mana (cek sheet live 18v3w5YJ).
+1. 🔶 **Complaint**: collection = `complaint` (✅ user 2026-08-31); sisa: baca layout positional + inventory page pembaca di sheet live 18v3w5YJ.
 2. ✅ **Identitas pengirim — SOLVED (input user 2026-08-31)**: JANGAN pakai token `{userVid}` — `cv`/`cn` dibake formula `"&Settings!$B$1&"` / `"&Settings!$B$2&"` (Settings B1/B2 = identitas user pemilik spreadsheet, per-sheet; pola sama dgn incident `<4>/<5>`). Filter feed pakai ref yang sama. Sisa: 1 submit test buat lihat `cv` keisi benar di doc.
 3. ⬜ **`◆` multi-doc lintas tabel di `updateEventRow`**: user bilang udah support — konfirmasi dengan 1 test write di tombol approve sandbox.
 4. ⬜ **Route conditional per row** (`ty` → page detail beda): cek kemampuan routeParams; fallback = DETAIL_CARD universal.
