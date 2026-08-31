@@ -55,15 +55,23 @@ Dipakai 2 tempat identik: card Home `op1Screen!190` dan page feed `op1Screen!163
 
 | Cell | Formula (`userEnteredValue.formulaValue`) | Nilai resolved |
 |---|---|---|
-| `op1Screen!H190` | `="84214220504259//submission"` | `84214220504259//submission` |
+| `op1Screen!H190` | ~~`="84214220504259//submission"`~~ → **`=""&auzSettings!$J$71`** (Task 1) | `84214220504259//submission` |
 | `op1Screen!I190` | `="fc◼submission⭘cv◼"&Settings!$B$1` | `fc◼submission⭘cv◼87544551624342` |
-| `op1Screen!H1637` | `="84214220504259//submission"` | `84214220504259//submission` |
+| `op1Screen!H1637` | ~~`="84214220504259//submission"`~~ → **`=""&auzSettings!$J$71`** (Task 1) | `84214220504259//submission` |
 | `op1Screen!I1637` | `="fc◼submission⭘cv◼"&Settings!$B$1` | `fc◼submission⭘cv◼87544551624342` |
 
 Jadi:
-- **Path table**: `84214220504259//submission` — di-hardcode di dalam formula
-  (`="84214220504259//submission"`), **BUKAN** ref `auzSettings!$J$n`.
+- **Path table**: `84214220504259//submission` — ~~di-hardcode di dalam formula
+  (`="84214220504259//submission"`), **BUKAN** ref `auzSettings!$J$n`~~.
   Lihat kontradiksi (f)-1.
+
+  > ✅ **SUDAH DIPERBAIKI Task 1 (2026-08-31).** Ketiga cell `table` `//submission`
+  > (`op1Screen!H190`, `op1Screen!H1637`, `op1Screen Driver!H958`) sekarang isinya
+  > `=""&auzSettings!$J$71` — resolved TETAP `84214220504259//submission` (byte-identik,
+  > sudah diverifikasi read-back grid + page JSON `D190`/`B1635`/`Driver!B956` tidak berubah).
+  > Hardcode `="84214220504259//submission"` **sudah tidak ada** di ketiganya.
+  > `I190`/`I1637`/`I958` (search) tidak disentuh — semuanya tetap
+  > `="fc◼submission⭘cv◼"&Settings!$B$1`.
 - **`fc◼submission` ADA** dan jadi segmen PERTAMA di `search`.
 - **Filter `cv`** bentuknya `⭘cv◼"&Settings!$B$1` — formula ref, bukan token
   `{userVid}`, bukan literal. Persis kayak constraint plan.
@@ -123,7 +131,22 @@ Jadi:
 | 1638-1639 | 3,4 | (buffer kosong) | |
 
 Mirror Driver: `op1Screen Driver!951` = `…RiwayatAbsensi`, **`op1Screen Driver!956`** =
-`…RiwayatSaya` (957 = listCard `//submission`, config identik).
+`…RiwayatSaya`.
+
+> ✅ **DIKOREKSI Task 1 (2026-08-31).** Catatan lama bilang "957 = listCard" — **SALAH, geser 1**.
+> Struktur Driver persis mirror `op1Screen` (1635/1636/1637):
+>
+> | Row | A | B | Ket |
+> |---|---|---|---|
+> | 956 | `vertikaTeknoLokaciptaRiwayatSaya` | page JSON | header |
+> | **957** | `1` | **`workspaceHeader`** | `H957` = `=""` — **BUKAN** cell `//submission` |
+> | **958** | `2` | **`listCard`** | **`H958` = cell `table` `//submission`** |
+> | 959-960 | 3,4 | (buffer kosong) | |
+>
+> Config listCard 958 identik dengan `op1Screen!1637`.
+> `H958` sudah di-flip Task 1 → `=""&auzSettings!$J$71` (resolved tetap
+> `84214220504259//submission`). `I958` (search) = `="fc◼submission⭘cv◼"&Settings!$B$1`,
+> identik `I190`/`I1637`, tidak diubah.
 
 ### Isi param row 1636 (workspaceHeader)
 
@@ -141,7 +164,7 @@ Mirror Driver: `op1Screen Driver!951` = `…RiwayatAbsensi`, **`op1Screen Driver
 |---|---|
 | `op1Screen!F1637` | `TRUE` |
 | `G1637` | `20342033315492` |
-| `H1637` | `84214220504259//submission` (formula `="84214220504259//submission"`) |
+| `H1637` | `84214220504259//submission` (formula **`=""&auzSettings!$J$71`** sejak Task 1; dulu `="84214220504259//submission"`) |
 | `I1637` | `fc◼submission⭘cv◼87544551624342` (formula `="fc◼submission⭘cv◼"&Settings!$B$1`) |
 | `J1637` | *(kosong)* |
 | `K1637` | `t` |
@@ -460,6 +483,24 @@ Resolved VERBATIM:
 `I30` = `vidtable (default) — produksi harusnya KOSONG, sekarang diisi buat testing`,
 `J30` = `20342033315492`. Mulai `J31` = daftar path table.
 
+> ⚠️ **BANNER — KOREKSI Task 1 (2026-08-31): kolom J itu FORMULA, bukan literal.**
+>
+> Tabel di bawah nampilin **nilai RESOLVED**. Isi cell sebenarnya **selalu** berbentuk:
+> ```
+> =""&'op1'!$K$9&"//<table>"
+> ```
+> Contoh terverifikasi via `include_grid_data:true`:
+> `J31` = `=""&'op1'!$K$9&"//event"` · `J59` = `=""&'op1'!$K$9&"//request"` ·
+> `J70` = `=""&'op1'!$K$9&"//customer"`.
+>
+> `'op1'!$K$9` = tenant VID (`84214220504259`). **JANGAN pernah nulis VID-nya literal**
+> ke kolom J — itu nge-bake identitas tenant dan ngelanggar aturan
+> template-dicopy-antar-tenant. Kalau nambah row registry baru, tulis bentuk formula-nya.
+>
+> Catatan Task 0 versi awal cuma nyatet nilai resolved buat kolom J, jadi brief turunan
+> sempat salah nyimpulin isinya hardcode. Kalau ada brief Task 2-4 yang ngutip literal
+> kolom J, **cek ulang**.
+
 | J | Isi | | J | Isi |
 |---|---|---|---|---|
 | J31 | `84214220504259//event` | | J51 | `…//model_cache` |
@@ -482,22 +523,33 @@ Resolved VERBATIM:
 | J48 | `…//complaint` | | J68 | `…//meter` |
 | J49 | `…//fate_project` | | J69 | `…//reorder_cache` |
 | J50 | `…//fate_assign` | | J70 | `84214220504259//customer` |
+| | | | **J71** | **`84214220504259//submission`** ✅ ditulis Task 1 |
 
-### ❌ `//submission` BELUM teregistrasi
+### ✅ `//submission` SUDAH teregistrasi di `J71` (Task 1, 2026-08-31)
 
-- Terakhir terisi: **`J70` = `84214220504259//customer`**.
-- **Baris kosong berikutnya: `auzSettings!J71`** (`I71` juga kosong; `I32:I70` semuanya
-  kosong — kolom I cuma dipakai di `I30` sebagai catatan).
+> **Status berubah.** Waktu Task 0 ditulis, `//submission` belum teregistrasi dan `J71` masih
+> kosong. **Task 1 sudah nulis cell itu.** Jangan re-propose pendaftarannya.
+
+- Isi sekarang: **`auzSettings!J71`** = formula `=""&'op1'!$K$9&"//submission"`
+  → resolved `84214220504259//submission`.
+- `I71` sengaja dibiarkan kosong (ikut konvensi `I32:I70`; kolom I cuma dipakai di `I30`).
 - Registry ini **load-bearing**: tiap cell addToEvent/updateEventRow form request
-  mulai dengan `=""&auzSettings!$J$59&"…`. Jadi kalau `//submission` didaftarin di
-  `J71`, semua blok `◆` baru harusnya nulis `=""&auzSettings!$J$71&"…` — BUKAN
-  literal `84214220504259//submission`.
+  mulai dengan `=""&auzSettings!$J$59&"…`. Semua blok `◆` `//submission` yang baru
+  **WAJIB** nulis `=""&auzSettings!$J$71&"…` — BUKAN literal
+  `84214220504259//submission`.
+- Kontradiksi (f)-1 **sudah diselesaikan**: opsi "daftarin di `J71` lalu flip `H190`/`H1637`"
+  yang dipilih. Lihat update di bagian (a).
 
 ---
 
 ## (f) Kontradiksi terhadap asumsi plan/spec — ⚠️ BACA SEMUA
 
-### f-1. Path table: card Riwayat HARDCODE, form request pakai registry ref
+### f-1. ✅ SELESAI (Task 1) — Path table: card Riwayat HARDCODE, form request pakai registry ref
+
+> **Resolusi 2026-08-31:** opsi "daftarin `//submission` di `J71` lalu flip ke
+> `=""&auzSettings!$J$71`" yang dipilih dan sudah dieksekusi untuk **ketiga** cell
+> (`H190`, `H1637`, `Driver!H958`). Dua konvensi sudah menyatu — semuanya registry ref.
+> Paragraf di bawah dipertahankan sebagai catatan historis.
 `op1Screen!H190`/`H1637` = `="84214220504259//submission"` (literal di dalam formula),
 sementara `L383`/`L476`/`R477` = `=""&auzSettings!$J$59&"…`.
 Dua konvensi beda di satu spreadsheet. Sesi Riwayat (2026-08-31) bikin card TANPA
@@ -645,4 +697,4 @@ Range MCP juga: `sheet` = nama persis, jangan disingkat.
 | 4 | `…!L476` | Setujui (detail) — `dv◼approve` |
 | 4 | `…!R477` | Tolak (detail) — `dv◼reject` |
 | 4 | `…!P471` / `Q471` | Setujui / Tolak (antrian) |
-| e | `auzSettings!J71` | KOSONG — slot buat `84214220504259//submission` |
+| ~~e~~ ✅ | `auzSettings!J71` | **SUDAH DIISI Task 1**: `=""&'op1'!$K$9&"//submission"` |
