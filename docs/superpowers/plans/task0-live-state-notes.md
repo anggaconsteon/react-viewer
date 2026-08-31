@@ -49,7 +49,7 @@ mengandung **koma + spasi**, jadi di formula WAJIB dikutip:
 ## (a) Konvensi `//submission` yang SUDAH LIVE — mirror persis ini
 
 Dipakai 2 tempat identik: card Home `op1Screen!190` dan page feed `op1Screen!1637`
-(+ mirror Driver `op1Screen Driver!957`).
+(+ mirror Driver `op1Screen Driver!958`).
 
 ### Cell + formula VERBATIM
 
@@ -550,6 +550,7 @@ Resolved VERBATIM:
 > `=""&auzSettings!$J$71`" yang dipilih dan sudah dieksekusi untuk **ketiga** cell
 > (`H190`, `H1637`, `Driver!H958`). Dua konvensi sudah menyatu — semuanya registry ref.
 > Paragraf di bawah dipertahankan sebagai catatan historis.
+
 `op1Screen!H190`/`H1637` = `="84214220504259//submission"` (literal di dalam formula),
 sementara `L383`/`L476`/`R477` = `=""&auzSettings!$J$59&"…`.
 Dua konvensi beda di satu spreadsheet. Sesi Riwayat (2026-08-31) bikin card TANPA
