@@ -173,12 +173,25 @@ Row Home yang nge-link ke sini: `op1Screen!190` (listCard, `AB190`=`3`,
 
 ## (c) Segmen "statusLabels" live
 
-### ⚠️ TIDAK ADA key `statusLabels` di config live mana pun
+### ⚠️ Key `statusLabels` TIDAK MUNCUL di range mana pun yang gua baca
 
-Key yang dipakai LIST_CARD / DETAIL_CARD / LIST_ACTION_CARD / TIMELINE live namanya
-**`badgeMap`** (+ `badgeField`). `statusLabels` cuma ada di dev-spec lokal
-(`docs/cost-center-card-dev-spec.md`, `docs/admin-home-dev-spec.md`) dan di
-placeholder `[STATUSLABEL]` katalog widget — **belum pernah dipakai di sheet live**.
+**Scope klaim (jujur):** gua TIDAK nge-scan seluruh spreadsheet. Yang gua baca cuma:
+`op1Screen!A180:V200`, `U190:AJ191`, `A1625:V1645`, `U1636:AJ1637`, `V140:V150`,
+`A1030:A1080`; `op1Screen Driver!A945:B965`;
+`op1Screen Incident, Request dan Approval!A1:B400`, `A400:A520`, `B400:B481`,
+`F383:BC383`, `F402:BC402`, `F421:BC421`, `F440:BC440`, `F456:BC456`, `F459:BC459`,
+`F471:BC471`, `F476:BC477`; `auzSettings!I28:J110`; `Settings!A1:C5`; `Plug!A1:D40`;
+`route!A1:C30`. Tab `Widget` (library template) **BELUM dibaca sama sekali**.
+
+Di semua range di atas, key yang dipakai LIST_CARD / DETAIL_CARD / LIST_ACTION_CARD /
+TIMELINE adalah **`badgeMap`** (+ `badgeField`) — `statusLabels` nol kemunculan.
+`statusLabels` ketemunya cuma di dev-spec lokal repo
+(`docs/cost-center-card-dev-spec.md`, `docs/admin-home-dev-spec.md`) dan sebagai
+placeholder `[STATUSLABEL]` di `json/widget-library/_widget-catalog.csv`.
+
+➡️ Sebelum Task 2 nulis key apa pun, **cek tab `Widget`** buat mastiin template
+LIST_CARD emang gak punya slot `statusLabels`. Rekomendasi tetap: pakai `badgeMap`,
+karena itu yang terbukti kepakai di page live yang mau dimodifikasi.
 
 ### Bentuk segmen: `value◼Label◼tier`, antar-entry = separator
 
@@ -343,16 +356,67 @@ K `fields` · L `stats` · M `searchFields` · N `route` · O `routeParams` ·
 **T `addToEvent1`** · **U `addToEvent2`** · V `gateTable` · W `gateSearch` ·
 X `gateSlot` · Y `note`
 
-| Cell | Isi VERBATIM |
+Cell non-DSL (literal, bukan formula — nilai apa adanya):
+
+| Cell | Isi |
 |---|---|
 | `…!I471` | `st◼pending` |
-| `…!P471` (updateEventRow1 = SETUJUI) | `84214220504259//request⭘search◼nm★{nm}⭘dv◼approve⭘dvby◼87544551624342⭘dvbn◼Agenia Demo-7` |
-| `…!Q471` (updateEventRow2 = TOLAK) | `84214220504259//request⭘search◼nm★{nm}⭘dv◼reject⭘rr◼◁5▷⭘dvby◼87544551624342⭘dvbn◼Agenia Demo-7` |
 | `…!R471` (actionMeta) | `ok◼request-approve◆danger◼request-reject◼5` |
-| `…!T471` (addToEvent1) | `84214220504259//event⭘r◼4320⭘nm◼◀2▶⭘ty◼request-approved⭘ttl◼Disetujui⭘nm◼{nm}⭘lvl◼{cl}⭘cv◼87544551624342⭘cn◼Agenia Demo-7⭘t◼◀2▶⭘ts◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶` |
-| `…!U471` (addToEvent2) | `84214220504259//event⭘r◼4320⭘nm◼◀2▶⭘ty◼request-rejected⭘ttl◼Ditolak⭘nm◼{nm}⭘lvl◼{cl}⭘d◼◁5▷⭘cv◼87544551624342⭘cn◼Agenia Demo-7⭘t◼◀2▶⭘ts◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶` |
 | `…!V471` / `W471` / `X471` | `grant` / `ty◼approver⭘vid◼{userVid}` / `sc◆ak◆cl` |
 | `…!N471` / `O471` | `vertikaTeknoLokaciptaApproveLeaveDetail` / `nm◼{nm}` |
+
+**4 cell DSL — SEMUANYA FORMULA** (dibaca ulang dengan `include_grid_data: true`;
+tidak ada satu pun yang literal string):
+
+**`…!P471` — `updateEventRow1` (SETUJUI)**
+Formula VERBATIM:
+```
+=auzSettings!$J$59&"⭘search◼nm★{nm}⭘dv◼approve⭘dvby◼"&Settings!$B$1&"⭘dvbn◼"&Settings!$B$2
+```
+Resolved VERBATIM:
+```
+84214220504259//request⭘search◼nm★{nm}⭘dv◼approve⭘dvby◼87544551624342⭘dvbn◼Agenia Demo-7
+```
+
+**`…!Q471` — `updateEventRow2` (TOLAK)**
+Formula VERBATIM:
+```
+=auzSettings!$J$59&"⭘search◼nm★{nm}⭘dv◼reject⭘rr◼◁5▷⭘dvby◼"&Settings!$B$1&"⭘dvbn◼"&Settings!$B$2
+```
+Resolved VERBATIM:
+```
+84214220504259//request⭘search◼nm★{nm}⭘dv◼reject⭘rr◼◁5▷⭘dvby◼87544551624342⭘dvbn◼Agenia Demo-7
+```
+
+**`…!T471` — `addToEvent1` (jejak SETUJUI ke `//event`)**
+Formula VERBATIM:
+```
+=auzSettings!$J$31&"⭘r◼4320⭘nm◼◀2▶⭘ty◼request-approved⭘ttl◼Disetujui⭘nm◼{nm}⭘lvl◼{cl}⭘cv◼"&Settings!$B$1&"⭘cn◼"&Settings!$B$2&"⭘t◼◀2▶⭘ts◼◀2|T"&System!$B$3&"|Ddd MMM yyyy HH:mm:ss▶"
+```
+Resolved VERBATIM:
+```
+84214220504259//event⭘r◼4320⭘nm◼◀2▶⭘ty◼request-approved⭘ttl◼Disetujui⭘nm◼{nm}⭘lvl◼{cl}⭘cv◼87544551624342⭘cn◼Agenia Demo-7⭘t◼◀2▶⭘ts◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶
+```
+
+**`…!U471` — `addToEvent2` (jejak TOLAK ke `//event`)**
+Formula VERBATIM:
+```
+=auzSettings!$J$31&"⭘r◼4320⭘nm◼◀2▶⭘ty◼request-rejected⭘ttl◼Ditolak⭘nm◼{nm}⭘lvl◼{cl}⭘d◼◁5▷⭘cv◼"&Settings!$B$1&"⭘cn◼"&Settings!$B$2&"⭘t◼◀2▶⭘ts◼◀2|T"&System!$B$3&"|Ddd MMM yyyy HH:mm:ss▶"
+```
+Resolved VERBATIM:
+```
+84214220504259//event⭘r◼4320⭘nm◼◀2▶⭘ty◼request-rejected⭘ttl◼Ditolak⭘nm◼{nm}⭘lvl◼{cl}⭘d◼◁5▷⭘cv◼87544551624342⭘cn◼Agenia Demo-7⭘t◼◀2▶⭘ts◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶
+```
+
+📌 **Catatan buat Task 4:** `T471`/`U471` ngambil path dari **`auzSettings!$J$31`**
+(`//event`), sementara `P471`/`Q471` dari **`$J$59`** (`//request`). Dua ref beda di
+satu row — jangan ketuker waktu nambah blok `◆`.
+
+⚠️ **Varian penulisan formula:** `P471`/`Q471`/`T471`/`U471` mulai dengan
+`=auzSettings!$J$nn&"…` (tanpa `""&` di depan), sedangkan `L383`/`L402`/`L421`/
+`L440`/`L456`/`L476`/`R477` mulai dengan `=""&auzSettings!$J$nn&"…`. Hasilnya
+identik; tapi kalau nulis balik, **pertahankan bentuk asli tiap cell** biar diff
+bersih.
 
 ### d.7 — Tombol approval B: `vertikaTeknoLokaciptaApprovalDetail` rows 476-477
 
@@ -453,9 +517,13 @@ Plan snippet Task 3 nulis `ts◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶`.
 Live: `ts◼◀2|T"&System!$B$3&"|Ddd MMM yyyy HH:mm:ss▶`.
 Hardcode `T7` melanggar aturan template-dicopy-antar-tenant. **Pakai `System!$B$3`.**
 
-### f-4. ⚠️ `statusLabels` TIDAK ADA di renderer live
-Task 2 Step 2 nyuruh "Tulis `statusLabels`". Key live = **`badgeMap`** (kolom T).
-Nulis key `statusLabels` = config-ahead-of-renderer → widget bakal DROP.
+### f-4. ⚠️ `statusLabels` tidak muncul di range mana pun yang dibaca
+Task 2 Step 2 nyuruh "Tulis `statusLabels`". Di semua range yang gua baca (daftar
+lengkap di bagian (c)), key yang kepakai = **`badgeMap`** (kolom T); `statusLabels`
+nol kemunculan. **Tab `Widget` belum dibaca**, jadi ini bukan bukti absolut kalau
+renderer gak kenal `statusLabels` — tapi cukup buat bilang: page yang mau kita
+modifikasi pakai `badgeMap`. Nulis key `statusLabels` ke page itu = risiko
+config-ahead-of-renderer → widget bisa DROP. Verifikasi tab `Widget` dulu.
 Task 2 harus di-reframe jadi "isi/rapikan `badgeMap`", dan `badgeMap` di `T190`/`T1637`
 **sudah** persis semantik yang diminta plan (waiting/processing/approved/done/rejected)
 — kemungkinan besar Task 2 Step 2 = NO-OP.
@@ -514,14 +582,28 @@ Incident ada **di dua tab**: tab ini rows 223-286 DAN `op1Screen` ~1037-1053
 Duplikasi = risiko edit di tab yang salah. Di luar scope plan ini, tapi wajib
 diklarifikasi sebelum plan incident/complaint berikutnya.
 
-### f-11. `ApproveLeave@1052` di plan Task 4 = STALE
-`op1Screen!A1052` = `vertikaTeknoLokaciptaIncidentSupervisorDetail` region.
-Tidak ada page `vertikaTeknoLokaciptaApproveLeave` / `…ApproveLeaveDetail` yang
-ketemu. Padahal `N471` (route antrian) = `vertikaTeknoLokaciptaApproveLeaveDetail`
-dan `P476` (backRoute) = `vertikaTeknoLokaciptaApproveLeave`, sementara page yang
-ADA namanya `vertikaTeknoLokaciptaApproval` (@468) dan `…ApprovalDetail` (@473).
-**Route mismatch — kemungkinan navigasi approval live PATAH.** Perlu verifikasi
-user (buka app) sebelum Task 4 nyentuh tombolnya.
+### f-11. Route-string mismatch di approval + `ApproveLeave@1052` gak ketemu di range yang dibaca
+
+**Yang TERBUKTI (kuat, dari cell yang gua baca):** nama route yang dituju ≠ nama page
+yang ada di tab ini.
+
+| Cell | Route yang ditulis | Page yang ADA di tab ini |
+|---|---|---|
+| `…!N471` (route antrian → detail) | `vertikaTeknoLokaciptaApproveLeaveDetail` | header @473 = `vertikaTeknoLokaciptaApprovalDetail` |
+| `…!P476` (backRoute tombol Setujui) | `vertikaTeknoLokaciptaApproveLeave` | header @468 = `vertikaTeknoLokaciptaApproval` |
+
+**Yang BELUM terbukti (jangan diklaim):** gua TIDAK bisa bilang page
+`vertikaTeknoLokaciptaApproveLeave` / `…ApproveLeaveDetail` tidak ada. Gua cuma
+baca `op1Screen!A1030:A1080` (di situ isinya region
+`vertikaTeknoLokaciptaIncidentSupervisorDetail`, jadi referensi plan
+"ApproveLeave@1052" **tidak cocok di baris itu**). Kolom A `op1Screen` selebihnya
+(13.510 baris) + `op1Screen Driver` + tab lain **belum di-scan**. Page-nya bisa saja
+ada di baris lain atau tab lain.
+
+➡️ **Aksi sebelum Task 4:** scan kolom A semua tab `op1Screen*` buat route
+`ApproveLeave` / `ApproveLeaveDetail`. Kalau ketemu → route mismatch ini cuma
+penamaan ganda (2 flow paralel), aman. Kalau gak ketemu di mana pun → navigasi
+approval kemungkinan patah dan perlu konfirmasi user di app.
 
 ### f-12. Tombol Setujui/Tolak di ApprovalDetail tidak nulis `//event`
 `M476` (`addToEvent`) kosong dan row 477 tidak punya slot addToEvent sama sekali.
