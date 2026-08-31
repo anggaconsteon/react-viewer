@@ -57,6 +57,7 @@ Batch full-site (P2):
 
 - [ ] **Field `lk`** (`{li}-{sv}`) di-stamp CF `onTenantWrite` — CF BUILT belum deploy. Doc seed manual buat tes wajib diisi `lk` tangan.
 - [ ] **Asset lockup** `powered_by_autsorz` — PNG transparan UTUH "powered by āutsorz" (~600px lebar), dikasih owner. Bundle ke `assets/` + `pubspec.yaml`. Footer TEKS dibuang (feedback 2026-07-23: font default renderer + underline nyasar + gak center — image utuh = font style guide, center via align).
+  - **Alternatif URL (2026-08-03):** `<IMAGE>` bisa tambah atribut `src='<firebase-url>'` (owner ganti logo lewat sheet, no redeploy) — `asset` bundle TETAP jalan sebagai fallback offline. Spec: `image-tag-url-src-dev-spec.md`. Additive; `asset`-only regresi 0.
 - [ ] **Dependency pub**: `pdf` + `share_plus` (kalau belum ada). QR painter pakai yang sama dgn `qrDisplay` existing.
 
 ## 6. Acceptance kunci (full list: spec §11)

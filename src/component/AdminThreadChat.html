@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="day">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autsorz — Operational Thread Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;650;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{ --radius:14px; }
+  [data-theme="day"]{
+    --bg:#EDEFEC; --panel:#F4F5F3; --surface:#FFFFFF; --surface-2:#F4F5F3;
+    --line:#E1E4E0; --line-strong:#C9CEC9;
+    --text:#141A21; --text-2:#4B5763; --text-3:#7C8893;
+    --ai:#0E6E6B; --ai-soft:#E3F0EF; --ai-line:#9FCCC9;
+    --crit:#B42318; --crit-soft:#FBEAE8;
+    --warn:#996A13; --warn-soft:#FBF1DD;
+    --ok:#1D7A46; --ok-soft:#E4F2E9;
+    --shadow:0 18px 44px rgba(20,30,40,.16);
+    --bubble-user:#0E6E6B; --bubble-user-t:#fff;
+  }
+  [data-theme="night"]{
+    --bg:#0C1216; --panel:#10181D; --surface:#161F26; --surface-2:#1D2830;
+    --line:#26323B; --line-strong:#33424D;
+    --text:#E9EDF0; --text-2:#9FADB8; --text-3:#6E7E8A;
+    --ai:#4FB8B2; --ai-soft:rgba(79,184,178,.12); --ai-line:rgba(79,184,178,.35);
+    --crit:#E5685A; --crit-soft:rgba(229,104,90,.13);
+    --warn:#E0A94E; --warn-soft:rgba(224,169,78,.13);
+    --ok:#57B87C; --ok-soft:rgba(87,184,124,.13);
+    --shadow:0 18px 44px rgba(0,0,0,.5);
+    --bubble-user:#0E6E6B; --bubble-user-t:#E9EDF0;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;align-items:center;-webkit-font-smoothing:antialiased}
+  .mono{font-family:'IBM Plex Mono',monospace}
+
+  .controls{width:100%;max-width:640px;padding:14px 16px 10px}
+  .controls .label{font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.1em;color:var(--text-3);text-transform:uppercase;margin-bottom:8px}
+  .ctrl-row{display:flex;gap:7px;flex-wrap:wrap}
+  .switch{font-size:.78rem;color:var(--text-2);padding:7px 12px;border-radius:99px;border:1px solid var(--line-strong);cursor:pointer;background:var(--panel)}
+
+  .phone{
+    width:100%;max-width:400px;height:min(800px,calc(100dvh - 108px));min-height:560px;
+    background:var(--panel);border:1px solid var(--line);border-radius:26px;overflow:hidden;
+    position:relative;display:flex;flex-direction:column;box-shadow:var(--shadow);margin-bottom:16px;
+  }
+  @media(max-width:440px){.phone{border-radius:0;border-left:none;border-right:none;height:calc(100dvh - 98px);margin-bottom:0}}
+
+  .thread-head{
+    padding:14px 16px 12px;border-bottom:1px solid var(--line);flex:none;display:flex;align-items:baseline;gap:10px;
+  }
+  .thread-head h1{font-family:'Archivo',sans-serif;font-weight:650;font-size:1.05rem;letter-spacing:-.01em}
+  .thread-head .sub{font-size:.72rem;color:var(--text-3)}
+  .thread{flex:1;overflow-y:auto;padding:16px 14px 10px;display:flex;flex-direction:column;gap:10px}
+
+  .day-mark{align-self:center;font-family:'IBM Plex Mono',monospace;font-size:.66rem;color:var(--text-3);letter-spacing:.08em;margin:4px 0}
+
+  .u-bubble{
+    align-self:flex-end;max-width:82%;background:var(--bubble-user);color:var(--bubble-user-t);
+    border-radius:16px 16px 4px 16px;padding:10px 14px;font-size:.9rem;line-height:1.45;
+  }
+  .u-bubble .via{display:block;font-size:.66rem;opacity:.75;margin-top:4px}
+  .s-line{
+    align-self:flex-start;font-size:.84rem;color:var(--text-2);line-height:1.5;max-width:92%;padding:2px 4px;
+  }
+  .s-status{
+    align-self:flex-start;display:flex;align-items:center;gap:7px;font-size:.78rem;color:var(--ok);font-weight:500;padding:2px 4px;
+  }
+  .s-status.muted{color:var(--text-3);font-weight:400}
+
+  .s-card{
+    align-self:stretch;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:13px 15px;box-shadow:0 2px 10px rgba(20,30,40,.05);
+  }
+  .card-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px}
+
+  /* choice chips */
+  .choice{display:flex;flex-direction:column;gap:8px}
+  .ch{
+    text-align:left;border:1.5px solid var(--line-strong);background:var(--surface-2);border-radius:12px;
+    padding:11px 13px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;color:var(--text);
+  }
+  .ch:hover{border-color:var(--ai)}
+  .ch b{display:block;font-size:.87rem;font-weight:600}
+  .ch span{display:block;font-size:.74rem;color:var(--text-3);margin-top:2px}
+  .ch.picked{border-color:var(--ai);background:var(--ai-soft)}
+  .ch:disabled{opacity:.5;cursor:default}
+
+  /* draft fields (compact, in-thread) */
+  .field{display:flex;align-items:center;gap:10px;padding:9px 0}
+  .field + .field{border-top:1px solid var(--line)}
+  .f-label{font-size:.74rem;color:var(--text-3);width:76px;flex:none}
+  .f-val{font-size:.86rem;font-weight:500;flex:1;min-width:0}
+  .f-val .sub{display:block;font-size:.71rem;color:var(--text-3);font-weight:400;margin-top:1px}
+  .aifill .f-val{box-shadow:inset 3px 0 0 var(--ai-line);padding-left:9px;border-radius:2px;cursor:pointer}
+  .stepper{display:flex;align-items:center;gap:2px;flex:none}
+  .stepper button{width:30px;height:30px;border-radius:8px;border:1px solid var(--line-strong);background:var(--surface-2);color:var(--text);font-size:.95rem;cursor:pointer}
+  .qchip{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:500;border:1.5px dashed var(--warn);color:var(--warn);border-radius:99px;padding:4px 11px;cursor:pointer;background:var(--warn-soft)}
+  .qchip.resolved{border-style:solid;border-color:var(--line-strong);color:var(--text-2);background:var(--surface-2)}
+  .okline{font-size:.75rem;color:var(--ok);font-weight:500}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;font-size:.86rem;font-weight:600;border-radius:11px;padding:10px 15px;cursor:pointer;border:1px solid var(--line-strong);background:var(--surface-2);color:var(--text);min-height:42px;font-family:'IBM Plex Sans',sans-serif;user-select:none}
+  .btn.primary{background:var(--ai);border-color:var(--ai);color:#fff}
+  [data-theme="night"] .btn.primary{color:#08211F}
+  .btn.quiet{background:none;border-color:transparent;color:var(--text-2);font-weight:500}
+  .row2{display:flex;gap:8px;margin-top:12px}
+  .row2 .btn{flex:1}
+
+  .rec-title{font-size:.88rem;font-weight:600}
+  .rec-why{font-size:.78rem;color:var(--text-2);margin-top:3px;line-height:1.5}
+
+  .done-card{display:flex;gap:10px;align-items:flex-start}
+  .done-ic{width:30px;height:30px;border-radius:9px;background:var(--ok-soft);color:var(--ok);display:flex;align-items:center;justify-content:center;flex:none}
+  .done-ic svg{width:15px;height:15px}
+  .done-t{font-size:.87rem;font-weight:600}
+  .done-s{font-size:.75rem;color:var(--text-3);margin-top:2px;line-height:1.5}
+
+  .saldo{display:flex;align-items:baseline;gap:10px}
+  .saldo .n{font-family:'Archivo',sans-serif;font-weight:700;font-size:1.5rem}
+  .saldo .note{font-size:.76rem;color:var(--warn);font-weight:500}
+
+  .typing{align-self:flex-start;display:flex;gap:4px;padding:8px 12px}
+  .typing i{width:6px;height:6px;border-radius:50%;background:var(--text-3);animation:tp 1s infinite}
+  .typing i:nth-child(2){animation-delay:.15s}
+  .typing i:nth-child(3){animation-delay:.3s}
+  @keyframes tp{0%,100%{opacity:.3}50%{opacity:1}}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important}}
+
+  /* composer */
+  .composer{flex:none;border-top:1px solid var(--line);padding:10px 12px 12px;background:var(--panel)}
+  .sugg{display:flex;gap:7px;overflow-x:auto;padding-bottom:9px;scrollbar-width:none}
+  .sugg::-webkit-scrollbar{display:none}
+  .sg{flex:none;font-size:.76rem;color:var(--ai);background:var(--ai-soft);border:1px solid var(--ai-line);border-radius:99px;padding:6px 12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif}
+  .c-row{display:flex;gap:8px;align-items:flex-end}
+  .c-input{
+    flex:1;background:var(--surface);border:1px solid var(--line-strong);border-radius:14px;
+    padding:11px 13px;font-size:.9rem;color:var(--text);font-family:'IBM Plex Sans',sans-serif;outline:none;resize:none;max-height:90px;
+  }
+  .c-input:focus{border-color:var(--ai)}
+  .c-mic{
+    width:44px;height:44px;border-radius:50%;border:none;background:var(--ai);color:#fff;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;flex:none;user-select:none;touch-action:none;
+  }
+  [data-theme="night"] .c-mic{color:#08211F}
+  .c-mic svg{width:19px;height:19px;pointer-events:none}
+  .c-mic.recording{background:var(--crit);animation:pulse 1.2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+  .ptoast{position:absolute;left:50%;bottom:88px;transform:translateX(-50%) translateY(14px);background:var(--text);color:var(--bg);font-size:.82rem;font-weight:500;padding:10px 16px;border-radius:10px;opacity:0;pointer-events:none;transition:all .25s;z-index:40;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis}
+  .ptoast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <div class="label">Prototype — Thread Operasional Admin · ketik / tahan mic / pakai saran</div>
+  <div class="ctrl-row">
+    <button class="switch" onclick="location.reload()">↺ Ulang</button>
+    <button class="switch" id="swTheme"><span id="themeLabel">Siang</span></button>
+  </div>
+</div>
+
+<div class="phone">
+  <div class="thread-head">
+    <h1>Operasional</h1>
+    <span class="sub">Depot Tangerang · Sari</span>
+  </div>
+
+  <div class="thread" id="thread">
+    <div class="day-mark">SENIN, 10 AGU</div>
+    <div class="s-status muted">Order #1279 CV Mitra Jaya selesai kemarin · semua trip hari ini berjalan</div>
+  </div>
+
+  <div class="composer">
+    <div class="sugg" id="sugg">
+      <button class="sg" onclick="sendText('Ada order 3 galon buat PT ABC')">Ada order 3 galon buat PT ABC</button>
+      <button class="sg" onclick="sendText('Saldo galon PT ABC berapa?')">Saldo galon PT ABC?</button>
+      <button class="sg" onclick="sendText('Stok isi tinggal berapa?')">Stok isi?</button>
+    </div>
+    <div class="c-row">
+      <textarea class="c-input" id="input" rows="1" placeholder="Ketik order atau pertanyaan…"></textarea>
+      <button class="c-mic" id="cmic" aria-label="Tahan untuk bicara">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="ptoast" id="ptoast"></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const thread=$('thread');
+let qtyV=3,tarikV=3,jamOk=false,customer=null,orderMade=false;
+
+$('swTheme').onclick=()=>{
+  const r=document.documentElement,day=r.dataset.theme==='day';
+  r.dataset.theme=day?'night':'day';
+  $('themeLabel').textContent=day?'Malam':'Siang';
+};
+let toastT;
+function ptoast(m){const t=$('ptoast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3000)}
+
+function el(html){const d=document.createElement('div');d.innerHTML=html;return d.firstElementChild}
+function push(node){thread.appendChild(node);thread.scrollTop=thread.scrollHeight;return node}
+function sLine(txt){push(el(`<div class="s-line">${txt}</div>`))}
+function sStatus(txt,muted){push(el(`<div class="s-status ${muted?'muted':''}">✓ ${txt}</div>`))}
+function uBubble(txt,via){push(el(`<div class="u-bubble">${txt}${via?`<span class="via">${via}</span>`:''}</div>`))}
+
+function typing(then,ms){
+  const t=push(el('<div class="typing"><i></i><i></i><i></i></div>'));
+  setTimeout(()=>{t.remove();then()},ms||900);
+}
+
+/* ============ routing ============ */
+function sendText(t,via){
+  t=t.trim();if(!t)return;
+  uBubble(t,via);
+  $('input').value='';
+  const low=t.toLowerCase();
+  if(/saldo/.test(low)){typing(answerSaldo);return}
+  if(/stok/.test(low)){typing(answerStok);return}
+  if(/order|kirim|galon/.test(low)){typing(askCustomer,1000);return}
+  typing(()=>sLine('Belum bisa memahami. Coba sebut order ("ada order … buat …") atau pertanyaan saldo/stok.'),700);
+}
+$('input').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendText($('input').value)}
+});
+
+/* voice: hold mic → simulated speech */
+let recT=null;
+const cmic=$('cmic');
+function recStart(e){e.preventDefault();cmic.classList.add('recording');recT=Date.now()}
+function recEnd(e){
+  if(!cmic.classList.contains('recording'))return;
+  e.preventDefault();cmic.classList.remove('recording');
+  if(Date.now()-recT<600){ptoast('Tahan untuk bicara');return}
+  sendText('Ada order 3 galon buat PT ABC','🎤 via suara');
+}
+cmic.addEventListener('mousedown',recStart);
+cmic.addEventListener('touchstart',recStart,{passive:false});
+window.addEventListener('mouseup',recEnd);
+window.addEventListener('touchend',recEnd);
+
+/* ============ step 1: one blocking question ============ */
+function askCustomer(){
+  if(customer){typing(showDraft,900);return} // already disambiguated earlier in thread
+  push(el(`
+  <div class="s-card" id="qCust">
+    <div class="card-eyebrow">Satu hal dulu — PT ABC ada dua</div>
+    <div class="choice">
+      <button class="ch" onclick="pickCust(this,'bsd')">
+        <b>PT ABC — Kantor BSD</b>
+        <span>Jl. Sudirman Kav. 21 · terakhir order Kamis lalu (3 galon)</span>
+      </button>
+      <button class="ch" onclick="pickCust(this,'serpong')">
+        <b>PT ABC — Gudang Gading Serpong</b>
+        <span>Kawasan Niaga blok C · biasanya order 10 galon</span>
+      </button>
+    </div>
+  </div>`));
+  thread.scrollTop=thread.scrollHeight;
+}
+function pickCust(btn,which){
+  customer=which;
+  document.querySelectorAll('#qCust .ch').forEach(b=>{b.disabled=true});
+  btn.classList.add('picked');
+  typing(showDraft,900);
+}
+
+/* ============ step 2: draft card (all remaining gaps live here) ============ */
+function showDraft(){
+  const isBsd=customer==='bsd';
+  const addr=isBsd?'Jl. Sudirman Kav. 21 · BSD':'Kawasan Niaga blok C · Gading Serpong';
+  const histNote=isBsd?'':'<span class="sub" style="color:var(--warn)">Biasanya 10 — pastikan 3 memang benar</span>';
+  push(el(`
+  <div class="s-card" id="draftCard">
+    <div class="card-eyebrow">Draft Order — periksa lalu buat</div>
+    <div class="field aifill" onclick="ptoast('Dipilih dari pertanyaan di atas · alamat dari akun')">
+      <span class="f-label">Pelanggan</span>
+      <span class="f-val">PT ABC — ${isBsd?'BSD':'Gd. Serpong'}<span class="sub">${addr}</span></span>
+    </div>
+    <div class="field aifill" onclick="ptoast('Dari riwayat: order terakhir semuanya Galon 19L')">
+      <span class="f-label">Produk</span>
+      <span class="f-val">Galon 19L (isi ulang)<span class="sub">dari riwayat</span></span>
+    </div>
+    <div class="field">
+      <span class="f-label">Jumlah</span>
+      <span class="f-val mono" style="flex:0 0 auto" id="qtyN">3</span>
+      <span class="stepper"><button onclick="qty(-1)">−</button><button onclick="qty(1)">+</button></span>
+      <span class="f-val">${histNote}</span>
+    </div>
+    <div class="field aifill" onclick="ptoast('Tidak disebut tanggal → default besok; tap untuk ganti')">
+      <span class="f-label">Kirim</span>
+      <span class="f-val">Selasa, 11 Agu (besok)<span class="sub">tidak disebut — default hari berikutnya</span></span>
+    </div>
+    <div class="field">
+      <span class="f-label">Jam</span>
+      <span class="f-val"><span class="qchip" id="jamChip" onclick="resolveJam()">09.00–11.00 — jam biasa mereka<b>?</b></span></span>
+    </div>
+    <div class="field aifill" onclick="ptoast('Saldo galon di lokasi: ${isBsd?'6':'14'}')">
+      <span class="f-label">Tarik kosong</span>
+      <span class="f-val mono" style="flex:0 0 auto" id="tarikN">3</span>
+      <span class="stepper"><button onclick="tarik(-1)">−</button><button onclick="tarik(1)">+</button></span>
+      <span class="f-val"><span class="sub">saldo: ${isBsd?'6':'14'} di lokasi</span></span>
+    </div>
+    <div class="field">
+      <span class="f-label">Stok</span>
+      <span class="f-val"><span class="okline">✓ 42 isi tersedia — direservasi saat order dibuat</span></span>
+    </div>
+    <div class="row2">
+      <button class="btn quiet" onclick="ptoast('Draft dibatalkan')">Batal</button>
+      <button class="btn primary" onclick="createOrder()">Buat Order</button>
+    </div>
+  </div>`));
+  thread.scrollTop=thread.scrollHeight;
+}
+function qty(d){qtyV=Math.max(1,qtyV+d);$('qtyN').textContent=qtyV}
+function tarik(d){tarikV=Math.max(0,tarikV+d);$('tarikN').textContent=tarikV}
+function resolveJam(){
+  jamOk=true;const c=$('jamChip');
+  c.classList.add('resolved');c.innerHTML='09.00–11.00 ✓';
+}
+
+/* ============ step 3: order made → recommendation ============ */
+function createOrder(){
+  if(orderMade)return;orderMade=true;
+  const dc=$('draftCard');
+  dc.innerHTML=`
+    <div class="done-card">
+      <span class="done-ic"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 8.5 3.2 3.2L13 5"/></svg></span>
+      <div>
+        <div class="done-t">Order #1285 dibuat — PT ABC ${customer==='bsd'?'BSD':'Gd. Serpong'}</div>
+        <div class="done-s">${qtyV} galon 19L · besok 09.00–11.00 · tarik ${tarikV} kosong · stok direservasi${jamOk?'':' · jam perlu konfirmasi pelanggan (draft WA disiapkan)'}</div>
+      </div>
+    </div>`;
+  typing(showRec,1000);
+}
+function showRec(){
+  push(el(`
+  <div class="s-card" id="recCard" style="border-color:var(--ai-line)">
+    <div class="card-eyebrow">Penjadwalan</div>
+    <div class="rec-title">Masukkan ke trip Dedi?</div>
+    <div class="rec-why">Rute Selasa lewat lokasi ±09.40 · muatan 26/40, masih muat · Dedi terima daftar trip besok 06.00.</div>
+    <div class="row2">
+      <button class="btn" onclick="ptoast('Prototype: pilihan kurir & trip lain')">Pilih lain</button>
+      <button class="btn primary" onclick="approveTrip(this)">Setujui</button>
+    </div>
+  </div>`));
+  thread.scrollTop=thread.scrollHeight;
+}
+function approveTrip(btn){
+  $('recCard').remove();
+  sStatus('Masuk trip Dedi (stop ke-4) · tugas terkirim besok 06.00');
+  sStatus('Pemberitahuan otomatis bila ada kendala pengiriman',true);
+}
+
+/* ============ Q&A ============ */
+function answerSaldo(){
+  push(el(`
+  <div class="s-card">
+    <div class="card-eyebrow">Saldo galon — PT ABC (BSD)</div>
+    <div class="saldo"><span class="n">6</span><span>di lokasi</span><span class="note">naik 3 order berturut (4→5→6)</span></div>
+    <div class="row2">
+      <button class="btn quiet" onclick="ptoast('Catatan disimpan — muncul di draft order berikutnya')">Ingatkan tarik lebih</button>
+    </div>
+  </div>`));
+  thread.scrollTop=thread.scrollHeight;
+}
+function answerStok(){
+  sLine('Stok depot: <b>42 isi</b> · 118 kosong · 8 di pencucian. Cukup untuk semua order besok (perlu 31).');
+}
+</script>
+</body>
+</html>

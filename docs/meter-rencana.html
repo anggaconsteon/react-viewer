@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>*,*::before,*::after{box-sizing:border-box}body{margin:0}</style>
+<title>Rencana bangun — Pencatatan Meter Paskal</title>
+
+<style>
+  /* ---------- tokens: light (bare :root = lengkap) ---------- */
+  :root {
+    --ground:        #f2f5f5;
+    --surface:       #ffffff;
+    --surface-2:     #e9eeee;
+    --line:          #d8e0e0;
+    --line-soft:     #e6ecec;
+
+    --ink:           #101718;
+    --ink-2:         #47585a;
+    --ink-3:         #7d8f90;
+
+    --accent:        #0f6e64;
+    --accent-soft:   #e2f0ee;
+    --accent-line:   #b6d8d3;
+
+    --drum:          #14181c;   /* kotak angka meter */
+    --drum-ink:      #ffffff;
+    --face:          #f0ece2;   /* muka meter, sama di dua tema */
+    --face-ink:      #5c5f63;
+    --bezel:         #6b6f73;
+
+    --red:           #b3261e;   /* digit liter — di sini: KERJAAN BARU */
+    --red-soft:      #fbe9e8;
+    --red-line:      #eec2be;
+
+    --amber:         #9a5406;
+    --amber-soft:    #fbeedd;
+    --amber-line:    #e8cda3;
+
+    --green:         #1c6b3f;
+    --green-soft:    #e4f1e9;
+    --green-line:    #bcdeca;
+
+    --shadow:        0 1px 2px rgba(16,24,26,.06), 0 8px 24px rgba(16,24,26,.05);
+
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  }
+
+  /* ---------- tokens: dark (system default, tanpa stamp) ---------- */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #0d1315;
+      --surface:     #141c1e;
+      --surface-2:   #1c2528;
+      --line:        #2a3639;
+      --line-soft:   #212b2e;
+
+      --ink:         #e7eeee;
+      --ink-2:       #a3b5b6;
+      --ink-3:       #718587;
+
+      --accent:      #4aa89b;
+      --accent-soft: #16302e;
+      --accent-line: #2c5751;
+
+      --red:         #e0776c;
+      --red-soft:    #2e1a18;
+      --red-line:    #5a2f2a;
+
+      --amber:       #d69646;
+      --amber-soft:  #2c2114;
+      --amber-line:  #55401f;
+
+      --green:       #5fb583;
+      --green-soft:  #14291e;
+      --green-line:  #2a4c36;
+
+      --shadow:      0 1px 2px rgba(0,0,0,.4), 0 10px 28px rgba(0,0,0,.32);
+    }
+  }
+
+  /* ---------- tokens: dark (toggle eksplisit) ---------- */
+  :root[data-theme="dark"] {
+    --ground:      #0d1315;
+    --surface:     #141c1e;
+    --surface-2:   #1c2528;
+    --line:        #2a3639;
+    --line-soft:   #212b2e;
+
+    --ink:         #e7eeee;
+    --ink-2:       #a3b5b6;
+    --ink-3:       #718587;
+
+    --accent:      #4aa89b;
+    --accent-soft: #16302e;
+    --accent-line: #2c5751;
+
+    --red:         #e0776c;
+    --red-soft:    #2e1a18;
+    --red-line:    #5a2f2a;
+
+    --amber:       #d69646;
+    --amber-soft:  #2c2114;
+    --amber-line:  #55401f;
+
+    --green:       #5fb583;
+    --green-soft:  #14291e;
+    --green-line:  #2a4c36;
+
+    --shadow:      0 1px 2px rgba(0,0,0,.4), 0 10px 28px rgba(0,0,0,.32);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0 20px 96px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .wrap { max-width: 860px; margin: 0 auto; }
+
+  /* ---------- type ---------- */
+  h1, h2, h3 { text-wrap: balance; margin: 0; letter-spacing: -0.025em; }
+  h1 { font-size: clamp(30px, 5.2vw, 44px); line-height: 1.1; font-weight: 800; }
+  h2 { font-size: clamp(21px, 3.2vw, 27px); font-weight: 750; line-height: 1.2; }
+  h3 { font-size: 16.5px; font-weight: 700; letter-spacing: -0.01em; }
+  p  { margin: 0; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 600;
+  }
+  .lede { font-size: 18px; color: var(--ink-2); line-height: 1.62; max-width: 62ch; }
+  .note { font-size: 14px; color: var(--ink-2); line-height: 1.6; }
+  .fine { font-size: 13px; color: var(--ink-3); line-height: 1.55; }
+  code, .m { font-family: var(--mono); font-size: .89em; }
+  code {
+    background: var(--surface-2);
+    border: 1px solid var(--line-soft);
+    border-radius: 5px;
+    padding: 1px 5px;
+    color: var(--ink);
+  }
+  b, strong { font-weight: 700; color: var(--ink); }
+
+  /* ---------- rhythm ---------- */
+  header.masthead { padding: 64px 0 40px; display: flex; flex-direction: column; gap: 18px; }
+  section { padding: 40px 0 0; display: flex; flex-direction: column; gap: 18px; }
+  .sec-head { display: flex; flex-direction: column; gap: 7px; }
+  .rule { height: 1px; background: var(--line); border: 0; margin: 0; }
+
+  /* ---------- meter face (dipakai sekali, di bagian yang butuh) ---------- */
+  .meter {
+    background: var(--face);
+    border: 5px solid var(--bezel);
+    border-radius: 10px;
+    padding: 12px 12px 9px;
+    max-width: 268px;
+    box-shadow: var(--shadow);
+  }
+  .meter .cap {
+    font-family: var(--mono);
+    font-size: 9px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--face-ink); font-weight: 700; margin-bottom: 7px;
+  }
+  .drums { display: flex; gap: 3px; }
+  .drums i {
+    font-style: normal; font-family: var(--mono); font-variant-numeric: tabular-nums;
+    width: 25px; height: 34px; border-radius: 3px;
+    background: var(--drum); color: var(--drum-ink);
+    display: grid; place-items: center; font-size: 19px; font-weight: 700;
+  }
+  .drums i.lt { background: #b3261e; }
+  .drums .gap { width: 6px; }
+  .meter .ser { font-family: var(--mono); font-size: 9px; color: var(--face-ink); margin-top: 6px; }
+
+  /* ---------- kartu ---------- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+
+  /* ---------- badge ---------- */
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--mono); font-size: 10.5px; font-weight: 700;
+    letter-spacing: .06em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 20px; white-space: nowrap;
+    border: 1px solid var(--line); background: var(--surface-2); color: var(--ink-2);
+  }
+  .badge.ada    { background: var(--green-soft); color: var(--green); border-color: var(--green-line); }
+  .badge.baru   { background: var(--red-soft);   color: var(--red);   border-color: var(--red-line); }
+  .badge.varian { background: var(--amber-soft); color: var(--amber); border-color: var(--amber-line); }
+
+  /* ---------- baris widget: inti visualnya ---------- */
+  .stack { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); }
+  .stack-head {
+    display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+    padding: 13px 16px; background: var(--surface-2); border-bottom: 1px solid var(--line);
+  }
+  .stack-head .t { font-weight: 750; font-size: 15px; letter-spacing: -0.01em; }
+  .stack-head .s { font-size: 12.5px; color: var(--ink-2); }
+
+  .row {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 200px) minmax(0, 1fr) auto;
+    align-items: start; gap: 12px;
+    padding: 12px 16px 12px 0;
+    border-top: 1px solid var(--line-soft);
+    position: relative;
+  }
+  .row:first-of-type { border-top: 0; }
+  .row::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--green);
+  }
+  .row.baru::before   { background: var(--red); }
+  .row.varian::before { background: var(--amber); }
+  .row .n {
+    font-family: var(--mono); font-size: 11.5px; color: var(--ink-3);
+    font-variant-numeric: tabular-nums; padding-left: 14px; padding-top: 2px;
+  }
+  .row .w { font-family: var(--mono); font-size: 12.5px; font-weight: 600; color: var(--ink); word-break: break-word; padding-top: 1px; }
+  .row .d { font-size: 13.5px; color: var(--ink-2); line-height: 1.5; }
+  .row .b { justify-self: end; }
+  .row.sub { background: var(--surface-2); }
+  .row.sub .w { padding-left: 16px; color: var(--ink-2); }
+
+  @media (max-width: 640px) {
+    .row { grid-template-columns: 26px minmax(0, 1fr) auto; row-gap: 4px; }
+    .row .d { grid-column: 2 / 4; }
+    .row .n { padding-left: 12px; }
+  }
+
+  /* ---------- diagram dua pembaca ---------- */
+  .split {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 12px;
+  }
+  .lane { border: 1px solid var(--line); border-radius: 12px; padding: 15px; background: var(--surface); display: flex; flex-direction: column; gap: 8px; }
+  .lane .who { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; color: var(--ink-3); }
+  .lane .val { font-family: var(--mono); font-size: 24px; font-weight: 700; letter-spacing: .05em; font-variant-numeric: tabular-nums; }
+
+  .verdict { display: flex; flex-direction: column; gap: 8px; }
+  .v {
+    display: grid; grid-template-columns: auto minmax(0,1fr); gap: 12px; align-items: baseline;
+    border: 1px solid var(--line); border-left-width: 3px; border-radius: 9px;
+    padding: 11px 14px; background: var(--surface);
+  }
+  .v .k { font-family: var(--mono); font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+  .v .x { font-size: 13.5px; color: var(--ink-2); line-height: 1.5; }
+  .v.ok   { border-left-color: var(--green); background: var(--green-soft); }
+  .v.ok .k   { color: var(--green); }
+  .v.warn { border-left-color: var(--amber); background: var(--amber-soft); }
+  .v.warn .k { color: var(--amber); }
+  .v.stop { border-left-color: var(--red); background: var(--red-soft); }
+  .v.stop .k { color: var(--red); }
+
+  /* ---------- fase ---------- */
+  .phase {
+    display: grid; grid-template-columns: 74px minmax(0,1fr); gap: 16px;
+    padding: 16px 0; border-top: 1px solid var(--line);
+  }
+  .phase:first-of-type { border-top: 0; padding-top: 4px; }
+  .phase .when {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--ink-3); font-weight: 700; padding-top: 3px; line-height: 1.5;
+  }
+  .phase .body { display: flex; flex-direction: column; gap: 7px; }
+  .phase .body .h { display: flex; gap: 9px; align-items: baseline; flex-wrap: wrap; }
+  @media (max-width: 560px) {
+    .phase { grid-template-columns: minmax(0,1fr); gap: 6px; }
+  }
+
+  /* ---------- callout ---------- */
+  .call {
+    border: 1px solid var(--accent-line); background: var(--accent-soft);
+    border-radius: 12px; padding: 16px 18px;
+    display: flex; flex-direction: column; gap: 7px;
+  }
+  .call .k { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; color: var(--accent); }
+  .call p { font-size: 14.5px; color: var(--ink-2); line-height: 1.6; }
+  .call.stop { border-color: var(--red-line); background: var(--red-soft); }
+  .call.stop .k { color: var(--red); }
+
+  /* ---------- daftar ---------- */
+  ul.tick { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  ul.tick li { display: grid; grid-template-columns: 16px minmax(0,1fr); gap: 10px; font-size: 14px; color: var(--ink-2); line-height: 1.55; }
+  ul.tick li::before { content: "—"; font-family: var(--mono); color: var(--ink-3); }
+
+  .scroll { overflow-x: auto; }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <span class="eyebrow">Rencana bangun · Paskal Hypersquare · 19 Agu 2026</span>
+    <h1>Ini bukan proyek OCR.</h1>
+    <p class="lede">
+      Product udah membalik arahnya: <b>petugas yang ngisi angka, OCR cuma memeriksa diam-diam</b>.
+      Begitu dibalik, OCR turun jadi tambahan opsional di paling akhir — dan yang tersisa di tengah
+      adalah satu halaman form biasa yang 80% pakai widget yang udah kita punya.
+    </p>
+    <div class="grid3">
+      <div class="card" style="gap:4px">
+        <span class="eyebrow">Layar</span>
+        <span style="font-size:26px;font-weight:750;letter-spacing:-.03em">3</span>
+        <span class="fine">2 mobile · 1 web kantor</span>
+      </div>
+      <div class="card" style="gap:4px">
+        <span class="eyebrow">Kerjaan renderer</span>
+        <span style="font-size:26px;font-weight:750;letter-spacing:-.03em;color:var(--red)">4</span>
+        <span class="fine">1 widget baru · 3 perilaku</span>
+      </div>
+      <div class="card" style="gap:4px">
+        <span class="eyebrow">Bisa mulai</span>
+        <span style="font-size:26px;font-weight:750;letter-spacing:-.03em;color:var(--accent)">Hari&nbsp;ini</span>
+        <span class="fine">skema data gak nunggu survei</span>
+      </div>
+    </div>
+  </header>
+
+  <hr class="rule" />
+
+  <!-- ================= 1 ================= -->
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">Peta</span>
+      <h2>Tiga layar, dua builder</h2>
+      <p class="note">Dua layar petugas jalan di proxy op1Screen (JSON mobile). Layar kantor jalan di VTL web builder. Beda mesin, beda orang yang ngerjain.</p>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap">
+          <h3>Pembacaan bulanan</h3><span class="badge">op1Screen</span>
+        </div>
+        <p class="note">Jalan <b>214× tiap bulan</b>. Ini layar yang biayanya nyata — selisih 8 tap per unit = beda 30 menit tiap putaran.</p>
+        <p class="fine">Prototipenya (<code>PencatatanMeter.jsx</code>) <b>belum ada di repo</b>. Perlu dikirim.</p>
+      </div>
+      <div class="card">
+        <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap">
+          <h3>Pendataan awal</h3><span class="badge">op1Screen</span>
+        </div>
+        <p class="note">Sekali seumur meter. Layarnya = layar bulanan <b>+ 3 baris</b>, bukan halaman lain.</p>
+        <p class="fine"><code>PendataanMeter.jsx</code> — ada di repo, sudah dibaca.</p>
+      </div>
+      <div class="card">
+        <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap">
+          <h3>Kokpit putaran</h3><span class="badge">VTL web</span>
+        </div>
+        <p class="note">Orang kantor. Tiga tumpukan penghalang tagihan, panel bukti, terima / baca-ulang / taksiran, kunci putaran.</p>
+        <p class="fine"><code>KokpitPutaran.jsx</code> — ada di repo, sudah dibaca.</p>
+      </div>
+      <div class="card">
+        <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap">
+          <h3>Data di belakangnya</h3><span class="badge ada">pola sudah ada</span>
+        </div>
+        <p class="note">Koleksi <code>meter</code> keyed per unit (seri, jumlah digit, bacaan terakhir, rata-rata) — persis pola <code>asset_cache</code>/<code>reorder_cache</code>: CF yang ngitung, klien yang baca.</p>
+        <p class="fine">Putaran bulanan = "harapan 214 titik" → <code>preconditionGateCard</code> date-scope. Nol konsep baru.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 2 ================= -->
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">Inti rencana</span>
+      <h2>Halaman bulanan, baris per baris</h2>
+      <p class="note">
+        Beginilah bentuknya di op1Screen: satu blok page, satu baris satu widget. Garis kiri
+        <span style="color:var(--green);font-weight:700">hijau</span> = widget yang udah jalan hari ini,
+        <span style="color:var(--amber);font-weight:700">kuning</span> = varian dari yang udah ada,
+        <span style="color:var(--red);font-weight:700">merah</span> = kerjaan dev Flutter.
+      </p>
+    </div>
+
+    <div class="stack">
+      <div class="stack-head">
+        <span class="t">Baca Meter — bulanan</span>
+        <span class="s">route per unit · <code>routeParams:"unit◼{unitId}"</code></span>
+      </div>
+
+      <div class="row">
+        <span class="n">01</span>
+        <span class="w">TXF variant:"static"</span>
+        <span class="d">Kepala: unit, blok, periode. Isinya dari <code>search</code> saat page load.</span>
+        <span class="b"><span class="badge ada">ada</span></span>
+      </div>
+      <div class="row">
+        <span class="n">02</span>
+        <span class="w">preconditionGateCard</span>
+        <span class="d">Gerbang: unit ini udah kebaca periode ini belum. Persis pemakaian date-scope yang udah live.</span>
+        <span class="b"><span class="badge ada">ada</span></span>
+      </div>
+      <div class="row">
+        <span class="n">03</span>
+        <span class="w">TXF variant:"static"</span>
+        <span class="d">Nomor meter terdaftar — <b>ditampilkan saja</b>, tanpa tombol konfirmasi. Tap "Ya, cocok" 214× itu refleks, bukan pemeriksaan.</span>
+        <span class="b"><span class="badge ada">ada</span></span>
+      </div>
+      <div class="row varian">
+        <span class="n">04</span>
+        <span class="w">location opMode:"qr-meter"</span>
+        <span class="d">Scan QR → layar yang sama langsung jadi kamera meter. Varian dari <code>qr-selfie</code> yang udah live 15 kombinasi.</span>
+        <span class="b"><span class="badge varian">varian</span></span>
+      </div>
+      <div class="row">
+        <span class="n">05</span>
+        <span class="w">GET_IMAGES</span>
+        <span class="d">Foto muka meter. Wajib, dan berdiri sendiri sebagai bukti. <code>imageParameter</code> dinaikin (mis. <code>1200,1200,85</code>) supaya kebaca manusia bertahun kemudian.</span>
+        <span class="b"><span class="badge ada">ada</span></span>
+      </div>
+      <div class="row baru">
+        <span class="n">06</span>
+        <span class="w">DIGIT_PAD</span>
+        <span class="d">Kotak digit terkunci sepanjang digit meter + numpad sendiri. Petugas <b>menyalin dari foto di layar</b>, bukan dongak ke meter. Kelebihan digit jadi mustahil secara bentuk.</span>
+        <span class="b"><span class="badge baru">baru</span></span>
+      </div>
+      <div class="row baru sub">
+        <span class="n"></span>
+        <span class="w">↳ comparePosition</span>
+        <span class="d">Banding sama bacaan lalu + rata-rata → mundur / lonjakan / masuk akal. Muncul <b>saat petugas masih di depan meter</b>.</span>
+        <span class="b"><span class="badge baru">baru</span></span>
+      </div>
+      <div class="row baru sub">
+        <span class="n"></span>
+        <span class="w">↳ ocrComparePhoto</span>
+        <span class="d">Pembanding kedua dari foto. <b>Ditambahin belakangan, tanpa ngubah layar.</b></span>
+        <span class="b"><span class="badge baru">nanti</span></span>
+      </div>
+      <div class="row">
+        <span class="n">07</span>
+        <span class="w">SELECTABLE_BTN + TXF</span>
+        <span class="d">"Tidak bisa dibaca" = status kelas satu, alasan wajib. Bukan kegagalan petugas.</span>
+        <span class="b"><span class="badge ada">ada</span></span>
+      </div>
+      <div class="row">
+        <span class="n">08</span>
+        <span class="w">RBT action:"savesend"</span>
+        <span class="d">Simpan → <code>routeParams</code> lompat ke titik berikutnya. Gak ada layar kuitansi; konfirmasi = banner di layar unit berikutnya.</span>
+        <span class="b"><span class="badge ada">ada</span></span>
+      </div>
+    </div>
+
+    <div class="call">
+      <span class="k">Yang mau gue tunjukin</span>
+      <p>
+        Dari 8 baris, <b>6 pakai widget yang udah jalan hari ini</b>. Yang baru cuma satu widget
+        (<code>DIGIT_PAD</code>) plus perilaku yang nempel di dia. Bukan halaman eksotis — halaman form
+        biasa dengan satu field yang bentuknya niru muka meter.
+      </p>
+    </div>
+
+    <div class="stack">
+      <div class="stack-head">
+        <span class="t">Pendataan awal — putaran nol</span>
+        <span class="s">halaman di atas <b>+ 3 baris</b>, bukan halaman baru</span>
+      </div>
+      <div class="row">
+        <span class="n">+</span>
+        <span class="w">SELECTABLE_BTN</span>
+        <span class="d">Jumlah angka di meter: 4 / 5 / 6. Diketik <b>sekali</b>; bulan-bulan berikutnya dibaca dari data, bukan ditanya lagi.</span>
+        <span class="b"><span class="badge ada">ada</span></span>
+      </div>
+      <div class="row">
+        <span class="n">+</span>
+        <span class="w">TXF + GET_IMAGES</span>
+        <span class="d">Nomor seri meter, diketik sekali seumur hidup meter, plus foto badannya.</span>
+        <span class="b"><span class="badge ada">ada</span></span>
+      </div>
+      <div class="row">
+        <span class="n">+</span>
+        <span class="w">SELECTABLE_BTN</span>
+        <span class="d">Dari mana kamu tahu ini meter unit ini: diuji aliran / label fisik / ikut daftar kantor. Yang lemah tetap lewat, tapi ditandai.</span>
+        <span class="b"><span class="badge ada">ada</span></span>
+      </div>
+      <div class="row baru">
+        <span class="n">Δ</span>
+        <span class="w">RBT disable-on-verdict</span>
+        <span class="d">Satu-satunya beda perilaku: kalau angkanya lebih kecil dari catatan spreadsheet, <b>simpan diblok</b>. Salah petakan berulang tiap bulan dan gak ketangkep pemeriksaan mana pun — ini satu-satunya tempat di seluruh sistem yang memblokir.</span>
+        <span class="b"><span class="badge baru">baru</span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 3 ================= -->
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">Momen yang bikin bingung kemarin</span>
+      <h2>Satu foto, dua pembaca</h2>
+      <p class="note">Foto diambil sekali. Yang membacanya ada dua, dan cuma salah satu yang boleh nulis ke kotak digit.</p>
+    </div>
+
+    <div class="scroll">
+      <div class="meter">
+        <div class="cap">Foto kamu · 09:41</div>
+        <div class="drums">
+          <i>0</i><i>1</i><i>2</i><i>6</i><i>8</i>
+          <span class="gap"></span>
+          <i class="lt">3</i><i class="lt">4</i><i class="lt">5</i>
+        </div>
+        <div class="ser">B21-4471902</div>
+      </div>
+    </div>
+    <p class="fine">Kotak merah = digit liter. Gak pernah ditampung — ikut tersalin sekali saja, tagihan meleset 1000×.</p>
+
+    <div class="split">
+      <div class="lane">
+        <span class="who">Mata petugas</span>
+        <span class="val">01268</span>
+        <p class="fine">Diketik pakai jempol di <code>DIGIT_PAD</code>. <b>Cuma jalur ini yang mengisi field.</b></p>
+      </div>
+      <div class="lane">
+        <span class="who">ML Kit · diam</span>
+        <span class="val" style="color:var(--ink-3)">01268</span>
+        <p class="fine">Baca file foto yang sama di background. Hasilnya gak pernah nyentuh kotak digit.</p>
+      </div>
+    </div>
+
+    <div class="verdict">
+      <div class="v ok">
+        <span class="k">Sama</span>
+        <span class="x">Gak ada apa-apa muncul. Petugas gak pernah tau OCR ada.</span>
+      </div>
+      <div class="v warn">
+        <span class="k">Beda</span>
+        <span class="x">"Hasil baca foto <span class="m">01268</span>, kamu ketik <span class="m">01286</span> — cek lagi?" Petugas yang mutusin. Bilang bener → simpan apa adanya + ditandai; di kokpit muncul sebagai <b>Beda dengan foto</b>.</span>
+      </div>
+      <div class="v stop">
+        <span class="k">Belum ada</span>
+        <span class="x">V1 jalan tanpa OCR sama sekali. Layarnya <b>persis sama</b> — cuma jalur kanan belum hadir.</span>
+      </div>
+    </div>
+
+    <div class="call">
+      <span class="k">Kenapa arahnya dibalik</span>
+      <p>
+        Kalau OCR yang ngisi: kotak udah keisi → petugas tap-lanjut tanpa baca → 214 unit, jadi refleks.
+        Salahnya diam-diam, dan hilirnya tagihan tenant. Kalau petugas yang ngisi: OCR salah = satu
+        peringatan menyebalkan, diabaikan, selesai. <b>Rusaknya dengan aman.</b>
+      </p>
+    </div>
+
+    <div class="call stop">
+      <span class="k">Konsekuensi ke spec lama</span>
+      <p>
+        <code>docs/ocr-capture-widget-dev-spec.md</code> merancang widget yang <b>punya kamera sendiri</b>
+        (<code>folder</code>, <code>filename</code>, <code>imageParameter</code>, <code>previewSize</code>…)
+        karena waktu itu dia yang ngisi field, jadi harus ngontrol mutu jepretan. Separuh itu sekarang mati —
+        <code>GET_IMAGES</code> udah ngerjain. Yang hidup (<code>ocrPattern</code>, <code>ocrType</code>,
+        pipeline §6, data map §15, delta §16) pindah rumah ke <code>DIGIT_PAD</code> sebagai parameter.
+      </p>
+      <p>
+        <b>Tapi variant <code>tap</code> jangan dibuang.</b> Buat invoice/nota, petugas gak punya pengetahuan
+        sendiri soal angkanya — dia cuma nunjuk. Gak ada pembacaan kedua buat dibandingin, jadi di sana
+        OCR-ngisi tetap bener. Dua konsumen, dua bentuk. Jangan dipaksa jadi satu widget.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= 4 ================= -->
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">Urutan</span>
+      <h2>Apa dikerjain kapan</h2>
+      <p class="note">Survei lapangan Kamis 20 Agustus cuma ngeblok satu hal: OCR. Sisanya bisa jalan duluan.</p>
+    </div>
+
+    <div>
+      <div class="phase">
+        <span class="when">Sekarang<br>tanpa survei</span>
+        <div class="body">
+          <div class="h"><h3>Skema data + CF</h3><span class="badge ada">nol renderer</span></div>
+          <p class="note">Koleksi <code>meter</code> keyed per unit, koleksi <code>putaran</code>, CF yang ngitung rata-rata pemakaian dan nyimpen bacaan terakhir. Seed dari spreadsheet Paskal masuk di sini.</p>
+          <p class="fine">Gak bergantung hasil foto sama sekali. Kalau ini duluan, begitu renderer siap halamannya langsung punya data.</p>
+        </div>
+      </div>
+
+      <div class="phase">
+        <span class="when">Fase 1</span>
+        <div class="body">
+          <div class="h"><h3>Halaman pembacaan bulanan</h3><span class="badge baru">butuh 3 kerjaan dev</span></div>
+          <p class="note"><code>DIGIT_PAD</code> · banding-riwayat · opMode <code>qr-meter</code>. Halaman 8 baris di atas, tanpa OCR.</p>
+          <p class="fine">Kenapa ini duluan, bukan pendataan: jalan 214×/bulan vs 1× seumur meter. Di sinilah biayanya.</p>
+        </div>
+      </div>
+
+      <div class="phase">
+        <span class="when">Fase 2</span>
+        <div class="body">
+          <div class="h"><h3>Pendataan awal</h3><span class="badge ada">reuse ~90%</span></div>
+          <p class="note">Halaman fase 1 + 3 baris + satu perilaku baru: blocking. Bareng ini, cetak QR yang udah tau dirinya, dengan nomor unit tercetak besar.</p>
+          <p class="fine">Realistis 2–3 hari kerja lapangan buat 214 unit. Harus masuk anggaran onboarding, jangan dianggap gratis.</p>
+        </div>
+      </div>
+
+      <div class="phase">
+        <span class="when">Fase 3</span>
+        <div class="body">
+          <div class="h"><h3>Kokpit kantor</h3><span class="badge ada">VTL web, pola ada</span></div>
+          <p class="note">Tiga tumpukan = statistic content · daftar per tumpukan = list · terima / baca-ulang / taksiran = <code>FORM</code> + action service Go.</p>
+          <p class="fine">Satu degradasi jujur: 2-pane master-detail sticky gak ada di web builder. Jadi daftar → halaman detail. Fungsinya sama, ritme kerjanya beda.</p>
+        </div>
+      </div>
+
+      <div class="phase">
+        <span class="when">Fase 4<br>setelah survei</span>
+        <div class="body">
+          <div class="h"><h3>OCR sebagai pembanding</h3><span class="badge varian">1 parameter</span></div>
+          <p class="note">Setelah 30 foto meter asli masuk dan hit-rate-nya keukur. Nempel ke <code>DIGIT_PAD</code> yang udah jalan — <b>layarnya gak berubah sama sekali</b>.</p>
+          <p class="fine">Risiko yang udah kelihatan dari foto: ini roda angka mekanik (drum), bukan 7-segment, dan sering ada watermark ke-bakar yang ikut kebaca.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 5 ================= -->
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">Buat dev Flutter</span>
+      <h2>Empat kerjaan, itu saja</h2>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap"><h3><span class="m">DIGIT_PAD</span></h3><span class="badge baru">widget baru</span></div>
+        <p class="note">Kotak digit terkunci sepanjang <code>digits</code> (dari data per-meter, bukan diketik), numpad sendiri, bentuk niru muka meter.</p>
+        <p class="fine">Kepake ulang di mana pun ada angka bertakaran tetap.</p>
+      </div>
+      <div class="card">
+        <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap"><h3>Banding riwayat</h3><span class="badge baru">perilaku</span></div>
+        <p class="note">Baca bacaan lalu + rata-rata yang udah keload, hitung selisih, render 3-tier. Pesannya dari <code>text</code> ◆-segmen — nol string hardcode.</p>
+        <p class="fine">Sekelas <code>TXF variant:"delta"</code>. Sekali ada, kepake di stok, absen, mana aja.</p>
+      </div>
+      <div class="card">
+        <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap"><h3>Blocking submit</h3><span class="badge baru">perilaku</span></div>
+        <p class="note">Tombol simpan mati kalau verdict = mundur. Harus <b>sempit</b> — satu kondisi, jangan jadi mesin aturan generik.</p>
+        <p class="fine">Cuma dipakai di pendataan awal. Di tempat lain petugas selalu menang.</p>
+      </div>
+      <div class="card">
+        <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap"><h3><span class="m">opMode:"qr-meter"</span></h3><span class="badge varian">varian</span></div>
+        <p class="note">QR kedeteksi sendiri (0 tap), layar yang sama jadi kamera meter — petugas boleh jalan beberapa langkah dari stiker ke meternya.</p>
+        <p class="fine">Turunan dari <code>qr-selfie</code> yang udah live.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 6 ================= -->
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">Belum beres</span>
+      <h2>Yang masih perlu diputuskan</h2>
+    </div>
+    <ul class="tick">
+      <li><b>Anggaran 7 tap.</b> Renderer kita form-scroll, bukan wizard. 214 unit × selisih 8 tap = ~30 menit vs 1 jam per putaran, tiap bulan. Bikin screen-type wizard, atau terima form biasa dan kasih tau Paskal ongkosnya — ini keputusan sadar, bukan hal yang bisa ditambal parameter.</li>
+      <li><b><code>PencatatanMeter.jsx</code> belum ada di repo.</b> Justru layar yang paling sering dipakai. Tanpa itu, baris 01–08 di atas masih rekonstruksi gue dari handoff, bukan dari prototipe yang udah diuji.</li>
+      <li><b>Ambang lonjakan.</b> Di prototipe masih konstanta (<code>AMBANG_LONJAKAN</code>). Kalau kelewat sensitif, petugas belajar mengabaikan peringatan — dan begitu itu terjadi, semua pemeriksaan lain ikut mati. Harus dari kebiasaan tiap unit, bukan angka global.</li>
+      <li><b>Meter induk PDAM.</b> Kalau survei Kamis nemu ada, kartu "air yang hilang bulan ini" naik ke paling atas kokpit dan bisa nggeser prioritas fase 3.</li>
+      <li><b>Design system.</b> Prototipe pakai style inline tanpa dependency, belum ngikut design system AUTSORZ. Buat jalur op1Screen ini gak relevan — renderer Flutter yang gambar, bukan React-nya.</li>
+    </ul>
+  </section>
+
+  <hr class="rule" style="margin-top:48px" />
+  <p class="fine" style="padding-top:18px">
+    Sumber: <code>docs/handoff-meter-pascal.md</code> · <code>src/component/PendataanMeter.jsx</code> ·
+    <code>src/component/KokpitPutaran.jsx</code> · <code>docs/ocr-capture-widget-dev-spec.md</code> (perlu revisi arah).
+  </p>
+
+</div>
+</head>
+<body>
+</body>
+</html>

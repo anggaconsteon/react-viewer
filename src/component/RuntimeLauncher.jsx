@@ -20,6 +20,15 @@ import FateOpsApp from './web/Fate_ops_app.jsx'
 import FateModelApp from './web/Fate_model_app_revisi.jsx'
 import AutsorzSupervisorApp from './AutsorzSupervisorApp.jsx'
 import SalesFreelanceV1 from './SalesFreelanceV1.jsx'
+import AdminServiceMaintenance from './AdminServiceRuntimeMaintenance.jsx'
+import TeknisiMaintenance from './TeknisiRuntimeMaintenance.jsx'
+import AssetRegistryMaintenance from './AssetRegistryMaintenance.jsx'
+import ReorderRadar from './ReorderRadar.jsx'
+import PendataanMeter from './PendataanMeter.jsx'
+import KokpitPutaran from './KokPitPutaran.jsx'
+import CleaningWorkFlow from './BeforeAfterCleaningWorkflow.jsx'
+import FileLinkCard from './FileLinkCard.jsx'
+import PreviewSlipGaji from './PreviewsSlipGaji.jsx'
 
 // Single entry point. Pick a gallery from the top bar instead of editing main.jsx.
 // Add a new gallery: import it, then add one { id, label, Comp } row to the right category.
@@ -57,6 +66,9 @@ const CATEGORIES = [
       { id: 'owner-desktop', label: 'Owner Runtime Desktop', Comp: OwnerRuntimeDesktop },
       { id: 'customer-outstanding', label: 'Customer Outstanding', Comp: CustomerOutstandingMobile },
       { id: 'asset-stock', label: 'Asset Stock', Comp: AssetStockMobile },
+      { id: 'cleaning-workflow', label: 'Cleaning Work Flow', Comp: CleaningWorkFlow },
+      { id: 'file-link-card', label: 'File Link Card', Comp: FileLinkCard },
+      { id: 'slip-gaji', label: 'Slip Gaji (Preview)', Comp: PreviewSlipGaji },
     ],
   },
   {
@@ -67,6 +79,24 @@ const CATEGORIES = [
       { id: 'sales-supervisor', label: 'Sales Supervisor', Comp: SalesSupervisor },
       { id: 'sales-worker', label: 'Sales Worker App', Comp: SalesWorkerApp },
       { id: 'sales-freelance-v1', label: 'Sales Freelance V1', Comp: SalesFreelanceV1 },
+    ],
+  },
+  {
+    group: 'Maintenance',
+    color: '#059669',
+    items: [
+      { id: 'maint-admin', label: 'Admin Service (AC)', Comp: AdminServiceMaintenance },
+      { id: 'maint-teknisi', label: 'Teknisi Service (AC)', Comp: TeknisiMaintenance },
+      { id: 'maint-asset-registry', label: 'Asset Registry', Comp: AssetRegistryMaintenance },
+      { id: 'maint-reorder-radar', label: 'Reorder Radar', Comp: ReorderRadar },
+    ],
+  },
+  {
+    group: 'Meter',
+    color: '#4f46e5',
+    items: [
+      { id: 'meter-pendataan', label: 'Pendataan Meter', Comp: PendataanMeter },
+      { id: 'meter-kokpit', label: 'Kokpit Putaran', Comp: KokpitPutaran },
     ],
   },
   {

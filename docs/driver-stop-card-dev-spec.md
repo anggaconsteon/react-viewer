@@ -274,3 +274,24 @@ Text +2 segmen di akhir: label tombol ("Tolak") + catatan kaki kartu.
 **Expected setelah implement:** reject 3 dari 4 → "Rute Hari Ini · **1 tujuan**", cuma task non-rejected.
 
 **Default (opt-in filter):** kalau `excludeStatus` **kosong (`""`) atau gak ada** → renderer **TIDAK exclude apa-apa** → tampil SEMUA task (termasuk `load_rejected`). Exclude cuma aktif kalau field-nya diisi. (Sama buat `PRECONDITION_GATE_CARD` `excludeStatus` — konsisten.)
+
+---
+
+## 16. Tombol Lihat Lokasi — field `mapsUrl` (2026-08-27) — PENDING
+
+**Kontrak lengkapnya ada di `docs/customer-coordinate-maps-dev-spec.md` §6** (UI §6.4, alasan §6.5, catatan dev §6.6). Ditulis di sana karena bagian dari fitur koordinat pelanggan end-to-end; section ini cuma penunjuk supaya dev yang buka spec `DRIVER_STOP_CARD` gak kelewat.
+
+Ringkasnya:
+
+| | |
+|---|---|
+| Field baru | `mapsUrl` — **satu** field, opsional, DSL keyed `url◼…⭘fallback◼…⭘empty◼…` |
+| Text | +1 segmen di ujung (◆20) = label tombol, usul `📍 Lihat Lokasi` |
+| Taruh di mana | **tiap baris stop, di KEDUA mode** (locked + unlocked), termasuk baris `Selesai` |
+| Aturan | pakai template pertama yang SEMUA `<token>`-nya keisi; habis → tombol disabled + tampilkan `empty` |
+
+**Kenapa di mode locked juga:** itu layar tempat sopir mutusin **Tolak**. `[ Lihat Lokasi ]` = pasangannya `[ Tolak ]` — lihat lokasinya dulu, baru putusin stop itu searah apa enggak. Bukan fitur tambahan, ini justru pemakaian utamanya.
+
+**⚠️ Jebakan:** di mode unlocked baris stop itu sendiri udah `<button onClick={openFeed}>`. Tombol baru nempel di dalamnya → wajib `stopPropagation`, kalau enggak tap Lihat Lokasi malah buka Tasklist.
+
+Absent `mapsUrl` = perilaku sekarang persis, nol regresi.

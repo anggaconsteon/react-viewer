@@ -41,7 +41,7 @@ Tombol "Kirim WhatsApp": menyiapkan pesan WA otomatis dari data (misal invoice d
 | `countryCode` | Wajib | Kode negara buat merapikan nomor: `08xx` otomatis jadi `628xx` | `62` |
 | `messageTable` | Wajib | Alamat tabel sumber isi pesan (misal nota) | `84214220504259//nota` |
 | `messageSearch` | Wajib | Cara mencari 1 baris data sumber pesan | `ref◼{taskVid}` |
-| `messageTemplate` | Wajib | Template pesan — `{{field}}` diganti isi data, `{{field\|idr}}` format Rupiah, `<LOOP li>…</LOOP>` mengulang per baris item, `\n` ganti baris | lihat contoh |
+| `messageTemplate` | Wajib | Template pesan — `{{field}}` diganti isi data, `{{field\|idr}}` format Rupiah, `<LOOP source='li'>…{{item.X}}…</LOOP>` mengulang per baris item, `\n` ganti baris | lihat contoh |
 | `logTable` | Opsional (kosong = off) | Tabel yang diberi penanda "sudah dikirim" saat tombol Buka WhatsApp ditekan | `84214220504259//task` |
 | `logSearch` | Opsional | Cara mencari baris yang ditandai | `tnm★{taskVid}` |
 | `logField` | Opsional | Field penanda | `iv` |
@@ -68,3 +68,6 @@ Tombol "Kirim WhatsApp": menyiapkan pesan WA otomatis dari data (misal invoice d
 - "Terkirim" dicatat saat tombol **Buka WhatsApp** ditekan (niat kirim) — app tidak bisa tahu apakah user benar-benar menekan Send di WA.
 - wa.me tidak bisa melampirkan file. Butuh kirim PDF → pakai `sharePdfKeyed` (share sheet).
 - Konsumen live: halaman `DeliveryInvoice` (invoice pengiriman) + `CreateTaskSummary` (WA konfirmasi order). Spec: `docs/whatsapp-invoice-delivery-dev-spec.md`.
+- ⚠️ **Sintaks LOOP:** `<LOOP source='li'>` — pakai `source='…'`, sama persis kaya `PRN`. Versi lama doc ini nulis `<LOOP li>` (tanpa `source=`) — **itu salah**, dibetulin 2026-08-27. Ground truth: config live `DeliveryInvoice` (op1Screen 892).
+- **`messageTable` nentuin apa yang bisa di-loop.** Widget cuma baca SATU dokumen. Mau nampilin baris item → `messageTable` harus nunjuk doc yang punya array-nya (`nota.li[]`, `task.it[]`), bukan doc pelanggan.
+- **Konsekuensi ganti `messageTable`:** `phoneField` ikut dibaca dari doc yang sama. Pindah dari `stock_location` (punya `hpic`) ke `task` (belum punya `hpic`) = nomor HP gak keisi otomatis, admin harus pilih kontak manual. Pastiin nomornya ada di doc yang dibaca, atau isi `phoneFallback`.

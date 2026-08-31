@@ -10,13 +10,30 @@ Kartu untuk satu titik pemberhentian rute driver: nama & alamat tujuan, tombol n
 
 ## Tampilan
 
+Kartu = container "Rute Hari Ini" berisi **daftar** stop (bukan 1 tujuan per kartu). Dua wajah: locked (custody belum confirmed) dan unlocked.
+
 ```
-┌────────────────────────────────────┐
-│ 📍 Toko Budi                       │  ← nameField
-│    Jl. Merdeka No. 5               │  ← addressField
-│ [ Navigasi ]        [ Tolak ]      │
-└────────────────────────────────────┘
+LOCKED                                    UNLOCKED
++-----------------------------------+     +-----------------------------------+
+| [gembok] Rute Hari Ini            |     | [truk] Rute Hari Ini         65%  |
+|          3 tujuan                 |     |        2 dari 3 . lanjut: Budi    |
++-----------------------------------+     | ##########------                  |
+| Cek barang dulu buat mulai...     |     +-----------------------------------+
++-----------------------------------+     |  v  Kopi Kenangan     [ Selesai ] |
+|  1  Kopi Kenangan Bintaro         |     |     Jl. Merdeka No.5              |
+|     Jl. Merdeka No.5 . 2 galon    |     |     [ Lihat Lokasi ] *            |
+|     [ Lihat Lokasi ] * [ Tolak ]  |     |                                   |
+|  2  Toko Budi                     |     |  2  Toko Budi         [ Lanjut  ] |
+|     Jl. Kenanga 12 . 1 galon      |     |     Jl. Kenanga 12                |
+|     [ Lihat Lokasi ] * [ Tolak ]  |     |     [ Lihat Lokasi ] *            |
++-----------------------------------+     +-----------------------------------+
+| Ada stop nggak searah? Tolak...   |     |   Buka Tasklist (eksekusi) ->     |
++-----------------------------------+     +-----------------------------------+
+
+* = mapsUrl, BELUM ADA DI RENDERER
 ```
+
+`[ Lihat Lokasi ]` muncul di **tiap baris stop, di kedua mode** — termasuk baris `Selesai`. Di mode locked dia pasangannya `[ Tolak ]`: sopir lihat lokasi dulu, baru mutusin stop itu searah apa enggak.
 
 ## Contoh JSON
 
@@ -42,10 +59,23 @@ Kartu untuk satu titik pemberhentian rute driver: nama & alamat tujuan, tombol n
 | `text` | Wajib | Judul + teks kosong (dipisah `◆`) | `Titik Antar◆Belum ada titik` |
 | `nameField` / `addressField` | Wajib | Field nama tujuan / alamat | `kn` / `al` |
 | `excludeStatus` | Opsional | Status yang dikecualikan dari daftar | `completed` |
+| `mapsUrl` ⬜ | Opsional | Tombol Navigasi — DSL keyed, lihat bawah | `url◼https://…⭘fallback◼https://…⭘empty◼Alamat belum lengkap` |
+
+⬜ = **belum ada di renderer** (nunggu dev). Tombol `[ Navigasi ]` di mockup atas itu target, belum jalan. Spec: `docs/customer-coordinate-maps-dev-spec.md` §6.
 
 ## Posisi field gabungan
 
-`text` dipisah `◆` (judul / teks kosong).
+`text` dipisah `◆` (judul / teks kosong). Kalau `mapsUrl` dipakai, `text` nambah 1 segmen di ujung = **label tombol Navigasi**.
+
+`mapsUrl` dipisah `⭘` antar-pasangan, `◼` antara key dan value — pola yang sama kaya `search` / `gateSearch`:
+
+| key | isi |
+|---|---|
+| `url` | template URL utama, `<field>` diinterpolasi dari doc tugas |
+| `fallback` | template cadangan kalau `url` ada token kosong |
+| `empty` | pesan waktu tombol mati |
+
+Aturan: pakai template pertama yang **semua** token-nya keisi; habis → tombol disabled + tampilkan `empty`. Keyed (bukan `◆` posisi) supaya `url` dan `fallback` gak ketuker — dua-duanya URL yang mirip.
 
 ## Tips & catatan
 

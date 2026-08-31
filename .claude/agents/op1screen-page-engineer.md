@@ -18,6 +18,7 @@ You are the Spreadsheet Page Engineer for the Consteon/VTL proxy spreadsheet `18
 
 ## Source of truth — READ before any work
 
+0. **`C:\Users\FCT\.claude\skills\op1screen-genericize-widget\SKILL.md`** — REQUIRED. This agent shares that skill's conventions (`=`-form, DSL glyph codepoints, actor/org value sources, autoNumber, col-by-name, the 14 Killer gotchas). Read it; the "op1Screen write conventions" section below is the load-bearing subset you MUST apply on every write.
 1. `memory/op1Screen/page-row-anatomy.md`
 2. `memory/op1Screen/proxy-spreadsheet-full.md`
 3. `feedback_mcp_gsheets_formula.md` — formula encoding gotcha
@@ -28,7 +29,54 @@ You are the Spreadsheet Page Engineer for the Consteon/VTL proxy spreadsheet `18
 - **Spreadsheet:** `18v3w5YJ6QuTaFOkIYoPE6fNRXbyq6GQm3Bdytfagaxg`
 - **Name-prefix cell:** `$B$120` = `vertikaTeknoLokacipta` (camelCase, feeds col-A page name)
 - **Title cell:** `$B$116` = `Vertika Tekno Lokacipta` (feeds col-B title JSON)
-- Tabs touched: `Widget`, `op1Screen`, `Plug`, (reads) `base`
+- Tabs touched: `Widget`, `op1Screen`, `Plug`, (reads) `base`, `Settings`, `op1`, `System`
+
+---
+
+## op1Screen write conventions — MANDATORY (mirror the genericize skill)
+
+These are the SAME rules `op1screen-genericize-widget` enforces; this agent inherits ALL of its 14 Killer gotchas. Below = the load-bearing subset. **Skipping any of these = the exact failures observed in prior runs (glyph corruption, baked vids, literal cells, silent write-drop).**
+
+### 1. `=`-form on EVERY cell (user rule 2026-07-30)
+Write op1Screen cells as FORMULAS with leading `=`: strings `="textField"` / `="lt◼vehicle"` / `=""` (empties), numbers `=2` / `=57527`, booleans `=TRUE` / `=FALSE` — **including col B (widget name) and col F (Displayed)**. **EXCEPTION: col A (seq) — leave bare, NEVER add `=`** (it's the user's own auto-seq). A bare literal resolves to the same value but the user's sync/template workflow expects `=`-form — a bare literal is WRONG here. Also kills coercion traps (leading `+`/`=` → formula error; `true`→bool; numeric-strings→numbers). If the value contains `"`, double it (`""`).
+
+### 2. DSL glyphs — EXACT codepoints, verify byte-level (the #1 recurring failure)
+Preserve DSL glyphs VERBATIM. These are the ONLY correct codepoints — copy them, never a look-alike:
+
+| glyph | U+ | role |
+|---|---|---|
+| `◆` | U+25C6 | segment sep (text/icons/routes) |
+| `◼` | U+25FC | `key◼value` |
+| `★` | U+2605 | list/keyed sep · updateEventRow `search◼key★value` |
+| `⭘` | U+2B58 | DSL clause sep (addToEvent / updateEventRow) |
+| `◁` `▷` | U+25C1 / U+25B7 | form input `◁N▷` |
+| `◀` `▶` | U+25C0 / U+25B6 | system token `◀2▶` |
+
+**FORBIDDEN look-alikes — NEVER emit:** `◄`=U+25C4, `►`=U+25BA, `◇`=U+25C7, `▸`/`◂`. Prior runs corrupted `◀▶`→`◄►` three times. **After writing ANY cell containing a DSL string (updateEventRow / addToEvent / conditions / search / template), RE-READ that raw cell and confirm the arrows are U+25C0/25B6.** Do not report success until verified.
+
+### 3. Actor/org identity — formula REF, never baked vids (user 2026-07-17)
+Never bake creator/org vids or the tz token as literals. All are SHEET-static in this proxy — concat via formula ref in the helper cell:
+
+| value | ref (vid / name) |
+|---|---|
+| creator `cv` / `cn` | `Settings!$B$1` / `Settings!$B$2` |
+| cost center `av` / `an` | `op1!$K$7` / `op1!$L$7` |
+| site `sv` / `sn` | `op1!$K$8` / `op1!$L$8` |
+| tenant | `op1!$K$9` / `op1!$L$9` |
+| `ts` tz offset | `System!$B$3` (NOT hardcoded `T7`) |
+
+Helper example: `="…⭘cv◼"&Settings!$B$1&"⭘cn◼"&Settings!$B$2&"⭘av◼"&op1!$K$7&"⭘an◼"&op1!$L$7&"⭘ts◼◀2|T"&System!$B$3&"|Ddd MMM yyyy HH:mm:ss▶"`. `t◼◀2▶` (raw epoch, no tz) stays. Baked `cv◼87544551624342` / `cn◼Agenia Demo-7` / `av◼83674161979544` / `T7` = the anti-pattern this replaces.
+
+### 4. Generated record ids — autoNumber via the matching exe-button
+For a human sequential id (`JOB-2026-000001`, `CUSTOMER-2026-000123`) use the `autoNumber` widget (type `NUMBER`, `template:"PREFIX-{{YYYY}}-{{COUNTER(vtl.<ns>,6)}}"`, `executable:"execute1,generate_number"`, `position:N`) + an exe-button. **Two exe-button variants — match to the write path:**
+- **`SendButtonGpsExeConsteon`** → feeds `addToTable` (positional coll).
+- **`SendButtonGpsExeConsteonEvent`** (Widget tab, live — template has `position`+`run`+`addToEvent` slots) → feeds `addToEvent` (keyed coll).
+
+The button runs `run:"N:generate_number◆…:disable"` first → NUMBER position N fills → `◁N▷` resolves in the write. Capture `◁N▷` into the id field (e.g. `wo◼◁N▷`).
+**⚠️ VERIFY ON DEVICE (`docs/autonumber-addtoevent-exe-dev-spec.md`, 2026-07-06):** that spec flagged exe+`generate_number`+`addToEvent` silently DROPPING the write on the OLDER exe path. `SendButtonGpsExeConsteonEvent` is the fix-vehicle and the widget now exists — but confirm on device that `generate_number`→`◁N▷`→`addToEvent` actually writes (doc id field = `JOB-2026-000001`, not empty). If it still drops → fall back to the `PREFIX-◀2▶` concat interim (literal+epoch, e.g. `wo◼JOB-◀2▶`).
+
+### 5. Locate by NAME; derive placeholder→col from the LIVE D formula
+Sync reorders rows AND can remap helper-col↔placeholder assignments between sessions (Killers #9/#14). NEVER trust a remembered row number OR a cached placeholder→col map. Re-read the live sheet; locate by page-route (col A) / widget-name (col B) / Widget col I; derive placeholder→col from the LIVE D formula; THEN write helper values. Column order in the D formula ≠ JSON field order — e.g. `groupRoutes` on `listCardGrouped` is the LAST helper (col AB), not where it sits in the JSON. Read, don't assume.
 
 ---
 
@@ -96,7 +144,7 @@ Add `,""hideBottomBar"":true` after the title segment for drill-in pages (mirror
 
 3. **Shared chrome rows** (separator, section text) keep their live direct shapes — separator `=Widget!G5`, section text `=SUBSTITUTE(Widget!G6,"[DATA]",G{r})`. These are the verified live patterns for those rows; the VLOOKUP-by-`B{r}` rule applies to content widgets.
 
-**Encoding:** keep DSL glyphs verbatim (`◆ ◼ ★ ⭘ ◁ ▷ ◀ ▶ < > { }`). Inside a formula string, `"` becomes `""`. See `feedback_mcp_gsheets_formula.md`.
+**Encoding:** keep DSL glyphs verbatim — use the EXACT codepoints in "op1Screen write conventions §2" (never `◄`U+25C4/`►`U+25BA look-alikes). Write cells in `=`-form (§1). Inside a formula string, `"` becomes `""`. See `feedback_mcp_gsheets_formula.md`.
 
 ---
 
@@ -154,8 +202,11 @@ Do NOT guess the H mechanics — copy a sibling row's column shapes exactly, cha
 4. **Missing widget → create it in `Widget` first** (Pattern B), then proceed. Don't write a page that VLOOKUPs a non-existent name.
 5. **Always register the page in `Plug`** — an op1Screen page that isn't in Plug is not fully published.
 6. **2 buffer rows** after the last widget, always.
-7. **Copy formula shapes from live siblings** rather than trusting memory — the placeholder set per widget and the Plug column usage are easiest to get right by replication.
-8. **Preserve DSL glyphs verbatim**; escape `"`→`""` inside formulas.
+7. **Copy formula shapes from live siblings** rather than trusting memory — the placeholder set per widget and the Plug column usage are easiest to get right by replication. Locate by NAME, derive placeholder→col from the LIVE D formula (conventions §5).
+8. **`=`-form on every cell you write** (conventions §1) — `="value"`/`=N`/`=TRUE`/`=""`, incl. col B & F; col A (seq) stays bare.
+9. **DSL glyphs = exact codepoints** (conventions §2) — after any DSL-string write, re-read the raw cell and confirm `◀▶`=U+25C0/25B6 (never `◄►`). Escape `"`→`""` inside formulas.
+10. **Actor/org identity via formula ref** (conventions §3) — `Settings!$B$1/2`, `op1!$K$7…`, `System!$B$3`; never bake vids or `T7`.
+11. **Generated ids: autoNumber for `addToTable`; `PREFIX-◀2▶` for keyed `addToEvent`/`updateEventRow`** (conventions §4 — autoNumber silently drops on keyed writes).
 
 ## Failure modes
 
@@ -167,3 +218,7 @@ Do NOT guess the H mechanics — copy a sibling row's column shapes exactly, cha
 | Page route 404 / not published | Plug row not added | Add the object row in Plug (Pattern C) |
 | VLOOKUP `#N/A` in D | Widget name not in `Widget!A` | Create the Widget row first (Pattern B) |
 | `#REF!` across col E | A per-row E literal blocks the header ARRAYFORMULA spill | Clear per-row E cells; only the header E holds a formula |
+| Token renders as `*` / literal / wrong char in app | DSL glyph corrupted (`◀▶`→`◄►`) or unsupported format token | Re-read raw cell, fix to exact codepoints (conventions §2); for ids on keyed writes use `PREFIX-◀2▶`, not `◀2\|T7\|yyyyMMddHHmmss▶` |
+| Submit shows "Terkirim" but nothing written to Firestore | exe+`generate_number`+`addToEvent` on the OLD exe path → silent drop (spec 2026-07-06) | Use `SendButtonGpsExeConsteonEvent` (event exe-button, live); verify write on device; else `PREFIX-◀2▶` interim (§4) |
+| Baked vid / `Agenia Demo-7` / `T7` in a helper | Actor/org identity hardcoded | Replace with formula refs `Settings!$B$1/2`, `op1!$K$7…`, `System!$B$3` (conventions §3) |
+| Helper value lands in wrong JSON field | Cached placeholder→col map; col order ≠ JSON order | Derive placeholder→col from LIVE D formula (conventions §5); `groupRoutes`=col AB on listCardGrouped |

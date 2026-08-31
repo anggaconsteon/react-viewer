@@ -56,19 +56,118 @@ Kerangka page. Otomatis dirakit sheet — kamu gak nulis manual. Isinya: `title`
 ### 2.2 Widget CONTENT (isi utama)
 
 #### `contentSpreadsheet` — tabel spreadsheet (view/edit data existing)
-Nampilin sheet sebagai grid. Bisa add/edit/delete row (kalau izin `permission` punya token-nya).
+
+Nampilin sheet sebagai grid. Bisa add/edit/delete row (kalau `permission` punya token-nya).
+
+> **Spreadsheet = engine-nya.** Tampilan grid ngikut sheet: lebar kolom, kolom di-hide, format tanggal/angka, warna sel, dropdown validasi, kolom beku — semua mirror, **bukan config**. Kalau tampilannya salah, benerin di spreadsheet. Daftar lengkap yang mirror ada di §2.6.
 
 | Config | Fungsi |
 |---|---|
+| `id` | ID unik; jadi target `refresh` / `target` widget lain |
 | `src` | pakai `[SRC:namaPage]` (jangan URL mentah) |
 | `permission` | `C◆U◆D` — Create/Update/Delete. Kosong = view-only |
-| `visibleSheets` | whitelist tab yang tampil (opsional) |
-| `sheetName` | tab default |
+| `visibleSheets` | tab mana yang boleh dibuka: `Nama◼barisHeader☆barisData`, antar tab `◆`. Tab di luar daftar ga bisa dibuka |
+| `sheetName` | tab yang kebuka duluan |
 | `rowHeader` / `rowStartData` | baris header / baris mulai data |
 
 ```json
-{"type":"SPREADSHEET","id":"dashboardContent","src":"[SRC:dashboard]","permission":"C◆U◆D","rowHeader":1,"rowStartData":2}
+{"type":"SPREADSHEET","id":"dashboardContent","src":"[SRC:dashboard]","permission":"C◆U◆D","visibleSheets":"","sheetName":"","rowHeader":1,"rowStartData":2}
 ```
+
+Contoh multi-tab (dari page `laporanPekerjaan` yang live) — urutan tab di `visibleSheets` dipakai juga sebagai acuan posisi buat `cell` dropdown dan `seq` tombol sequential:
+
+```json
+{"type":"SPREADSHEET","id":"laporanPekerjaanContent","src":"[SRC:laporanPekerjaan]","permission":"C◆U◆D","visibleSheets":"Patroli◼8☆9◆Patroli1◼8☆9◆Rutin◼8☆9","sheetName":"Patroli","rowHeader":8,"rowStartData":9}
+```
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│ [ Patroli ] [ Patroli1 ] [ Rutin ]        ← dari visibleSheets│
+├─────┬──────────────┬───────────┬──────────┬──────────────────┤
+│  #  │ VID          │ Nama      │ Jabatan  │ Site             │
+│ ═══ │ ════════════ │ ═════════ │ ════════ │ ════════════════ │ ← baris 8 (rowHeader)
+├─────┼──────────────┼───────────┼──────────┼──────────────────┤
+│  1  │ 788136801773 │ Imaglo CS │ Selektor │ Product Group    │ ← baris 9 (rowStartData)
+│  2  │ 353393324999 │ Edu FM    │ Selektor │ Product Group    │
+└─────┴──────────────┴───────────┴──────────┴──────────────────┘
+  └── lebar kolom ini dari spreadsheet, bukan dari config ──┘
+```
+
+#### `contentSpreadsheetRowAction` — grid + tombol proses per baris
+
+Sama seperti di atas, plus satu ikon di tiap baris yang manggil action backend buat baris itu.
+
+| Config `rowAction` | Fungsi |
+|---|---|
+| `action` | nama handler di registry backend |
+| `payload` | data tambahan, diteruskan apa adanya |
+| `icon` / `label` | ikon lucide / tooltip |
+| `confirm` | `true` = nanya dulu |
+| `successToast` | notif kalau berhasil |
+| `refresh` | `true` = tabel dimuat ulang setelah sukses |
+
+```json
+{"type":"SPREADSHEET","id":"slipGajiContent","src":"https://docs.google.com/spreadsheets/d/1FQqc6KIOT1e194_1Dux-6zVR4Ab76bg8l7hxd4GG2mg/edit","permission":"C◆U◆D","visibleSheets":"Payroll◼2☆3","sheetName":"Payroll","rowHeader":2,"rowStartData":3,"rowAction":{"action":"DOCENGINE_GENERATE","payload":{"docType":"Slip Gaji"},"icon":"FileOutput","label":"Generate slip baris ini","confirm":true,"successToast":"Slip gaji baris ini selesai","refresh":false}}
+```
+
+#### `contentSpreadsheetRowView` — grid + proses + buka dokumen per baris
+
+Tambah ikon kedua: buka link yang tersimpan di sebuah kolom. Dipakai page Slip Gaji.
+
+| Config `rowView` | Fungsi |
+|---|---|
+| `sourceColumn` | nama header kolom yang isinya link |
+| `fallbackColumn` | kolom cadangan kalau yang pertama kosong |
+| `icon` / `label` | ikon / tooltip |
+| `mode` | `dialog` (popup di dalam app) atau tab baru |
+| `emptyText` | tooltip kalau kolomnya kosong |
+
+Kolom dicocokin **pakai nama header**, bukan huruf kolom. Kolom digeser di sheet tetap aman; header di-rename bakal mutusin.
+
+**Kolom sumbernya biasanya di-hide** — di sheet `Payroll`, kolom W (`Link Drive (Slip Gaji)`) dan X (`Link Storage (Slip Gaji)`) dua-duanya tersembunyi. Tetap jalan, karena kolom tersembunyi cuma dilewati waktu render; datanya tetap lengkap. Syaratnya satu: renderer nyari nama kolomnya di **baris header utuh**, bukan di kolom yang tampil. Kalau kebalik, ikonnya nonaktif semua tanpa pesan error.
+
+Dua catatan dari isi kolom yang sebenarnya:
+- Link Drive bentuknya `/view?usp=drivesdk` — **ga bakal render di iframe**, harus dikonversi ke `/preview` dulu. Makanya Storage ditaro duluan di `sourceColumn`.
+- Kolom hidden **tetap kekirim ke browser**. Di halaman ini artinya tiap pengguna nerima URL slip gaji semua pegawai, dan URL Storage-nya bawa `token=` yang bisa dibuka tanpa login. Nyembunyiin kolom ga ngubah itu. Rinciannya di `docs/web-row-actions-dev-spec.md` §3.
+
+```json
+{"type":"SPREADSHEET","id":"slipGajiContent","src":"https://docs.google.com/spreadsheets/d/1FQqc6KIOT1e194_1Dux-6zVR4Ab76bg8l7hxd4GG2mg/edit","permission":"C◆U◆D","visibleSheets":"Payroll◼2☆3","sheetName":"Payroll","rowHeader":2,"rowStartData":3,"rowAction":{"action":"DOCENGINE_GENERATE","payload":{"docType":"Slip Gaji"},"icon":"FileOutput","label":"Generate slip baris ini","confirm":true,"successToast":"Slip gaji baris ini selesai","refresh":false},"rowView":{"sourceColumn":"Link Storage (Slip Gaji)","fallbackColumn":"Link Drive (Slip Gaji)","icon":"Eye","label":"Lihat slip gaji","mode":"dialog","emptyText":"Slip belum di-generate"}}
+```
+
+```
+┌─────┬──────────────┬───────────┬─────────────────────┬─────────┐
+│  #  │ VID          │ Nama      │ Link Storage (Slip) │  aksi   │
+├─────┼──────────────┼───────────┼─────────────────────┼─────────┤
+│  1  │ 788136801773 │ Imaglo CS │ https://…/slip1.pdf │  ⚙  👁  │
+│  2  │ 353393324999 │ Edu FM    │                     │  ⚙  👁̶  │ ← kolom kosong:
+└─────┴──────────────┴───────────┴─────────────────────┴─────────┘    ikon nonaktif,
+                                                                       tooltip emptyText
+   ⚙ = rowAction (generate)      👁 = rowView (buka dokumen)
+```
+
+Klik 👁 dengan `mode:"dialog"`:
+
+```
+        ┌──────────────────────────────────┐
+        │  Lihat slip gaji             ✕   │
+        ├──────────────────────────────────┤
+        │                                  │
+        │        [ preview PDF ]           │
+        │                                  │
+        └──────────────────────────────────┘
+```
+
+#### `contentSpreadsheetRowActions` — banyak ikon per baris (usulan, belum jalan)
+
+Ganti `rowAction` + `rowView` jadi **satu array**, tiap entri punya `type`. Ikon ketiga nanti cuma nambah entri, bukan nambah key baru. Semua teks jadi satu field `text` dipisah `◆`.
+
+Kontrak lengkap: `docs/web-row-actions-dev-spec.md`.
+
+```json
+{"type":"SPREADSHEET","id":"slipGajiContent","src":"…","permission":"C◆U◆D","visibleSheets":"Payroll◼2☆3","sheetName":"Payroll","rowHeader":2,"rowStartData":3,"rowActions":[{"type":"RUN_ACTION","icon":"FileOutput","action":"DOCENGINE_GENERATE","payload":{"docType":"Slip Gaji"},"refresh":"FALSE","text":"Generate slip baris ini◆◆Generate slip untuk baris ini?◆Slip gaji baris ini selesai◆Gagal generate slip"},{"type":"OPEN_LINK","icon":"Eye","sourceColumns":"Link Storage (Slip Gaji)◆Link Drive (Slip Gaji)","mode":"dialog","text":"Lihat slip gaji◆Slip belum di-generate◆◆◆Link tidak valid◆Slip Gaji"}]}
+```
+
+Indeks `text`: `1` label · `2` tooltip nonaktif · `3` pertanyaan konfirmasi (kosong = tanpa konfirmasi) · `4` toast sukses · `5` toast gagal · `6` judul dialog.
 
 #### `contentForm` — form field (1 record; input satu-satu)
 Form isian: field ke bawah, bisa diatur horizontal/vertikal + lebar per field. Buat input 1 orang/1 record.
@@ -91,6 +190,43 @@ Form isian: field ke bawah, bisa diatur horizontal/vertikal + lebar per field. B
    {"id":"tanggal","label":"Tanggal","input":"date","width":"1/2"},
    {"id":"alasan","label":"Alasan","input":"dropdown","width":"1/2","options":"Meninggal◆Lain-lain"}
  ],"action":"PHK"}
+```
+
+#### `contentFormAction` — form ke action backend (bentuk FORM terbaru)
+
+Beda dari `contentForm`: **`action` di level atas**, ga ada `onClick`/`url`, dan punya `onSuccess.then`. Ini bentuk yang dipakai page baru.
+
+| Config | Fungsi |
+|---|---|
+| `action` | nama handler di registry backend |
+| `confirm` | nanya dulu sebelum submit |
+| `columns` | jumlah field per baris (angka, jangan dikosongin) |
+| `submitLabel` / `submitVariant` | teks + warna tombol |
+| `onSuccess` | `{toast, then}` — `then`: `RESET_FORM` / `REFRESH_CONTENT` |
+| `fields[]` | daftar field |
+
+Field `input`: `text` · `number` · `date` · `textarea` · `dropdown` · `file` · `hidden`.
+Field `file` punya `accept`, `maxSizeMb`, `width`. Field bisa punya `default` (nilai awal).
+
+Contoh page `icon` (live):
+
+```json
+{"type":"FORM","id":"addLogoContent","action":"ADD_LOGO","confirm":true,"columns":2,"submitLabel":"Simpan Logo","submitVariant":"default","onSuccess":{"toast":"Logo tersimpan","then":"RESET_FORM"},"fields":[{"id":"vidClient","label":"VID Client","input":"text","required":true},{"id":"label","label":"Label","input":"text","required":true},{"id":"rootFolder","label":"Folder","input":"text","required":true,"default":"id/2026/"},{"id":"logo","label":"Logo","input":"file","required":true,"accept":"image/png,image/jpeg","maxSizeMb":5,"width":"full"}]}
+```
+
+```
+┌──────────────────────────────────────────────────┐
+│ VID Client                Label                  │
+│ [____________]            [____________]         │  ← columns: 2
+│                                                  │
+│ Folder                                           │
+│ [id/2026/____]                                   │  ← default
+│                                                  │
+│ Logo                                             │
+│ [ ⬆ Pilih berkas — PNG/JPEG, maks 5 MB ]         │  ← width: "full"
+│                                                  │
+│                              [ Simpan Logo ]     │
+└──────────────────────────────────────────────────┘
 ```
 
 #### `DATA_TABLE` — form-tabel / batch (BANYAK record) — **BARU, lihat §3**
@@ -202,6 +338,57 @@ POST `{spreadsheetId, data:[{cell,value},…]}` ke `onClick.url`. `data:"key1◆
 {"type":"BUTTON","icon":"X","text":"Reset","variant":"ghost","onClick":{"type":"RESET","scope":"topbar"}}
 ```
 
+#### `buttonRunAction` — jalanin proses backend
+
+Tombol paling umum buat aksi halaman. `action` = nama handler di registry, `payload` = data tambahan (bentuknya bebas, ditulis per page).
+
+```json
+{"type":"BUTTON","variant":"default","size":"default","text":"Generate Semua Slip Gaji","onClick":{"type":"RUN_ACTION","action":"DOCENGINE_GENERATE_ALL","confirm":true,"payload":{"docType":"Slip Gaji"},"onSuccess":{"toast":"Slip gaji diproses","then":"REFRESH_CONTENT"},"onError":{"toast":"Gagal generate slip gaji"}}}
+```
+
+Versi lama `buttonAction` sama saja tapi tanpa `payload` dan `confirm`-nya di-bake `true`. Buat page baru pakai `buttonRunAction`.
+
+#### `buttonSequential` — jalanin Apps Script sequential
+
+`buttonRunAction` + satu field `seqBySheet`. Kepakai kalau satu spreadsheet punya beberapa sequential, satu per tab.
+
+| Config | Fungsi |
+|---|---|
+| `seqBySheet` | `"TRUE"` = ambil `seq` sesuai tab yang lagi dibuka; `"FALSE"` = kirim utuh |
+| `payload.seq` | ◆-list, **urutannya sejajar `visibleSheets`** |
+| `payload.encoding` | cara backend nembak service: `queryParams` / `json` |
+
+Browser cuma ngomong ke backend kita; backend yang manggil service. Kontrak lengkap: `docs/web-button-sequential-dev-spec.md`.
+
+```json
+{"type":"BUTTON","variant":"default","size":"default","text":"Jalankan Sequential","onClick":{"type":"RUN_ACTION","action":"RUN_SEQUENTIAL","confirm":true,"seqBySheet":"TRUE","payload":{"ssid":"1LnZsETajZ6Ut4rxgyTIyWpYW9HKC1bsXTn4Lqw50LzY","seq":"SequentialDailyM0◆SequentialDailyM1◆SequentialDailyM2","encoding":"queryParams"},"onSuccess":{"toast":"Sequential dijalankan","then":"REFRESH_CONTENT"},"onError":{"toast":"Gagal menjalankan sequential"}}}
+```
+
+```
+visibleSheets:  Daily M0  ◆  Daily M1  ◆  Daily M2
+                   │            │            │
+payload.seq:    ...M0     ◆  ...M1     ◆  ...M2
+                             ▲
+              tab aktif index 1 → yang dikirim cuma "SequentialDailyM1"
+```
+
+#### `buttonLink` — buka link
+
+`href` nerima nilai literal atau penunjuk. Link dari sheet/Firestore di-resolve di server waktu halaman disajikan, jadi yang nyampe ke browser udah URL jadi.
+
+| Isi `href` | Artinya |
+|---|---|
+| `https://…` | literal |
+| `[SRC:pageKey]` | dari tab `Web URL` |
+| `sheet◼<spreadsheet>◼Config!B2` | baca 1 cell |
+| `firestore◼web_links/dashboard◼url` | baca 1 field doc |
+
+Kontrak lengkap: `docs/web-button-link-dev-spec.md`.
+
+```json
+{"type":"BUTTON","variant":"outline","size":"default","icon":"ExternalLink","text":"Buka Dashboard","onClick":{"type":"OPEN_LINK","href":"https://lookerstudio.google.com/reporting/abc123","newTab":"TRUE","confirm":false,"onError":{"toast":"Link belum diisi"}}}
+```
+
 #### `buttonUpload` — upload Excel → feed ke tabel — **BARU**
 Baca Excel di browser → map header ke `key` kolom → dorong baris ke `DATA_TABLE` lewat `target`.
 ```json
@@ -253,7 +440,59 @@ Download template. Bisa di-generate dari kolom tabel (header = label kolom) atau
 }
 ```
 
-**Contoh 3 — page batch tabel** (topbar upload+template, content DATA_TABLE): lihat §3.
+**Contoh 3 — page grid + aksi per baris + tombol massal** (Slip Gaji, live):
+```json
+{
+  "title": "Slip Gaji",
+  "description": "Generate slip gaji dari antrian Payroll.",
+  "topbar": { "alignment": "", "children": [] },
+  "content": [
+    {"type":"SPREADSHEET","id":"slipGajiContent","src":"https://docs.google.com/spreadsheets/d/1FQqc6KIOT1e194_1Dux-6zVR4Ab76bg8l7hxd4GG2mg/edit","permission":"C◆U◆D","visibleSheets":"Payroll◼2☆3","sheetName":"Payroll","rowHeader":2,"rowStartData":3,
+     "rowAction":{"action":"DOCENGINE_GENERATE","payload":{"docType":"Slip Gaji"},"icon":"FileOutput","label":"Generate slip baris ini","confirm":true,"successToast":"Slip gaji baris ini selesai","refresh":false},
+     "rowView":{"sourceColumn":"Link Storage (Slip Gaji)","fallbackColumn":"Link Drive (Slip Gaji)","icon":"Eye","label":"Lihat slip gaji","mode":"dialog","emptyText":"Slip belum di-generate"}}
+  ],
+  "bottomBar": { "alignment": "", "children": [
+    {"type":"BUTTON","variant":"default","size":"default","text":"Generate Semua Slip Gaji","onClick":{"type":"RUN_ACTION","action":"DOCENGINE_GENERATE_ALL","confirm":true,"payload":{"docType":"Slip Gaji"},"onSuccess":{"toast":"Slip gaji diproses","then":"REFRESH_CONTENT"},"onError":{"toast":"Gagal generate slip gaji"}}}
+  ]}
+}
+```
+
+```
+  Slip Gaji                                       ← title
+  Generate slip gaji dari antrian Payroll.        ← description
+┌─────┬──────────────┬───────────┬──────────┬─────────┐
+│  #  │ VID          │ Nama      │ Jabatan  │  aksi   │
+├─────┼──────────────┼───────────┼──────────┼─────────┤
+│  1  │ 788136801773 │ Imaglo CS │ Selektor │  ⚙  👁  │  ← content[]
+│  2  │ 353393324999 │ Edu FM    │ Selektor │  ⚙  👁  │
+└─────┴──────────────┴───────────┴──────────┴─────────┘
+  [ Generate Semua Slip Gaji ]                    ← bottomBar
+```
+
+**Contoh 4 — page batch tabel** (topbar upload+template, content DATA_TABLE): lihat §3.
+
+---
+
+### 2.6 Yang BUKAN config — diatur di spreadsheet
+
+Grid di web itu cerminan sheet. Hal-hal ini **ga punya key config** dan emang ga akan pernah punya. Kalau tampilannya salah, benerinnya di spreadsheet.
+
+| Mau ubah | Caranya |
+|---|---|
+| kolom ga usah tampil | hide kolomnya di spreadsheet |
+| lebar kolom | lebarin kolomnya di spreadsheet |
+| urutan kolom | pindahin kolomnya di spreadsheet |
+| format tanggal / angka / rupiah | format sel di spreadsheet |
+| rata kiri / kanan / tengah | atur di spreadsheet |
+| warna sel, teks tebal | atur di spreadsheet |
+| isi pilihan dropdown di sel | Data Validation di spreadsheet |
+| kolom nempel pas scroll | freeze kolom di spreadsheet |
+| sel ga boleh diedit | protect range di spreadsheet |
+| sel gabungan | merge di spreadsheet |
+
+**Kasus nyata:** halaman Slip Gaji nampilin 5 kolom kosong tanpa judul di sebelah kanan. Itu bukan bug renderer — kolomnya emang ada di sheet. Sembunyiin di spreadsheet, hilang sendiri di web.
+
+Status: sekarang yang benar-benar sudah mirror = **kolom di-hide** dan **format tanggal/angka**. Sisanya masih gap renderer, rinciannya di `docs/web-spreadsheet-widget-dev-spec.md` §2.2.
 
 ---
 
@@ -411,10 +650,16 @@ Submit 1000 baris, baris ke-543 gagal → **proses tetap lanjut**, tiap baris da
 | Butuh | Pakai |
 |---|---|
 | Lihat/edit data sheet apa adanya | `contentSpreadsheet` |
-| Input 1 record (1 orang) | `contentForm` |
+| Grid + tombol proses per baris | `contentSpreadsheetRowAction` |
+| Grid + proses + buka dokumen per baris | `contentSpreadsheetRowView` |
+| Grid + banyak ikon per baris (usulan) | `contentSpreadsheetRowActions` |
+| Input 1 record (1 orang) | `contentFormAction` (bentuk baru) / `contentForm` (lama) |
 | Input beberapa record cepat | `contentForm` + `multi` |
 | Input banyak record / dari Excel | `DATA_TABLE` (+ `buttonUpload`/`buttonTemplate`) |
 | Filter/aksi di bar atas | `dropdown` / `date` / `buttonSubmit` |
+| Jalanin proses backend | `buttonRunAction` |
+| Jalanin Apps Script sequential | `buttonSequential` |
+| Buka link (statis / dari sheet / dari Firestore) | `buttonLink` |
 | Peta | `contentMap` |
 | Reset device | `contentResetDevice` |
 
@@ -424,7 +669,40 @@ Submit 1000 baris, baris ke-543 gagal → **proses tetap lanjut**, tiap baris da
 
 ## 5. Status & yang perlu web-dev bangun
 
-- **Sudah ada di renderer:** `contentSpreadsheet`, bar widgets (dropdown/date/spacer/buttonSubmit/fetch/reset). (`contentForm`/`RESET_DEVICE` — user: sudah dihandle web-dev versi baru; local checkout masih SPREADSHEET-only.)
-- **BARU perlu dibangun web-dev:** `DATA_TABLE` renderer (grid editable + search + resolve batch + submit records[] + hasil per-baris), `buttonUpload` (parser Excel client), `buttonTemplate` (generate/download).
-- **Backend:** resolve borongan (bentuk object = VLOOKUP sheet; bentuk string = handler registry). Submit batch = `records[]` ke action, hasil per-record.
-- **Terkait:** kontrak FORM/action & records[] = `docs/web-dynamic-form-action-dev-spec.md`. DATA_TABLE = perluasan input surface-nya (bukan logic baru).
+Status per 2026-08-20.
+
+| Widget | Config di sheet | Renderer |
+|---|---|---|
+| `contentSpreadsheet` | ✅ | ✅ |
+| `contentSpreadsheetRowAction` | ✅ | ✅ |
+| `contentSpreadsheetRowView` | ✅ live di page Slip Gaji | ❓ **belum dikonfirmasi** |
+| `contentSpreadsheetRowActions` | ✅ template siap | 📋 baru spec |
+| `contentFormAction` | ✅ live di page Icon | ❓ belum dikonfirmasi |
+| `buttonRunAction` | ✅ | ✅ |
+| `buttonSequential` | ✅ template siap | 📋 baru spec |
+| `buttonLink` | ✅ template siap | 📋 baru spec |
+| `DATA_TABLE`, `buttonUpload`, `buttonTemplate` | 📋 | 📋 |
+| bar widgets (dropdown/date/spacer/submit/fetch/reset) | ✅ | ✅ |
+
+**Yang perlu dibangun web-dev, urut dari yang paling nyangkut:**
+
+1. **`rowView`** — config-nya udah live di page Slip Gaji. Kalau renderer belum dukung, ikon matanya ga muncul dan itu bukan salah config.
+2. **Perlindungan sel berformula** — `values.get` pakai `FORMATTED_VALUE`, jadi sel `=VLOOKUP` ga bisa dibedain dari literal, dan web sekarang bisa nimpa formula tanpa undo. Rinciannya `docs/web-spreadsheet-widget-dev-spec.md` §5.1.
+3. **`valueInputOption` per kolom** — sekarang `USER_ENTERED` semua, jadi `0812…` kehilangan nol depan. §5.2.
+4. **Cek bentrok saat 2 orang ngedit sel yang sama** — sekarang tulisan terakhir menang diam-diam. §5.3.
+5. **Status simpan per sel** — sekarang cuma satu penanda "Menyimpan…" di atas tabel, jadi kalau 3 sel diedit dan 1 gagal, ga ketauan yang mana. Dan kalau gagal, nilai salahnya tetep kelihatan seolah kesimpen. §5.4 — **3 dari 4 state-nya nol kerja backend**.
+6. **Navigasi keyboard di grid** — sekarang cuma `Enter`/`Esc` di dalam editor; panah dan Tab ga ngapa-ngapain, masuk edit harus klik dua kali. §5.5.
+7. Mirror yang belum jalan: lebar kolom, kolom beku, merge, warna. §2.2 & §3.
+8. `DATA_TABLE` + `buttonUpload` + `buttonTemplate`.
+9. `buttonSequential`, `buttonLink`, `rowActions[]`.
+
+**Spec per fitur:**
+
+| Dokumen | Isi |
+|---|---|
+| `docs/web-spreadsheet-widget-dev-spec.md` | mirror sheet→web, tulis-balik, state visual grid |
+| `docs/web-row-actions-dev-spec.md` | `rowActions[]` + kontrak `text` ◆ |
+| `docs/web-button-sequential-dev-spec.md` | `buttonSequential` |
+| `docs/web-button-link-dev-spec.md` | `buttonLink` / `OPEN_LINK` |
+| `docs/web-dynamic-form-action-dev-spec.md` | kontrak FORM/action & `records[]` |
+| `docs/web-data-table-batch-form-dev-spec.md` | `DATA_TABLE` batch + Excel |

@@ -2,7 +2,7 @@
 
 **Tanggal:** 2026-07-27
 **Buat:** dev Flutter (renderer) + builder op1Screen
-**Status:** APPROVED (design user-approved 2026-07-27; renderer belum ada)
+**Status:** APPROVED (design user-approved 2026-07-27; renderer belum ada). **REVISI 2026-07-29:** `action1`/`action2` → nama write-DSL eksplisit (`updateEventRow{N}`+`addToEvent{N}`, opsional `addToTable{N}`/`updateTableRow{N}`) biar operasi jelas + tiap tombol bisa >1 write (approve = update request + add event timeline). Template/config re-align PENDING (§6).
 **Konteks / Konsumen pertama:** `RewardReview@1014` row 1017 — antrian review submission reward (±1.800 worker). Dulu LIST_CARD → route detail → approve/reject → balik; page di-rebuild 2026-07-27: noticeBar@1016 + listActionCard@1017 (config-ahead bareng paket reward — runtime nunggu renderer 4-spec + CF deploy).
 **Referensi:** `docs/sales-freelance-reward-dev-spec.md` (induk) · mockup `src/component/SalesFreelanceV1.jsx` (Admin Review tab) · dict book tab `widget_field_positions`
 
@@ -16,7 +16,7 @@ Komplain tech lead (2026-07-27, terkunci): field display jangan kebanyakan — *
 
 ## 2. Konsep
 
-LIST_CARD + 2 tombol write per-row. Tiap tombol bawa write DSL `updateEventRow` utuh di config; token `{field}` di DSL di-resolve dari **doc row yang ditap** (mekanisme sama persis `routeParams`). Tombol bisa langsung kirim atau lewat popup note dulu (mekanisme sama `workflowEventNoteBtn`: isi popup → position N → DSL baca `◁N▷`). Row hilang sendiri via listener begitu `st` berubah dan gak match `search` lagi. Nol token baru, nol logika case di Flutter — semua dari config.
+LIST_CARD + 2 tombol write per-row. Tiap tombol bawa **≥1 write DSL bernama-operasi** (`updateEventRow{N}` merge, `addToEvent{N}` append; + positional `addToTable{N}`/`updateTableRow{N}` kalau perlu) di config; token `{field}` di DSL di-resolve dari **doc row yang ditap** (mekanisme sama persis `routeParams`). Tap 1 tombol → submit SEMUA write DSL tombol itu yang keisi (mis. approve = `updateEventRow1` merge request + `addToEvent1` append event timeline — 1 tap, 2 write). Tombol bisa langsung kirim atau lewat popup note dulu (mekanisme sama `workflowEventNoteBtn`: isi popup → position N → DSL baca `◁N▷`). Row hilang sendiri via listener begitu `st` berubah dan gak match `search` lagi. Nol token baru, nol logika case di Flutter — semua dari config.
 
 ## 3. Kontrak field
 
@@ -32,14 +32,16 @@ LIST_CARD + 2 tombol write per-row. Tiap tombol bawa write DSL `updateEventRow` 
   "searchFields": "[SEARCHFIELDS]",// search box client-side ("cn"); kosong = off
   "route": "[ROUTE]",              // tap CARD → detail; kosong = tap mati
   "routeParams": "[ROUTEPARAMS]",  // ck◼{ck}
-  "action1": "[ACTION1]",          // write DSL updateEventRow UTUH; kosong = tombol off
-  "action2": "[ACTION2]",
-  "actionMeta": "[ACTIONMETA]",    // ◆-split per action — lihat §3.2
+  "updateEventRow1": "[UPDATEEVENTROW1]", // tombol 1: merge keyed doc (//request, dv◼approve); kosong = tombol off
+  "addToEvent1": "[ADDTOEVENT1]",         // tombol 1: append keyed event (//event, timeline); opsional
+  "updateEventRow2": "[UPDATEEVENTROW2]", // tombol 2 (reject): merge keyed doc
+  "addToEvent2": "[ADDTOEVENT2]",         // tombol 2: append keyed event; opsional
+  "actionMeta": "[ACTIONMETA]",    // ◆-split per tombol — lihat §3.2
   "text": "[TEXT]"                 // ◆-split 13 posisi FIXED — lihat §3.3
 }
 ```
 
-14 field. `action1`/`action2` SENGAJA gak digabung: isinya DSL panjang ber-⭘◼★ yang di-assembly formula sheet (`=""&auzSettings!$J$57&…`) — digabung ◆ bikin formula helper monster.
+**REVISI 2026-07-29 (user): `action1`/`action2` DIGANTI nama write-DSL eksplisit.** `action` opaque — gak keliatan add vs update. Sekarang per tombol pakai **nama operasi asli**, konsisten sama tombol RBT detail (`updateEventRow`+`addToEvent`): renderer tau operasi DARI NAMA field, bukan nebak. Tiap tombol bisa bawa **≥1 write** (approve = `updateEventRow1` merge request + `addToEvent1` append event; reject = `updateEventRow2` + `addToEvent2`). Slot positional `addToTable{N}`/`updateTableRow{N}` juga tersedia (kosong buat keyed case). `tombol off` = SEMUA write DSL-nya kosong. Field write SENGAJA gak digabung ◆ (DSL panjang ber-⭘◼★ di-assembly formula sheet `=""&auzSettings!$J$57&…` — digabung bikin helper monster). 2 pasang write: **keyed** `addToEvent`/`updateEventRow` (coll `//x`) · **positional** `addToTable`/`updateTableRow` (`<N>` index).
 
 ### 3.1 `fields` — 6 posisi (selalu 6 segmen, kosongin = fitur off)
 
@@ -52,7 +54,7 @@ LIST_CARD + 2 tombol write per-row. Tiap tombol bawa write DSL `updateEventRow` 
 | 5 | badgeField | nama field | `fl` |
 | 6 | badgeMap | `value◼label◼tone★…` (◼/★ DI DALAM segmen ◆ aman — split ◆ duluan) | `sample◼Sampel acak◼neutral★…` |
 
-### 3.2 `actionMeta` — segmen N = action N; per segmen `tone◼flag[◼posisiNote]`
+### 3.2 `actionMeta` — segmen N = tombol N; per segmen `tone◼flag[◼posisiNote]` (styling/behavior tombol, BUKAN write)
 
 | # | Isi | Catatan |
 |---|---|---|
@@ -90,10 +92,19 @@ Contoh: `ok◼reward-approve◆danger◼reward-reject◼5`.
 ## 4. Contoh resolved (konsumen pertama — id REAL dari live @1016 + tombol detail @1022/@1023)
 
 ```json
-{"type":"LIST_ACTION_CARD","vidtable":"20342033315492","table":"84214220504259//post_claim","search":"st◼review","sort":"t◼asc","fields":"<cn>◆<pl>◆i◆<ts>◆fl◆sample◼Sampel acak◼neutral★burst◼Submit cepat◼warn★duplicate◼Foto duplikat◼warn★link◼Link bekas◼warn★ai◼Cek AI◼warn","stats":"Antrian◼","searchFields":"cn","route":"vertikaTeknoLokaciptaRewardReviewDetail","routeParams":"ck◼{ck}","action1":"84214220504259//post_claim⭘tablevid◼20342033315492⭘search◼ck★{ck}⭘st◼approved","action2":"84214220504259//post_claim⭘tablevid◼20342033315492⭘search◼ck★{ck}⭘st◼rejected⭘rr◼◁5▷","actionMeta":"ok◼reward-approve◆danger◼reward-reject◼5","text":"Antrian Review◆Cuma yang kena flag / sampel — sisanya auto◆item◆Cari nama worker◆Antrian kosong — semua bersih◆Approve◆Reject◆Reject Submission◆Kasih alasan biar worker tahu harus perbaiki apa.◆Alasan reject◆Mis. screenshot buram◆Reject◆Tanpa link"}
+{"type":"LIST_ACTION_CARD","vidtable":"20342033315492","table":"84214220504259//post_claim","search":"st◼review","sort":"t◼asc","fields":"<cn>◆<pl>◆i◆<ts>◆fl◆sample◼Sampel acak◼neutral★burst◼Submit cepat◼warn★duplicate◼Foto duplikat◼warn★link◼Link bekas◼warn★ai◼Cek AI◼warn","stats":"Antrian◼","searchFields":"cn","route":"vertikaTeknoLokaciptaRewardReviewDetail","routeParams":"ck◼{ck}","updateEventRow1":"84214220504259//post_claim⭘tablevid◼20342033315492⭘search◼ck★{ck}⭘st◼approved","updateEventRow2":"84214220504259//post_claim⭘tablevid◼20342033315492⭘search◼ck★{ck}⭘st◼rejected⭘rr◼◁5▷","actionMeta":"ok◼reward-approve◆danger◼reward-reject◼5","text":"Antrian Review◆Cuma yang kena flag / sampel — sisanya auto◆item◆Cari nama worker◆Antrian kosong — semua bersih◆Approve◆Reject◆Reject Submission◆Kasih alasan biar worker tahu harus perbaiki apa.◆Alasan reject◆Mis. screenshot buram◆Reject◆Tanpa link"}
 ```
 
-DSL action = **persis** string `updateEventRow` tombol detail existing (workflowEventBtn@1022 / NoteBtn@1023) — CF nol perubahan.
+RewardReview cuma pakai `updateEventRow1/2` (gak butuh event/timeline → `addToEvent1/2` kosong). DSL = **persis** string `updateEventRow` tombol detail existing (workflowEventBtn@1022 / NoteBtn@1023) — CF nol perubahan.
+
+**Contoh approval (ApproveLeave — 2 write per tombol):**
+```json
+"updateEventRow1":"84214220504259//request⭘tablevid◼20342033315492⭘search◼nm★{nm}⭘dv◼approve⭘dvby◼{userVid}⭘dvbn◼{userName}",
+"addToEvent1":"84214220504259//event⭘nm◼◀2▶⭘ty◼request-approved⭘ttl◼Disetujui⭘ref◼{nm}⭘lvl◼{cl}⭘cv◼{userVid}⭘cn◼{userName}⭘t◼◀2▶⭘ts◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶",
+"updateEventRow2":"…⭘dv◼reject⭘rr◼◁5▷…",
+"addToEvent2":"…⭘ty◼request-rejected⭘ttl◼Ditolak⭘d◼◁5▷…"
+```
+`{nm}`/`{cl}` di-resolve dari doc ROW yg ditap (tiap baris = 1 request doc). Approve dari list = sama persis efeknya kayak approve dari tombol detail (updateEventRow + addToEvent).
 
 ## 4b. UI / Layout
 
@@ -122,7 +133,8 @@ Perilaku:
 
 ## 6. Sheet-side (builder)
 
-- Template `listActionCard` **@ Widget!I308:J308 (DITULIS 2026-07-27)** + G308/H308 formula standar. Semua placeholder string-quoted — nol quote-eat.
+- **⚠ RE-ALIGN 2026-07-29 (rename):** template Widget@308 + config RewardReview@1017 (+ ApproveLeave@1052) masih pakai placeholder/helper `action1`/`action2` lama → WAJIB diganti `updateEventRow1`/`addToEvent1`/`updateEventRow2`/`addToEvent2` sebelum renderer dibangun. Helper P/Q (action1/action2) → jadi updateEventRow1/2; tambah 2 helper addToEvent1/2 (kosong buat RewardReview). PENDING.
+- Template `listActionCard` **@ Widget!I308:J308 (DITULIS 2026-07-27, PERLU UPDATE placeholder)** + G308/H308 formula standar. Semua placeholder string-quoted — nol quote-eat.
 - **✅ Page RewardReview DI-REBUILD 2026-07-27 (user order — config-ahead konsisten paket reward, runtime belum live):** 1015 wsHeader (tetap) · **1016 = `noticeBar` variant `ok`** (banner "Auto-approve jalan…" — pengganti banner mockup; angka dinamis 214 gak bisa, noticeBar text-only) · **1017 = `listActionCard`** (row buffer kepake, sisa buffer 1018; window A1014:A1018 + CONCATENATE(E1015:E1018) udah nutup). Helper 1017 G:S urut placeholder: G vidtable · H table (=J57) · I search · J sort · K fields · L stats · M searchFields · N route (=$B$120&"RewardReviewDetail") · O routeParams · P action1 (`=""&auzSettings!$J$57&"⭘tablevid◼20342033315492⭘search◼ck★{ck}⭘st◼approved"`) · Q action2 (idem + `⭘st◼rejected⭘rr◼◁5▷`) · R actionMeta · S text. Helper listCard lama @1016 G..AA di-clear. B1014 verified resolve bersih.
 - **Stat card mockup (Menunggu review / Ada flag anomali / angka auto-approved hari ini) DEFER** — butuh doc stats GLOBAL tenant (reward_cache per-worker, gak bisa) = CF delta maintain doc agregat; count antrian udah ke-cover `stats` header list.
 - Detail page @1019 TETAP — masih dipakai buat lihat gambar + fallback vonis.
@@ -131,7 +143,7 @@ Perilaku:
 
 1. Type baru `LIST_ACTION_CARD` — display fork LIST_CARD (title/subtitle/meta template `<field>`, badge, stats, searchFields, route+routeParams) + **thumbnail** dari `fields` pos 3.
 2. Parser `fields` / `actionMeta` / `text` posisi-fixed (§3.1–3.3) — segmen kosong = fitur off.
-3. Tombol per-row: resolve `{field}` DSL dari doc row (reuse resolver routeParams) → submit pipeline savesend existing (updateEventRow + flag), disabled+spinner in-flight.
+3. Tombol per-row: resolve `{field}` DSL dari doc row (reuse resolver routeParams) → submit SEMUA write DSL bernama tombol itu yang keisi (`updateEventRow{N}` merge + `addToEvent{N}` append; + `addToTable{N}`/`updateTableRow{N}` kalau ada; urut: request dulu baru event) via pipeline savesend existing + flag, disabled+spinner in-flight. Renderer pilih operasi dari NAMA field (add=append, update=merge-by-search) — bukan nebak.
 4. Popup note: reuse machinery bottom-sheet TXF (pola workflowEventNoteBtn) — isi ke position N, kirim DSL, clear.
 5. Tone tombol dari THEME (`ok/warn/danger/neutral`) — bukan hex, bukan `buttonColor` legacy.
 

@@ -81,7 +81,8 @@ Generic — reusable semua case (invoice, reminder outstanding, konfirmasi order
 ### 3.3 messageTemplate — engine (reuse gaya PRN)
 
 - `{{field}}` = field doc. `{{field|idr}}` = format Rupiah.
-- `<LOOP li>…{{item.xxx}}…</LOOP>` = ulang per elemen array `li[]`.
+- `<LOOP source='li'>…{{item.xxx}}…</LOOP>` = ulang per elemen array `li[]`. ⚠️ **Pakai `source='…'`**, sama persis kaya `PRN`. Versi awal doc ini nulis `<LOOP li>` (tanpa `source=`) — **salah**, dibetulin 2026-08-27 dari config live `DeliveryInvoice` (op1Screen 892).
+- **Gak ada penjumlahan.** Engine cuma substitusi + pengulangan. Total rupiah harus udah jadi field di doc (mis. `nota.tot`); array tanpa `tot` gak bisa dijumlah dari template.
 - `\n` = newline (URL-encode jadi `%0A`).
 - Contoh invoice:
   `*INVOICE {{nno}}*\n{{by}}\n{{ts}}\n------------------\n<LOOP li>{{item.in}} x{{item.qt}} = {{item.sub|idr}}\n</LOOP>------------------\n*TOTAL: {{tot|idr}}*\nTerima kasih 🙏`
@@ -134,6 +135,132 @@ Bukti reusability WHATSAPP_SEND: **setelah admin "Buat Task & Assign"**, kirim W
   `{"type":"WHATSAPP_SEND","vidtable":"20342033315492","phoneField":"hpic","phoneFallback":"","allowContactPick":"TRUE","countryCode":"62","messageTable":"84214220504259//stock_location","messageSearch":"lv◼{customerId}","messageTemplate":"Halo {{ln}},\\nPesanan Anda sudah kami terima & dijadwalkan untuk diantar. Terima kasih 🙏","logTable":"","logSearch":"","logField":"","logValue":"","text":"Kirim WA ke Customer◆Nomor tujuan◆Pilih Kontak◆Pesan (bisa diedit)◆Buka WhatsApp◆Nomor tidak valid◆✅ Terkirim"}`
 
 Nunjukin WHATSAPP_SEND emang generic: 1 renderer, konsumen = invoice (baca nota, LOOP li) + order-confirm (baca customer, no loop) + reminder outstanding (nanti). Item order di pesan konfirmasi = fase-2 (butuh baca wizard/task it[]; v1 pesan generik cukup).
+
+## 6b-2. FASE-2 konfirmasi order — rincian barang + harga (2026-08-27) ✅ LIVE 2026-08-28
+
+Fase-2 yang di §6b ditunda ("item order di pesan konfirmasi = fase-2"): pesan konfirmasi nampilin **rincian barang + harga satuan**, bukan cuma kalimat generik.
+
+> ### ✅ TERPASANG 2026-08-28 — dev udah ship `routeParams`, sheet udah disambung
+>
+> `TASK_CREATE_SUBMIT` sekarang `route:OrderConfirm` + `routeParams:taskVid◼{tnm}`, kepasang di **dua tab** baris 728. Alurnya jalan penuh:
+>
+> ```
+> CreateTaskSummary → [Buat Tugas] → OrderConfirm(taskVid) → [Kirim Rincian] → WhatsApp
+> ```
+>
+> Perubahan sisi sheet yang ikut: `receiptDoc` ditambahin ke `OrderConfirm` (visual nota), `whatsappSendKeyed` pakai `phoneTable`/`phoneSearch`, dan tombol WA lama di `CreateTaskSummary`@727 **dimatiin** (`F727=FALSE`) biar pelanggan gak dapet dua pesan. Rinciannya §6b-2.0b.
+
+**LOOP-nya bukan masalah** — `<LOOP source='it'>` udah didukung sejak 2026-07-21, nol perubahan renderer buat bagian itu. Yang ngeblokir: **halamannya**, bukan template-nya. Baca §6b-2.0 → §6b-2.0b berurutan.
+
+> ⚠️ **Percobaan pertama di `CreateTaskSummary`@727 GAGAL dan udah di-ROLLBACK** (§6b-2.0). Baris 727 sekarang balik ke versi lama yang jalan. Jangan ambil config dari sini buat halaman itu.
+
+Template yang dituju (sekarang kepasang di halaman baru `OrderConfirm`, §6b-2.0b):
+```
+*KONFIRMASI ORDER {{tnm}}*\n{{kn}}\n\nBarang yang dijadwalkan:\n<LOOP source='it'>• {{item.in}} x{{item.pd}} @ {{item.hg|idr}}\n</LOOP>\n⚠️ *HARGA BELUM FINAL*\nRincian di atas masih sementara. Jumlah bisa berubah kalau ada tambahan barang atau tukar tabung di lokasi.\n\n*Mohon jangan transfer dulu* — nota resmi kami kirim setelah barang diterima.\n\nTerima kasih 🙏
+```
+
+**Kenapa TANPA total (keputusan, bukan keterbatasan awal).** Angka total di bawah daftar barang kebaca sebagai **tagihan** — dan harga di tahap ini belum final, jadi risikonya pelanggan keburu transfer nominal yang salah. Rincian per barang tanpa angka akhir lebih jujur nyampein "belum final". Blok peringatan ditulis dua lapis: judul tegas + larangan eksplisit *"mohon jangan transfer dulu"*, karena rincian harga tanpa larangan tetap kebaca sebagai tagihan.
+
+### 6b-2.0 ⚠️ KOREKSI 2026-08-27 — tombol WA GAK BISA di `CreateTaskSummary`
+
+Config §6b-2 sempat dipasang di `CreateTaskSummary` (baris 727) lalu **di-ROLLBACK hari yang sama**. Sebabnya bukan sintaks — **posisinya yang mustahil**:
+
+1. Tap WA **sebelum** submit → doc `task` belum lahir → `messageSearch:"tnm◼{tnm}"` gak nemu → semua `{{…}}` kosong → **pesan kosong**.
+2. Tap WA **sesudah** submit → gak bisa. `TASK_CREATE_SUBMIT` punya `"route":"vertikaTeknoLokaciptaAdminHome"` + chain dialog Ok→AdminHome, jadi **halaman langsung ditinggalin**. Tombolnya gak pernah kesentuh pas task-nya ada.
+
+Alur di §6b ("bikin task → tap Kirim WA") **gak pernah mungkin** dengan config halaman itu. Baris 727 udah dibalikin ke versi lama (baca `stock_location`, pesan generik, jalan) di **dua tab**.
+
+**Pelajaran:** kalau tombol gantung ke doc yang lahir dari submit di halaman yang sama, cek dulu submit-nya navigate ke mana. Widget yang butuh `taskVid` harus ada di halaman **sesudah** task jadi.
+
+### 6b-2.0b Halaman `OrderConfirm` — ✅ LIVE dua tab (2026-08-28)
+
+Halaman tujuan sesudah submit. **`op1Screen` 1622-1628** dan **`op1Screen Driver` 944-950** (2 baris buffer di ekor masing-masing):
+
+| # | Widget | Isi |
+|---|---|---|
+| *header* | — | `vertikaTeknoLokaciptaOrderConfirm` |
+| 1 | `workspaceHeader` | `task` by `tnm◼{taskVid}` · title `kn` · address `al` · back AdminHome · text `Order Dibuat◆Kirim rincian ke pelanggan` |
+| 2 | `receiptDoc` | **baru 08-28** — `task` by `tnm◼{taskVid}`, baris dari `it[]` (`in`/`pd`/`hg`/`sub`), total `tot`, judul `RINCIAN ORDER` |
+| 3 | `whatsappSendKeyed` | `messageTable:task` · `messageSearch:tnm◼{taskVid}` · `phoneTable:stock_location` · `phoneSearch:lv◼{kl}` · template LOOP `it[]` + blok peringatan |
+| 4 | `rbtCta` | `Selesai` → AdminHome |
+
+Nomor baris beda antar tab (1622 vs 944) — gak masalah, route resolve dari **kolom A**, bukan nomor baris. `Plug` gak perlu diisi.
+
+**Kenapa `receiptDoc` di sini.** Sebelumnya halaman ini cuma header + tombol — gak ada yang bisa dilihat admin sebelum kirim. Sekarang nampilin nota visual yang sama gayanya kaya `WalkInNota`/`DeliveryInvoice`, jadi admin bisa **cek rincian sebelum nge-WA**. Widget `receiptDoc` dipakai apa adanya (semua field-nya emang param) — cuma diarahin ke `//task` + `it[]` gantinya `//nota` + `li[]`.
+
+> ⚠️ **Total di layar ≠ total di WA — disengaja.** `receiptDoc` nampilin `tot` ke **admin** (labelnya `PERKIRAAN TOTAL`, footer `Harga belum final — nota resmi menyusul`). Pesan WA ke **pelanggan** tetap TANPA total (§6b-2 alinea "Kenapa TANPA total"). Admin butuh angka buat ngecek; pelanggan jangan dikasih angka yang belum final.
+
+**✅ `routeParams` udah landing.** `TASK_CREATE_SUBMIT` di baris 728 (dua tab) sekarang:
+```
+"route":"vertikaTeknoLokaciptaOrderConfirm",
+"routeParams":"taskVid◼{tnm}"
+```
+
+**⚠️ Dialog konfirmasi dibuang.** Widget `taskCreateSubmit`@Widget255 punya `chain` DO_DIALOG yang Ok-nya balik ke AdminHome — itu bakal **ninggalin halaman sebelum `route` sempat jalan**, persis penyakit §6b-2.0. `chain`-nya dicabut dari template, `routeParams` ditambahin. Aman diubah di tempat: `taskCreateSubmit` **cuma punya 1 konsumen** (baris 728) — dikonfirmasi lewat sisir kolom B dua tab. Param dialog lama (`R`/`S`/`T` = DIALOGTITLE/DIALOGTEXT/OKROUTE) dikosongin jadi `=""`. Dialognya emang gak diperluin lagi — `OrderConfirm` sendiri yang jadi layar konfirmasi, dan buat user gaptek satu tap lebih sedikit.
+
+**`whatsappSend`@Widget300 diperluas, BUKAN dibikin varian.** Tambah `phoneTable`/`phoneSearch`, sekalian `vidtable` yang tadinya ke-bake jadi `[VIDTABLE]`. Template ini dipakai **3 halaman per tab**, jadi ketiganya wajib ikut diperlebar SUBSTITUTE-nya barengan (Killer #8) — kalau nggak, `[PHONETABLE]` kerender literal di halaman lain:
+
+| Halaman | op1Screen | op1Screen Driver | `phoneTable`/`phoneSearch` |
+|---|---|---|---|
+| `CreateTaskSummary` | 727 | 727 | `=""` (baca dari `messageTable` — perilaku lama) |
+| `DeliveryInvoice` | 897 | 887 | `=""` |
+| `ReorderCustomer` | 1226 | 921 | `=""` |
+| `OrderConfirm` | 1625 | 947 | **diisi** — `stock_location` + `lv◼{kl}` |
+
+Peta param seragam semua baris: `G`=phoneField · `H`=fallback · `I`=allowContactPick · `J`=countryCode · `K`=messageTable · `L`=messageSearch · `M`=messageTemplate · `N`-`Q`=log* · `R`=text · **`S`=phoneTable · `T`=phoneSearch · `U`=vidtable**.
+
+**⚠️ Tombol WA lama di `CreateTaskSummary`@727 dimatiin** (`F727=FALSE`, dua tab). Kalau dibiarin, pelanggan dapet **dua** WA: pesan generik pra-submit + rincian pasca-submit. Config-nya masih utuh di barisnya, tinggal balikin `F727=TRUE` kalau mau dihidupin lagi.
+
+### 6b-2.1 `phoneTable` / `phoneSearch` — param baru `WHATSAPP_SEND` ⬜
+
+**Masalah:** `phoneField` dibaca dari doc yang sama dengan `messageTable`. Begitu `messageTable` nunjuk `task` (biar bisa LOOP `it[]`), nomor HP ilang — `task` gak punya `hpic`, itu adanya di doc pelanggan.
+
+**Ditolak: denorm `hpic` ke task.** Sempat diusulin, lalu dibatalin owner 2026-08-27. Dua alasan:
+
+1. **Denorm selalu bikin rombongan "sebelum diperbaiki".** Persis kejadian `la`/`lo` di spec `customer-coordinate-maps`: task yang dibuat sebelum fix landing, koordinatnya kosong **selamanya**. `hpic` bakal ngulang persis pola itu — semua task existing gak akan pernah punya nomor.
+2. **Alasan denorm di sistem ini gak berlaku di sini.** `kn`/`al`/`la`/`lo` didenorm ke `task` karena **sopir sering sinyal jelek** — kartu rute wajib render tanpa query kedua. Kirim WhatsApp itu **aksi admin dan wajib online** (butuh internet buat buka wa.me). Bayar ongkos denorm tanpa dapet manfaatnya.
+
+**Yang diminta — 2 param baru, dua-duanya OPSIONAL (kosong = perilaku sekarang, nol regresi):**
+
+| param | isi | contoh |
+|---|---|---|
+| `phoneTable` | koleksi tempat nomor tinggal | `84214220504259//stock_location` |
+| `phoneSearch` | cara nemuin doc-nya, boleh pakai field dari doc utama | `lv◼{kl}` |
+
+Aturan resolve `phoneField`:
+1. `phoneTable`+`phoneSearch` diisi → baca `phoneField` dari doc itu.
+2. Kosong → baca `phoneField` dari doc `messageTable` (perilaku sekarang).
+3. Tetap kosong → `phoneFallback` → input manual/kontak (`allowContactPick`).
+
+⚠️ `phoneSearch` perlu bisa nunjuk **field dari doc utama** (`{kl}` = FK pelanggan di doc `task`), bukan cuma token route. Ini bagian yang perlu diperhatiin dev.
+
+**Plumbing-nya udah setengah ada:** widget ini udah nge-resolve sepasang `table`+`search` kedua buat `logTable`/`logSearch` (tujuan tulis marker). Yang belum cuma pasangan buat sisi **baca**.
+
+**Kepakai lagi di mana:** doc apa pun yang punya FK ke doc yang punya nomor — `task` (`kl`), `nota` delivery (`kl`), dan kemungkinan besar yang berikutnya.
+
+**BUKAN buat walk-in.** `WalkInNota` `phoneField:""` bukan karena kelupaan — nota walk-in emang **gak punya kaitan ke pelanggan** (`by` cuma teks bebas, sering "Umum"). Di situ admin ketik/pilih kontak manual, dan itu udah bener. Jangan dipaksa.
+
+### 6b-2.2 Yang nyangkut di `TASK_CREATE_SUBMIT`
+
+Semuanya nyentuh handler yang sama:
+
+| # | Minta | Dipakai buat | Status |
+|---|---|---|---|
+| 1 | Salin `la`/`lo` dari doc pelanggan ke `task` | tombol Lihat Lokasi | ✅ **kelar 2026-08-27** — kebukti di doc `TASK-2026-000555` |
+| 2 | ~~Salin `hpic`~~ | prefill nomor WA | ❌ **dicabut** — diganti `phoneTable`/`phoneSearch`, §6b-2.1 |
+| 3a | **`hg`** per baris `it[]` (salin harga satuan dari master item) | harga di `receiptDoc` + WA | ✅ **kelar, kebukti 2026-08-31** — `TASK-2026-000567`: `hg:120000` (Gas 5,5 Kg, sesuai `hrg` master). Akarnya dua lapis: config kurang `priceSourceField` (dibenerin 08-28) + renderer mode `order` belum implement (dibenerin dev) |
+| 3b | Hitung **`sub`** (`pd × hg`) + **`tot`** (Σ sub) | total di `receiptDoc` | ✅ **kelar, kebukti 2026-08-31** — `sub:240000` (2×120000), `tot:240000` |
+| 4 | **`routeParams`** — nurunin id task ke halaman tujuan | nyambungin `OrderConfirm` | ✅ **kelar 2026-08-28**, kepasang §6b-2.0b |
+| 5 | **`ts`** di doc `task` keisi string tanggal | baris Tanggal di `receiptDoc` | ✅ **kelar, kebukti 2026-08-31** — `ts:"2026-08-31 09:12"` |
+| 6 | **`qt`** per baris `it[]` = qty tertagih (yang dipakai ngitung `sub`) | kolom qty di `receiptDoc` + WA | ⬜ **baru, 2026-08-31** — bukti `TASK-2026-000568`: Crystalline 3300ml `tx:"sale"` `ps:3` `pd:0` → layar nampil "**0x** 43.000" padahal `sub:129000` bener. Qty tinggal di field beda per jenis baris (`pd` antar / `ps` jual / `pr` refill / `pb` beli), widget cuma bisa baca SATU field. `sub` yang bener ngebuktiin dev udah milih qty tepat secara internal — **tinggal disimpen** sebagai `qt`, konsisten sama `li[].qt` nota walk-in. Habis landing: builder ganti 3 sel × 2 tab (`lineQtyField` `pd`→`qt` + WA `{{item.pd}}`→`{{item.qt}}`) |
+
+**No.3 — kenapa gak bisa config doang.** Engine template cuma bisa substitusi (`{{field}}`, `{{field|idr}}`) dan pengulangan (`<LOOP>`) — **gak ada penjumlahan**. Satu-satunya agregat yang pernah kepakai `{{it.count}}` (hitung baris, bukan uang). Polanya udah ada di `NOTA_CREATE_SUBMIT` (bikin `li[]{…,sub}` + `tot` buat nota walk-in) — tinggal ditiru. Catatan tambahan 08-28: bukan cuma `sub`/`tot` — **`hg`-nya sendiri gak ada** di `it[]` order delivery (beda dari walk-in yang builder-nya bawa `priceField:"hg"`), jadi dev juga harus nyalin harga satuan pas submit.
+
+> ✅ **2026-08-31: harga+tanggal DIBALIKIN.** Sempat disembunyiin 08-28 pas semua nilai masih 0 (biar pelanggan gak nerima "@ Rp 0"). Setelah dev landing & kebukti di `TASK-2026-000567` (`hg:120000` · `sub:240000` · `tot:240000` · `ts` string), keenam sel dipulihkan di dua tab proxy: `dateField:"ts"` · `totalField:"tot"` · `linePriceField:"hg"` · `lineSubField:"sub"` · label Tanggal + PERKIRAAN TOTAL balik ke segmen text · ` @ {{item.hg|idr}}` balik ke template WA. **Copy ke prod**: baris `receiptDoc` + `whatsappSend` halaman OrderConfirm.
+
+**Pesan WA tetap TANPA total** walau `tot` ada — itu keputusan, bukan keterbatasan (§6b-2). Yang lihat angka cuma admin di layar.
+
+---
 
 ## 6c. Consumer KE-3 — WA struk walk-in (WalkInNota, user 2026-07-20)
 
