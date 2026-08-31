@@ -124,31 +124,45 @@ Desain ini pattern generic, bukan fitur one-off:
 
 Incident (`vtl.report-incident`) dan complaint (`complaint`) masih pakai **addToTable positional** (`<1>..<30>`, wajib lengkap, shift index kalau nambah field). Di-refactor jadi **keyed** (addToEvent char-code) supaya: (a) konsisten kamus, (b) bisa `updateEventRow` merge → status flow sama kayak request, (c) langsung ikut kontrak `//submission`.
 
-### 7.1 Mapping incident positional → keyed
+### 7.1 Mapping positional → keyed
 
-| Posisi lama | Isi | Char-code baru |
-|---|---|---|
-| `<1>` | flag ref (K899) | metadata `fc` (tetap di string, bukan doc) |
-| `<2>` | autoNumber | `nm` |
-| `<3>` | MENUNGGU | `st◼waiting` (kanonik §4) |
-| `<4>`/`<5>` | VID/nama pengirim | `cv`/`cn` (formula Settings B1/B2) |
-| `<6>`/`<7>` | CC | `av`/`an` |
-| `<8>`/`<9>` | site | `sv`/`sn` |
-| `<10>`/`<11>` | tanggal/epoch | `ts`/`t` |
-| `<12>`/`<13>` | lokasi/loc-id | `ln`/`lq` |
-| `<15>` | judul insiden | `ttl` |
-| `<17>` | dokumen pendukung | `i` |
-| `<18>` | catatan | `d` |
-| `<14>` `<16>` `<19>` `<20>` | ?, jenis keluhan, urgensi, assigned | ⬜ TERBUKA — map ke kode existing tanpa bikin kode baru per-fitur (kandidat: jenis→`cl`? urgensi→`lvl`? assigned→`ta`/`VID`) — putuskan bareng user, JANGAN nambah kamus |
-| `index◼2★S◼…` | index positional | ⬜ cek: mekanisme index keyed ada/perlu? |
+Layout SUMBER = versi live `docs/standard-page-event-pattern.md` §7.2 (BUKAN `file/incident.txt` — itu draft lama, posisinya geser). Complaint = keluarga layout yang sama (memory `complaint-feature`, rows 989-1071) + field tambahan.
 
-Complaint: mapping serupa setelah layout positional-nya dibaca dari sheet live.
+Aturan kode: kamus event (`//event`) TIDAK ditambah; table per-fitur boleh kode sendiri (preseden live: `stock_location` pakai `pic`/`hpic`/`lst`). Keputusan user 2026-08-31: `cat`/`urg`/`asg`.
+
+| Pos incident live | Pos complaint | Isi | Keyed |
+|---|---|---|---|
+| `<1>` | `<1>` | autoNumber (◁17▷; INC/CMP-YYYY-counter) | `nm` |
+| `<2>` | `<2>` | status MENUNGGU | `st◼waiting` (kanonik §4) |
+| `<3>` `<4>` | — | `[]` array literal ("array jaman dulu") | ⬜ cek isi/konsumen di live — kandidat hapus |
+| `<5>`/`<6>` | `<5>`/`<6>` | pengirim | `cv`/`cn` (formula Settings B1/B2 — udah begitu) |
+| `<7>`/`<8>` | `<7>`-`<10>` | CC (op1 K8/L8) | `av`/`an` |
+| `<9>`/`<10>` | (urutan CC/site complaint ⬜ verify live) | site (op1 K7/L7) | `sv`/`sn` |
+| `<11>`/`<12>` | `<11>` | waktu string/epoch | `ts`/`t` |
+| `<13>`/`<14>` | `<13>`/`<14>` | lokasi QR / nama lokasi | `lq`/`ln` |
+| `<15>` | `<15>` | judul | `ttl` |
+| `<16>` | `<16>` | jenis keluhan | `cat` |
+| `<17>` | `<17>` | dokumen/foto | `i` |
+| `<18>` | `<18>` | catatan | `d` |
+| `<19>` | `<19>` | urgensi | `urg` |
+| `<20>` | `<23>`/`<24>` | assigned VID/nama | `asg`/`asgn` |
+| `<30>` | — | ringkasan text | `d` atau drop (⬜) |
+| — | `<20>` | kapan terjadi (khusus complaint) | `oc` (occurred) ⬜ konfirmasi |
+| — | `<22>`/`<25>` | keterangan hasil / hasil | `res`/`resn` ⬜ konfirmasi |
+| `index◼1★S◼2★S…` | idem | index positional | ⬜ bentuk index keyed — tanya dev / cek stock_location |
+
+### 7.1b Inventory pembaca (yang WAJIB ikut di-flip ke keyed)
+
+**Complaint (7 page @989-1071, dari memory `complaint-feature`):** ComplaintForm@989 (submit), ClientList@1006 (`search 5◼{user}` → jadi `cv◼…`), ClientDetail@1015 (+Konfirmasi/BukaLagi 1023-1025), SupervisorList@1028 (`7◼op1!K8` → `av◼…`), SupervisorDetail@1037 (Assign/Re-assign 1045-1046), TaskList@1050 (`23◼{user}` → `asg◼…`), TaskDetail@1059 (comment+Mulai+Selesaikan 1066-1068). Semua `search`/`toDo` positional number → field name. Status flow complaint (MENUNGGU→ASSIGN→PROSES→SELESAI→DITUTUP) TETAP di table complaint; map ke `//submission.st`: MENUNGGU→`waiting`, ASSIGN/PROSES→`processing`, SELESAI/DITUTUP→`done`.
+
+**Incident:** form LogIncident + list/detail (row cek live; config list ada di `docs/list-search-numeric-type-dev-spec.md` §3). Inventory final = tugas implementation plan (scan op1Screen kolom D yang nyebut `vtl.report-incident` / `complaint`).
+
+**Catatan:** Event C ★ map (spreadsheet-side, E13..U13) baca POSISI FORM, bukan posisi table — TIDAK kena refactor ini.
 
 ### 7.2 Migrasi
 
-- **Cutover, bukan dual-format**: tombol submit ganti ke keyed, page reader (list/detail incident & complaint existing) di-update baca field name.
-- Data positional lama **dibiarkan mati sendiri** — retention 4320 menit (3 hari) → overlap cuma beberapa hari. ⬜ verify retention beneran ngehapus.
-- Inventory dulu SEMUA page/widget yang baca dua table ini sebelum flip (tugas implementation plan).
+- **Cutover, bukan dual-format**: tombol submit ganti ke keyed, reader pages di-flip bareng (1 fitur = 1 batch tulis).
+- Data positional lama **dibiarkan mati sendiri** — retention 4320 menit (3 hari) → overlap beberapa hari. ⬜ verify retention beneran ngehapus.
 
 ## 7b. Rollout
 
