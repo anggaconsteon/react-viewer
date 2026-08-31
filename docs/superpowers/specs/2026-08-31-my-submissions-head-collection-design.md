@@ -81,7 +81,7 @@ addToEvent":
 ⭘nm◼<nomor — sumber sama dgn doc utama>
 ⭘ttl◼<judul>
 ⭘st◼waiting
-⭘cv◼{userVid}⭘cn◼{userName}
+⭘cv◼"&Settings!$B$1&"⭘cn◼"&Settings!$B$2&"   // identitas dibake FORMULA proxy (pola incident) — BUKAN token Flutter
 ⭘t◼◀2▶⭘ts◼◀2|T7|Ddd MMM yyyy HH:mm:ss▶
 ⭘d◼◁N▷
 ```
@@ -102,11 +102,23 @@ Approval non-final (L1 dari 3): TIDAK update `//submission` (status masih `waiti
 
 ## 6. Feed page "Kiriman Saya"
 
-- 1 page baru op1Screen, widget **LIST_CARD existing** (reuse-first).
-- Query: `table◼…//submission` + `search◼cv◼{userVid}⭘fc◼submission`, sort `t` desc.
+- **BUKAN widget/tipe renderer baru** — pakai list widget existing (LIST_CARD family; cek Widget tab mana yang current). Yang baru maksimal **1 template generic di Widget tab** dengan `[TABLE]`/`[SEARCH]`/`[SORT]`/`[STATUSLABELS]`/`[TYMAP]` placeholder + VLOOKUP+SUBSTITUTE — biar reusable (§6b).
+- Query: `table◼…//submission` + `search◼cv◼"&Settings!$B$1&"⭘fc◼submission` (identitas dari formula Settings, bukan token), sort `t` desc.
 - Card: icon+label dari map `ty` ◆-segment, `ttl`, `ts`, badge `st` via `statusLabels`.
 - `route` + `routeParams◼nm◼{nm}⭘ty◼{ty}` → page detail per jenis (routing per `ty` — cek dulu apakah route bisa conditional per row; kalau tidak, detail page universal DETAIL_CARD).
 - Menu: entry "Kiriman Saya" gantiin menu "My X" per jenis secara bertahap.
+
+## 6b. Reusability (requirement user 2026-08-31: WAJIB general)
+
+Desain ini pattern generic, bukan fitur one-off:
+
+1. **Profil 8 kolom = kontrak generic.** Tidak ada char-code khusus fitur. Vertikal/fitur APAPUN ke depan (service AC, sales, walk-in, galon, …) yang mau muncul di feed cukup dual-write profil yang sama — nol perubahan di feed page.
+2. **Template feed generic (1 template Widget tab).** Variasi feed = page baru dengan param beda, TANPA template baru:
+   - "Kiriman Saya" → `[SEARCH]` = `cv◼"&Settings!$B$1&"⭘fc◼submission`
+   - "Kiriman Tim" (supervisor per-CC) → `[SEARCH]` = `av◼<ccVid>⭘fc◼submission`
+   - Bucket **Pending Approvals** nanti → `[SEARCH]` = `st◼waiting` + filter approver — template SAMA
+3. **`fc` = marker family.** Head jenis lain besok (mis. `fc◼task-head`) bisa hidup di collection yang sama atau terpisah tanpa ganggu feed.
+4. Blok `◆` dual-write = pola copy-paste baku — masuk checklist skill/spec supaya tiap fitur baru otomatis ikut.
 
 ## 7. Rollout
 
@@ -119,7 +131,7 @@ Approval non-final (L1 dari 3): TIDAK update `//submission` (status masih `waiti
 ## 8. Verifikasi WAJIB sebelum implementasi (blocker)
 
 1. ⬜ **Complaint**: nulis ke collection mana, tombolnya di page mana (cek sheet live 18v3w5YJ).
-2. ⬜ **Token `{userVid}`/`{userName}`**: per catatan `customer-namelist-and-creator-token-dev-spec`, belum kebukti resolve di Flutter. Tanpa ini `cv` gak keisi → konsep "punyaku" mati. Test 1 tombol dulu; kalau gagal = dev ask #1.
+2. ✅ **Identitas pengirim — SOLVED (input user 2026-08-31)**: JANGAN pakai token `{userVid}` — `cv`/`cn` dibake formula `"&Settings!$B$1&"` / `"&Settings!$B$2&"` (Settings B1/B2 = identitas user pemilik spreadsheet, per-sheet; pola sama dgn incident `<4>/<5>`). Filter feed pakai ref yang sama. Sisa: 1 submit test buat lihat `cv` keisi benar di doc.
 3. ⬜ **`◆` multi-doc lintas tabel di `updateEventRow`**: user bilang udah support — konfirmasi dengan 1 test write di tombol approve sandbox.
 4. ⬜ **Route conditional per row** (`ty` → page detail beda): cek kemampuan routeParams; fallback = DETAIL_CARD universal.
 5. ⬜ **Sumber `nm` seragam**: incident pakai autoNumber `<2>`, request pakai `nm` — pastikan tiap fitur punya nomor yang bisa dipakai sebagai key merge.
